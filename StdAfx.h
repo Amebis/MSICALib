@@ -34,3 +34,13 @@ using namespace ATL;
 #include "BuildNum.h"
 
 #include "MSITSCA.h"
+
+#include <assert.h>
+#include <msi.h>
+#include <msiquery.h>
+
+#ifdef NDEBUG
+#define verify(expr) ((void)(expr))
+#else
+#define verify(expr) assert(expr)
+#endif
