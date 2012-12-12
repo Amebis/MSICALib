@@ -49,10 +49,10 @@
 extern "C" {
 #endif
 
+    UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall);
     UINT MSITSCA_API InstallScheduledTasks(MSIHANDLE hInstall);
     UINT MSITSCA_API CommitScheduledTasks(MSIHANDLE hInstall);
     UINT MSITSCA_API RollbackScheduledTasks(MSIHANDLE hInstall);
-    UINT MSITSCA_API RemoveScheduledTasks(MSIHANDLE hInstall);
 
 #ifdef __cplusplus
 }

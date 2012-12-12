@@ -78,7 +78,10 @@ UINT MSITSCA_API CommitScheduledTasks(MSIHANDLE hInstall)
 
     UINT uiResult;
     BOOL bIsCoInitialized = SUCCEEDED(::CoInitialize(NULL));
+    CString msg;
 
+    msg.Format(_T("Pripni razhrošèevalnik na proces %u."), ::GetCurrentProcessId());
+    ::MessageBox(NULL, msg, _T("MSITSCA"), MB_OK);
     uiResult = ERROR_SUCCESS;
 
     if (bIsCoInitialized) ::CoUninitialize();
@@ -90,21 +93,6 @@ UINT MSITSCA_API RollbackScheduledTasks(MSIHANDLE hInstall)
 {
     UNREFERENCED_PARAMETER(hInstall);
     assert(::MsiGetMode(hInstall, MSIRUNMODE_ROLLBACK));
-
-    UINT uiResult;
-    BOOL bIsCoInitialized = SUCCEEDED(::CoInitialize(NULL));
-
-    uiResult = ERROR_SUCCESS;
-
-    if (bIsCoInitialized) ::CoUninitialize();
-    return uiResult;
-}
-
-
-
-UINT MSITSCA_API RemoveScheduledTasks(MSIHANDLE hInstall)
-{
-    UNREFERENCED_PARAMETER(hInstall);
 
     UINT uiResult;
     BOOL bIsCoInitialized = SUCCEEDED(::CoInitialize(NULL));

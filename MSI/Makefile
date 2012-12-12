@@ -1,6 +1,13 @@
 !INCLUDE "..\..\include\MSINast.mak"
 
 #MSM_IMA_LOKALIZACIJO=1
+!IF "$(CFG)" == "ReleaseU"
+CFG_VC=Unicode Release
+!ELSEIF "$(CFG)" == "DebugU"
+CFG_VC=Unicode Debug
+!ELSE
+CFG_VC=$(CFG)
+!ENDIF
 
 
 ######################################################################
@@ -43,6 +50,62 @@ TaskTrigger	DaysOfMonth	Y					DoubleInteger		Specifies the day of the month a ta
 TaskTrigger	WeekOfMonth	Y					Integer	1;2;3;4;5	Specifies the week of the month when the task runs. This value is exclusive and is one of the following flags: 1=The task will run between the first and seventh day of the month, 2=The task will run between the eighth and 14th day of the month, 3=The task will run between the 15th and 21st day of the month, 4=The task will run between the 22nd and 28th of the month, 5=The task will run between the last seven days of the month.
 TaskTrigger	MonthsOfYear	Y	0	4095			Integer		Specifies the month(s) when the task runs. This value is a combination of the following flags: 1=Jan, 2=Feb, 4=Mar, 8=Apr, 16=May, 32=Jun, 64=Jul, 128=Aug, 256=Sep, 512=Oct, 1024=Nov, 2048=Dec.
 TaskTrigger	Task_	N			ScheduledTask	1	Identifier		Key of the Trigger's task.
+<<NOKEEP
+
+
+######################################################################
+# Binary
+
+Vse :: \
+	"$(JEZIK).$(CFG).$(PLAT).Binary-1.idt" \
+	"$(JEZIK).$(CFG).$(PLAT).Binary-1\MSITSCA.dll"
+
+"$(JEZIK).$(CFG).$(PLAT).Binary-1.idt" : "Makefile" "..\..\include\MSINast.mak" "$(JEZIK).$(CFG).$(PLAT).Binary-1"
+	-if exist $@ del /f /q $@
+	move /y << $@ > NUL
+Name	Data
+s$(MSI_TIP_ID)	v0
+Binary	Name
+binMSITSCA.dll	MSITSCA.dll
+<<NOKEEP
+
+"$(JEZIK).$(CFG).$(PLAT).Binary-1\MSITSCA.dll" : "..\..\Test\$(CFG_VC).$(PLAT)\MSITSCA.dll"
+	copy /y $** $@ > NUL
+
+
+######################################################################
+# CustomAction
+
+Vse :: "$(JEZIK).$(CFG).$(PLAT).CustomAction-1.idt"
+
+"$(JEZIK).$(CFG).$(PLAT).CustomAction-1.idt" : "Makefile" "..\..\include\MSINast.mak"
+	-if exist $@ del /f /q $@
+	move /y << $@ > NUL
+Action	Type	Source	Target
+s$(MSI_TIP_ID)	i2	S$(MSI_TIP_ID)	S255
+CustomAction	Action
+caEvaluateScheduledTasks	1	binMSITSCA.dll	EvaluateScheduledTasks
+caInstallScheduledTasks	1025	binMSITSCA.dll	InstallScheduledTasks
+caRollbackScheduledTasks	1281	binMSITSCA.dll	RollbackScheduledTasks
+caCommitScheduledTasks	1537	binMSITSCA.dll	CommitScheduledTasks
+<<NOKEEP
+
+
+######################################################################
+# InstallExecuteSequence
+
+Vse :: "$(JEZIK).$(CFG).$(PLAT).InstallExecuteSequence-1.idt"
+
+"$(JEZIK).$(CFG).$(PLAT).InstallExecuteSequence-1.idt" : "Makefile" "..\..\include\MSINast.mak"
+	-if exist $@ del /f /q $@
+	move /y << $@ > NUL
+Action	Condition	Sequence
+s$(MSI_TIP_ID)	S255	I2
+InstallExecuteSequence	Action
+caEvaluateScheduledTasks		6580
+caInstallScheduledTasks		6581
+caRollbackScheduledTasks		6582
+caCommitScheduledTasks		6583
 <<NOKEEP
 
 
