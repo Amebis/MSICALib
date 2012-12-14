@@ -38,6 +38,7 @@ using namespace ATL;
 #include <assert.h>
 #include <msi.h>
 #include <msiquery.h>
+#include <mstask.h>
 
 #ifdef NDEBUG
 #define verify(expr) ((void)(expr))

@@ -67,6 +67,48 @@ namespace MSITSCA {
     extern HINSTANCE hInstance; // roèica modula
 }
 
+
+////////////////////////////////////////////////////////////////////
+// Lokalni include
+////////////////////////////////////////////////////////////////////
+
+#include <msiquery.h>
+
+
+////////////////////////////////////////////////////////////////////
+// Funkcije inline
+////////////////////////////////////////////////////////////////////
+
+inline UINT MsiRecordGetString(MSIHANDLE hRecord, unsigned int iField, CString &sValue)
+{
+    DWORD dwSize = 0;
+    UINT uiResult;
+
+    // Query the actual string length first.
+    uiResult = ::MsiRecordGetString(hRecord, iField, _T(""), &dwSize);
+    if (uiResult == ERROR_MORE_DATA) {
+        // Prepare the buffer to read the string data into and read it.
+        LPTSTR szBuffer = sValue.GetBuffer(dwSize++);
+        uiResult = ::MsiRecordGetString(hRecord, iField, szBuffer, &dwSize);
+        if (uiResult == ERROR_SUCCESS) {
+            // Read succeeded.
+            sValue.ReleaseBuffer(dwSize);
+            return ERROR_SUCCESS;
+        } else {
+            // Read failed. Empty the string and return error code.
+            sValue.ReleaseBuffer(0);
+            return uiResult;
+        }
+    } else if (uiResult == ERROR_SUCCESS) {
+        // The string in database is empty.
+        sValue.Empty();
+        return ERROR_SUCCESS;
+    } else {
+        // Return error code.
+        return uiResult;
+    }
+}
+
 #endif // !defined(RC_INVOKED) && !defined(MIDL_PASS)
 
 #endif // __MSITSCA_H__

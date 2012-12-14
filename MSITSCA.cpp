@@ -42,12 +42,45 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
 
     UINT uiResult;
     BOOL bIsCoInitialized = SUCCEEDED(::CoInitialize(NULL));
-    CString msg;
+    CString sComponent;
+    PMSIHANDLE hDatabase, hViewST;
 
-    msg.Format(_T("Pripni razhrošèevalnik na proces %u."), ::GetCurrentProcessId());
-    ::MessageBox(NULL, msg, _T("MSITSCA"), MB_OK);
+    assert(0); // Attach debugger here or press "Ignore"!
+
+    hDatabase = ::MsiGetActiveDatabase(hInstall);
+    if (!hDatabase) {
+        uiResult = ERROR_INVALID_HANDLE;
+        goto error1;
+    }
+
+    uiResult = ::MsiDatabaseOpenView(hDatabase, _T("SELECT Component_ FROM ScheduledTask"), &hViewST);
+    if (uiResult != ERROR_SUCCESS) goto error1;
+
+    uiResult = ::MsiViewExecute(hViewST, NULL);
+    if (uiResult != ERROR_SUCCESS) goto error1;
+
+    for (;;) {
+        PMSIHANDLE hRecord;
+        INSTALLSTATE iInstalled, iAction;
+
+        // Fetch one record from the view.
+        uiResult = ::MsiViewFetch(hViewST, &hRecord);
+        if (uiResult == ERROR_NO_MORE_ITEMS)
+            break;
+        else if (uiResult != ERROR_SUCCESS)
+            goto error1;
+
+        uiResult = ::MsiRecordGetString(hRecord, 1, sComponent);
+        if (uiResult != ERROR_SUCCESS) goto error1;
+
+        uiResult = ::MsiGetComponentState(hInstall, sComponent, &iInstalled, &iAction);
+        if (uiResult != ERROR_SUCCESS) goto error1;
+    }
+
+    verify(::MsiViewClose(hViewST) == ERROR_SUCCESS);
     uiResult = ERROR_SUCCESS;
 
+error1:
     if (bIsCoInitialized) ::CoUninitialize();
     return uiResult;
 }
@@ -60,10 +93,8 @@ UINT MSITSCA_API InstallScheduledTasks(MSIHANDLE hInstall)
 
     UINT uiResult;
     BOOL bIsCoInitialized = SUCCEEDED(::CoInitialize(NULL));
-    CString msg;
 
-    msg.Format(_T("Pripni razhrošèevalnik na proces %u."), ::GetCurrentProcessId());
-    ::MessageBox(NULL, msg, _T("MSITSCA"), MB_OK);
+    assert(0); // Attach debugger here or press "Ignore"!
     uiResult = ERROR_SUCCESS;
 
     if (bIsCoInitialized) ::CoUninitialize();
@@ -78,10 +109,8 @@ UINT MSITSCA_API CommitScheduledTasks(MSIHANDLE hInstall)
 
     UINT uiResult;
     BOOL bIsCoInitialized = SUCCEEDED(::CoInitialize(NULL));
-    CString msg;
 
-    msg.Format(_T("Pripni razhrošèevalnik na proces %u."), ::GetCurrentProcessId());
-    ::MessageBox(NULL, msg, _T("MSITSCA"), MB_OK);
+    assert(0); // Attach debugger here or press "Ignore"!
     uiResult = ERROR_SUCCESS;
 
     if (bIsCoInitialized) ::CoUninitialize();
@@ -96,10 +125,8 @@ UINT MSITSCA_API RollbackScheduledTasks(MSIHANDLE hInstall)
 
     UINT uiResult;
     BOOL bIsCoInitialized = SUCCEEDED(::CoInitialize(NULL));
-    CString msg;
 
-    msg.Format(_T("Pripni razhrošèevalnik na proces %u."), ::GetCurrentProcessId());
-    ::MessageBox(NULL, msg, _T("MSITSCA"), MB_OK);
+    assert(0); // Attach debugger here or press "Ignore"!
     uiResult = ERROR_SUCCESS;
 
     if (bIsCoInitialized) ::CoUninitialize();

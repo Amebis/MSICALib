@@ -22,14 +22,15 @@ Table	Column	Nullable	MinValue	MaxValue	KeyTable	KeyColumn	Category	Set	Descript
 s32	s32	s4	I4	I4	S255	I2	S32	S255	S255
 _Validation	Table	Column
 ScheduledTask	Task	N					Identifier		Primary key, non-localized token.
+ScheduledTask	DisplayName	N					Formatted		Task name.
 ScheduledTask	Application	N					Formatted		Task application name.
-ScheduledTask	Parameters	N					Formatted		Task command line parameters.
+ScheduledTask	Parameters	Y					Formatted		Task command line parameters.
 ScheduledTask	WorkingDir	N					Formatted		Task working directory. If the working directory is set to "", when the application is run, the current directory will be the directory in which the task scheduler service executable, Mstask.exe, resides.
 ScheduledTask	Flags	N					DoubleInteger		Task's flags to pass in IScheduledWorkItem::SetFlags() call.
-ScheduledTask	Priority	N					DoubleInteger	32;64;128;256	Task's priority to pass in IScheduledWorkItem::SetPriority() call.
-ScheduledTask	User	N					Text		Account name to run task as. Use empty string for system account.
+ScheduledTask	Priority	N					DoubleInteger	32;64;128;256	Task's priority to pass in ITask::SetPriority() call.
+ScheduledTask	User	Y					Text		Account name to run task as. Use empty string for system account.
 ScheduledTask	Password	Y					Text		Account password to run task as. Use NULL for system account.
-ScheduledTask	Comment	Y					Text		Task description.
+ScheduledTask	Description	Y					Text		Task description.
 ScheduledTask	IdleMin	Y					Integer		A value that specifies how long, in minutes, the system must remain idle before the work item can run.
 ScheduledTask	IdleDeadline	Y					Integer		A value that specifies the maximum number of minutes that the Task Scheduler will wait for the idle-time period.
 ScheduledTask	MaxRuntime	N					DoubleInteger		Specifies the maximum run time (in milliseconds), for the task. This parameter may be set to -1 to specify an unlimited time.
@@ -117,8 +118,8 @@ Vse :: "$(JEZIK).$(CFG).$(PLAT).ScheduledTask-1.idt"
 "$(JEZIK).$(CFG).$(PLAT).ScheduledTask-1.idt" : "Makefile" "..\..\include\MSINast.mak"
 	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
-Task	Application	Parameters	WorkingDir	Flags	Priority	User	Password	Comment	IdleMin	IdleDeadline	MaxRuntime	Condition	Component_
-s$(MSI_TIP_ID)	s255	s255	s255	i4	i4	s255	S255	S255	I2	I2	i4	S255	s$(MSI_TIP_ID)
+Task	DisplayName	Application	Parameters	WorkingDir	Flags	Priority	User	Password	Description	IdleMin	IdleDeadline	MaxRuntime	Condition	Component_
+s$(MSI_TIP_ID)	s255	s255	S255	s255	i4	i4	S255	S255	S255	I2	I2	i4	S255	s$(MSI_TIP_ID)
 ScheduledTask	Task
 <<NOKEEP
 
