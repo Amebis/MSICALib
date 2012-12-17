@@ -26,6 +26,7 @@
 #define _ATL_NO_AUTOMATIC_NAMESPACE
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS // Some CString constructors will be explicit
 
+#include <afx.h>
 #include <atlbase.h>
 #include <atlstr.h>
 
