@@ -249,6 +249,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="MSITSCA.cpp" />
+    <ClCompile Include="MSITSCAOp.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -262,6 +263,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MSITSCA.h" />
+    <ClInclude Include="MSITSCAOp.h" />
     <ClInclude Include="StdAfx.h" />
   </ItemGroup>
   <ItemGroup>

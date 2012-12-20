@@ -26,8 +26,8 @@
 #define _ATL_NO_AUTOMATIC_NAMESPACE
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS // Some CString constructors will be explicit
 
-#include <afx.h>
 #include <atlbase.h>
+#include <atlfile.h>
 #include <atlstr.h>
 
 using namespace ATL;
@@ -35,11 +35,15 @@ using namespace ATL;
 #include "BuildNum.h"
 
 #include "MSITSCA.h"
+#include "MSITSCAOp.h"
 
 #include <assert.h>
+#include <corerror.h>
 #include <msi.h>
 #include <msiquery.h>
 #include <mstask.h>
+#include <stdlib.h>
+#include <time.h>
 
 #ifdef NDEBUG
 #define verify(expr) ((void)(expr))
