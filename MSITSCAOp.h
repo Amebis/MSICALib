@@ -6,6 +6,7 @@
 #include <atlcoll.h>
 #include <atlfile.h>
 #include <atlstr.h>
+#include <msi.h>
 #include <mstask.h>
 #include <windows.h>
 
@@ -19,9 +20,16 @@ class CMSITSCASession;
 class CMSITSCAOp
 {
 public:
-    CMSITSCAOp();
+    CMSITSCAOp(int iTicks = 0);
 
     virtual HRESULT Execute(CMSITSCASession *pSession) = 0;
+
+    friend class CMSITSCAOpList;
+    friend inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOp &op);
+    friend inline HRESULT operator >>(CAtlFile &f, CMSITSCAOp &op);
+
+protected:
+    int m_iTicks;   // Number of ticks on a progress bar required for this action execution
 };
 
 
@@ -32,7 +40,7 @@ public:
 class CMSITSCAOpSingleStringOperation : public CMSITSCAOp
 {
 public:
-    CMSITSCAOpSingleStringOperation(LPCWSTR pszValue = L"");
+    CMSITSCAOpSingleStringOperation(LPCWSTR pszValue = L"", int iTicks = 0);
 
     friend inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpSingleStringOperation &op);
     friend inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpSingleStringOperation &op);
@@ -49,7 +57,7 @@ protected:
 class CMSITSCAOpSrcDstStringOperation : public CMSITSCAOp
 {
 public:
-    CMSITSCAOpSrcDstStringOperation(LPCWSTR pszValue1 = L"", LPCWSTR pszValue2 = L"");
+    CMSITSCAOpSrcDstStringOperation(LPCWSTR pszValue1 = L"", LPCWSTR pszValue2 = L"", int iTicks = 0);
 
     friend inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpSrcDstStringOperation &op);
     friend inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpSrcDstStringOperation &op);
@@ -67,7 +75,7 @@ protected:
 class CMSITSCAOpBooleanOperation : public CMSITSCAOp
 {
 public:
-    CMSITSCAOpBooleanOperation(BOOL bValue = TRUE);
+    CMSITSCAOpBooleanOperation(BOOL bValue = TRUE, int iTicks = 0);
 
     friend inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpBooleanOperation &op);
     friend inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpBooleanOperation &op);
@@ -84,7 +92,7 @@ protected:
 class CMSITSCAOpEnableRollback : public CMSITSCAOpBooleanOperation
 {
 public:
-    CMSITSCAOpEnableRollback(BOOL bEnable = TRUE);
+    CMSITSCAOpEnableRollback(BOOL bEnable = TRUE, int iTicks = 0);
     virtual HRESULT Execute(CMSITSCASession *pSession);
 };
 
@@ -96,7 +104,7 @@ public:
 class CMSITSCAOpDeleteFile : public CMSITSCAOpSingleStringOperation
 {
 public:
-    CMSITSCAOpDeleteFile(LPCWSTR pszFileName = L"");
+    CMSITSCAOpDeleteFile(LPCWSTR pszFileName = L"", int iTicks = 0);
     virtual HRESULT Execute(CMSITSCASession *pSession);
 };
 
@@ -108,7 +116,7 @@ public:
 class CMSITSCAOpMoveFile : public CMSITSCAOpSrcDstStringOperation
 {
 public:
-    CMSITSCAOpMoveFile(LPCWSTR pszFileSrc = L"", LPCWSTR pszFileDst = L"");
+    CMSITSCAOpMoveFile(LPCWSTR pszFileSrc = L"", LPCWSTR pszFileDst = L"", int iTicks = 0);
     virtual HRESULT Execute(CMSITSCASession *pSession);
 };
 
@@ -120,9 +128,8 @@ public:
 class CMSITSCAOpCreateTask : public CMSITSCAOpSingleStringOperation
 {
 public:
-    CMSITSCAOpCreateTask(LPCWSTR pszTaskName = L"");
+    CMSITSCAOpCreateTask(LPCWSTR pszTaskName = L"", BOOL bForce = FALSE, int iTicks = 0);
     virtual ~CMSITSCAOpCreateTask();
-
     virtual HRESULT Execute(CMSITSCASession *pSession);
 
     UINT SetFromRecord(MSIHANDLE hInstall, MSIHANDLE hRecord);
@@ -156,7 +163,7 @@ protected:
 class CMSITSCAOpDeleteTask : public CMSITSCAOpSingleStringOperation
 {
 public:
-    CMSITSCAOpDeleteTask(LPCWSTR pszTaskName = L"");
+    CMSITSCAOpDeleteTask(LPCWSTR pszTaskName = L"", int iTicks = 0);
     virtual HRESULT Execute(CMSITSCASession *pSession);
 };
 
@@ -168,7 +175,7 @@ public:
 class CMSITSCAOpEnableTask : public CMSITSCAOpSingleStringOperation
 {
 public:
-    CMSITSCAOpEnableTask(LPCWSTR pszTaskName = L"", BOOL bEnable = TRUE);
+    CMSITSCAOpEnableTask(LPCWSTR pszTaskName = L"", BOOL bEnable = TRUE, int iTicks = 0);
     virtual HRESULT Execute(CMSITSCASession *pSession);
 
     friend inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpEnableTask &op);
@@ -186,7 +193,7 @@ protected:
 class CMSITSCAOpCopyTask : public CMSITSCAOpSrcDstStringOperation
 {
 public:
-    CMSITSCAOpCopyTask(LPCWSTR pszTaskSrc = L"", LPCWSTR pszTaskDst = L"");
+    CMSITSCAOpCopyTask(LPCWSTR pszTaskSrc = L"", LPCWSTR pszTaskDst = L"", int iTicks = 0);
     virtual HRESULT Execute(CMSITSCASession *pSession);
 };
 
@@ -198,7 +205,7 @@ public:
 class CMSITSCAOpList : public CMSITSCAOp, public CAtlList<CMSITSCAOp*>
 {
 public:
-    CMSITSCAOpList();
+    CMSITSCAOpList(int iTicks = 0);
 
     void Free();
     HRESULT LoadFromFile(LPCTSTR pszFileName);
@@ -235,10 +242,8 @@ class CMSITSCASession
 {
 public:
     CMSITSCASession();
-    virtual ~CMSITSCASession();
 
-    HRESULT Initialize();
-
+    MSIHANDLE m_hInstall;                       // Installer handle
     CComPtr<ITaskScheduler> m_pTaskScheduler;   // Task scheduler interface
     BOOL m_bContinueOnError;                    // Continue execution on operation error?
     BOOL m_bRollbackEnabled;                    // Is rollback enabled?
@@ -251,14 +256,36 @@ public:
 // Inline operators
 ////////////////////////////////////////////////////////////////////////////
 
+inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOp &op)
+{
+    return f << op.m_iTicks;
+}
+
+
+inline HRESULT operator >>(CAtlFile &f, CMSITSCAOp &op)
+{
+    return f >> op.m_iTicks;
+}
+
+
 inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpSingleStringOperation &op)
 {
+    HRESULT hr;
+
+    hr = f << (const CMSITSCAOp &)op;
+    if (FAILED(hr)) return hr;
+
     return f << op.m_sValue;
 }
 
 
 inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpSingleStringOperation &op)
 {
+    HRESULT hr;
+
+    hr = f >> (CMSITSCAOp &)op;
+    if (FAILED(hr)) return hr;
+
     return f >> op.m_sValue;
 }
 
@@ -266,6 +293,9 @@ inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpSingleStringOperation &op)
 inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpSrcDstStringOperation &op)
 {
     HRESULT hr;
+
+    hr = f << (const CMSITSCAOp &)op;
+    if (FAILED(hr)) return hr;
 
     hr = f << op.m_sValue1;
     if (FAILED(hr)) return hr;
@@ -278,6 +308,9 @@ inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpSrcDstStringOperation &op)
 {
     HRESULT hr;
 
+    hr = f >> (CMSITSCAOp &)op;
+    if (FAILED(hr)) return hr;
+
     hr = f >> op.m_sValue1;
     if (FAILED(hr)) return hr;
 
@@ -287,6 +320,11 @@ inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpSrcDstStringOperation &op)
 
 inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpBooleanOperation &op)
 {
+    HRESULT hr;
+
+    hr = f << (const CMSITSCAOp &)op;
+    if (FAILED(hr)) return hr;
+
     return f << (int)op.m_bValue;
 }
 
@@ -295,6 +333,9 @@ inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpBooleanOperation &op)
 {
     int iValue;
     HRESULT hr;
+
+    hr = f >> (CMSITSCAOp &)op;
+    if (FAILED(hr)) return hr;
 
     hr = f >> iValue;
     if (FAILED(hr)) return hr;
@@ -392,6 +433,9 @@ inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpList &list)
     POSITION pos;
     HRESULT hr;
 
+    hr = f << (const CMSITSCAOp &)list;
+    if (FAILED(hr)) return hr;
+
     hr = f << (int)list.GetCount();
     if (FAILED(hr)) return hr;
 
@@ -430,6 +474,9 @@ inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpList &list)
 {
     HRESULT hr;
     DWORD dwCount;
+
+    hr = f >> (CMSITSCAOp &)list;
+    if (FAILED(hr)) return hr;
 
     hr = f >> (int&)dwCount;
     if (FAILED(hr)) return hr;

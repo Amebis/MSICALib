@@ -1,6 +1,6 @@
 !INCLUDE "..\..\include\MSINast.mak"
 
-#MSM_IMA_LOKALIZACIJO=1
+MSM_IMA_LOKALIZACIJO=1
 !IF "$(CFG)" == "ReleaseU"
 CFG_VC=Unicode Release
 !ELSEIF "$(CFG)" == "DebugU"
@@ -66,7 +66,7 @@ Vse :: "$(JEZIK).$(CFG).$(PLAT).ActionText-2.idt"
 Action	Description	Template
 s$(MSI_TIP_ID)	L0	L0
 1250	ActionText	Action
-InstallScheduledTasks	Registracija razporejenih opravil	Opravilo: [1]
+InstallScheduledTasks	Registracija razporejenih opravil	Razporejeno opravilo: [1]
 <<NOKEEP
 
 "De.$(CFG).$(PLAT).ActionText-2.idt" : "Sl.$(CFG).$(PLAT).ActionText-2.idtx" "..\res\de_DE.po"

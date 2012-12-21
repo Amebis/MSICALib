@@ -8,7 +8,7 @@
 // Local constants
 ////////////////////////////////////////////////////////////////////////////
 
-#define MSITSCA_TASK_TICK_SIZE  (10*1024*1024)
+#define MSITSCA_TASK_TICK_SIZE  (16*1024)
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -115,7 +115,7 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
                         if (iAction >= INSTALLSTATE_LOCAL) {
                             // Installing component. Add the task.
                             PMSIHANDLE hViewTT;
-                            CMSITSCAOpCreateTask *opCreateTask = new CMSITSCAOpCreateTask(sDisplayName);
+                            CMSITSCAOpCreateTask *opCreateTask = new CMSITSCAOpCreateTask(sDisplayName, iAction < INSTALLSTATE_LOCAL, MSITSCA_TASK_TICK_SIZE);
                             assert(opCreateTask);
 
                             // Populate the operation with task's data.
@@ -138,7 +138,7 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
                             olExecute.AddTail(opCreateTask);
                         } else {
                             // Removing component. Remove the task.
-                            olExecute.AddTail(new CMSITSCAOpDeleteTask(sDisplayName));
+                            olExecute.AddTail(new CMSITSCAOpDeleteTask(sDisplayName, MSITSCA_TASK_TICK_SIZE));
                         }
 
                         // The amount of tick space to add for each task to progress indicator.
@@ -247,6 +247,8 @@ UINT MSITSCA_API InstallScheduledTasks(MSIHANDLE hInstall)
             CMSITSCASession session;
             BOOL bIsCleanup = ::MsiGetMode(hInstall, MSIRUNMODE_COMMIT) || ::MsiGetMode(hInstall, MSIRUNMODE_ROLLBACK);
 
+            session.m_hInstall = hInstall;
+
             // In case of commit/rollback, continue sequence on error, to do as much cleanup as possible.
             session.m_bContinueOnError = bIsCleanup;
 
@@ -283,15 +285,18 @@ UINT MSITSCA_API InstallScheduledTasks(MSIHANDLE hInstall)
                             // Saving commit file failed.
                             uiResult = HRESULT_CODE(hr);
                         }
-                    } else
+                    } else {
+                        // No cleanup support required.
                         uiResult = ERROR_SUCCESS;
+                    }
                 } else {
                     // Execution failed.
                     uiResult = HRESULT_CODE(hr);
                 }
 
-                if (uiResult != ERROR_SUCCESS && !bIsCleanup) {
-                    // Perform the cleanup now, since rollback action might not get called at all (if scheduled later than this action).
+                if (uiResult != ERROR_SUCCESS) {
+                    // Perform the cleanup now. The rollback script might not have been written to file yet.
+                    // And even if it was, the rollback action might not get invoked at all (if scheduled in InstallExecuteSequence later than this action).
                     session.m_bContinueOnError = TRUE;
                     session.m_bRollbackEnabled = FALSE;
                     verify(SUCCEEDED(session.m_olRollback.Execute(&session)));

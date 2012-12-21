@@ -5,7 +5,8 @@
 // CMSITSCAOp
 ////////////////////////////////////////////////////////////////////////////
 
-CMSITSCAOp::CMSITSCAOp()
+CMSITSCAOp::CMSITSCAOp(int iTicks) :
+    m_iTicks(iTicks)
 {
 }
 
@@ -14,9 +15,9 @@ CMSITSCAOp::CMSITSCAOp()
 // CMSITSCAOpSingleStringOperation
 ////////////////////////////////////////////////////////////////////////////
 
-CMSITSCAOpSingleStringOperation::CMSITSCAOpSingleStringOperation(LPCWSTR pszValue) :
+CMSITSCAOpSingleStringOperation::CMSITSCAOpSingleStringOperation(LPCWSTR pszValue, int iTicks) :
     m_sValue(pszValue),
-    CMSITSCAOp()
+    CMSITSCAOp(iTicks)
 {
 }
 
@@ -25,10 +26,10 @@ CMSITSCAOpSingleStringOperation::CMSITSCAOpSingleStringOperation(LPCWSTR pszValu
 // CMSITSCAOpDoubleStringOperation
 ////////////////////////////////////////////////////////////////////////////
 
-CMSITSCAOpSrcDstStringOperation::CMSITSCAOpSrcDstStringOperation(LPCWSTR pszValue1, LPCWSTR pszValue2) :
+CMSITSCAOpSrcDstStringOperation::CMSITSCAOpSrcDstStringOperation(LPCWSTR pszValue1, LPCWSTR pszValue2, int iTicks) :
     m_sValue1(pszValue1),
     m_sValue2(pszValue2),
-    CMSITSCAOp()
+    CMSITSCAOp(iTicks)
 {
 }
 
@@ -37,8 +38,9 @@ CMSITSCAOpSrcDstStringOperation::CMSITSCAOpSrcDstStringOperation(LPCWSTR pszValu
 // CMSITSCAOpBooleanOperation
 ////////////////////////////////////////////////////////////////////////////
 
-CMSITSCAOpBooleanOperation::CMSITSCAOpBooleanOperation(BOOL bValue) :
-    m_bValue(bValue)
+CMSITSCAOpBooleanOperation::CMSITSCAOpBooleanOperation(BOOL bValue, int iTicks) :
+    m_bValue(bValue),
+    CMSITSCAOp(iTicks)
 {
 }
 
@@ -47,8 +49,8 @@ CMSITSCAOpBooleanOperation::CMSITSCAOpBooleanOperation(BOOL bValue) :
 // CMSITSCAOpEnableRollback
 ////////////////////////////////////////////////////////////////////////////
 
-CMSITSCAOpEnableRollback::CMSITSCAOpEnableRollback(BOOL bEnable) :
-    CMSITSCAOpBooleanOperation(bEnable)
+CMSITSCAOpEnableRollback::CMSITSCAOpEnableRollback(BOOL bEnable, int iTicks) :
+    CMSITSCAOpBooleanOperation(bEnable, iTicks)
 {
 }
 
@@ -66,8 +68,8 @@ HRESULT CMSITSCAOpEnableRollback::Execute(CMSITSCASession *pSession)
 // CMSITSCAOpDeleteFile
 ////////////////////////////////////////////////////////////////////////////
 
-CMSITSCAOpDeleteFile::CMSITSCAOpDeleteFile(LPCWSTR pszFileName) :
-    CMSITSCAOpSingleStringOperation(pszFileName)
+CMSITSCAOpDeleteFile::CMSITSCAOpDeleteFile(LPCWSTR pszFileName, int iTicks) :
+    CMSITSCAOpSingleStringOperation(pszFileName, iTicks)
 {
 }
 
@@ -75,17 +77,18 @@ CMSITSCAOpDeleteFile::CMSITSCAOpDeleteFile(LPCWSTR pszFileName) :
 HRESULT CMSITSCAOpDeleteFile::Execute(CMSITSCASession *pSession)
 {
     assert(pSession);
+    DWORD dwError;
 
     if (pSession->m_bRollbackEnabled) {
         CStringW sBackupName;
         UINT uiCount = 0;
-        DWORD dwError;
 
         do {
             // Rename the file to make a backup.
             sBackupName.Format(L"%ls (orig %u)", (LPCWSTR)m_sValue, ++uiCount);
             dwError = ::MoveFileW(m_sValue, sBackupName) ? ERROR_SUCCESS : ::GetLastError();
-        } while (dwError == ERROR_FILE_EXISTS);
+        } while (dwError == ERROR_ALREADY_EXISTS);
+        if (dwError == ERROR_FILE_NOT_FOUND) return S_OK;
         if (dwError != ERROR_SUCCESS) return AtlHresultFromWin32(dwError);
 
         // Order rollback action to restore from backup copy.
@@ -97,7 +100,9 @@ HRESULT CMSITSCAOpDeleteFile::Execute(CMSITSCASession *pSession)
         return S_OK;
     } else {
         // Delete the file.
-        return ::DeleteFileW(m_sValue) ? S_OK : AtlHresultFromLastError();
+        if (::DeleteFileW(m_sValue)) return S_OK;
+        dwError = ::GetLastError();
+        return dwError == ERROR_FILE_NOT_FOUND ? S_OK : AtlHresultFromWin32(dwError);
     }
 }
 
@@ -106,8 +111,8 @@ HRESULT CMSITSCAOpDeleteFile::Execute(CMSITSCASession *pSession)
 // CMSITSCAOpMoveFile
 ////////////////////////////////////////////////////////////////////////////
 
-CMSITSCAOpMoveFile::CMSITSCAOpMoveFile(LPCWSTR pszFileSrc, LPCWSTR pszFileDst) :
-    CMSITSCAOpSrcDstStringOperation(pszFileSrc, pszFileDst)
+CMSITSCAOpMoveFile::CMSITSCAOpMoveFile(LPCWSTR pszFileSrc, LPCWSTR pszFileDst, int iTicks) :
+    CMSITSCAOpSrcDstStringOperation(pszFileSrc, pszFileDst, iTicks)
 {
 }
 
@@ -135,14 +140,14 @@ HRESULT CMSITSCAOpMoveFile::Execute(CMSITSCASession *pSession)
 // CMSITSCAOpCreateTask
 ////////////////////////////////////////////////////////////////////////////
 
-CMSITSCAOpCreateTask::CMSITSCAOpCreateTask(LPCWSTR pszTaskName) :
-    m_bForce(FALSE),
+CMSITSCAOpCreateTask::CMSITSCAOpCreateTask(LPCWSTR pszTaskName, BOOL bForce, int iTicks) :
+    m_bForce(bForce),
     m_dwFlags(0),
     m_dwPriority(NORMAL_PRIORITY_CLASS),
     m_wIdleMinutes(0),
     m_wDeadlineMinutes(0),
     m_dwMaxRuntimeMS(INFINITE),
-    CMSITSCAOpSingleStringOperation(pszTaskName)
+    CMSITSCAOpSingleStringOperation(pszTaskName, iTicks)
 {
 }
 
@@ -161,6 +166,12 @@ HRESULT CMSITSCAOpCreateTask::Execute(CMSITSCASession *pSession)
     HRESULT hr;
     CComPtr<ITask> pTask;
     POSITION pos;
+    PMSIHANDLE hRecordMsg = ::MsiCreateRecord(1);
+
+    // Display our custom message in the progress bar.
+    verify(::MsiRecordSetStringW(hRecordMsg, 1, m_sValue) == ERROR_SUCCESS);
+    if (MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ACTIONDATA, hRecordMsg) == IDCANCEL)
+        return AtlHresultFromWin32(ERROR_INSTALL_USEREXIT);
 
     // Load the task to see if it exists.
     hr = pSession->m_pTaskScheduler->Activate(m_sValue, IID_ITask, (IUnknown**)&pTask);
@@ -406,8 +417,8 @@ UINT CMSITSCAOpCreateTask::SetTriggersFromView(MSIHANDLE hView)
 // CMSITSCAOpDeleteTask
 ////////////////////////////////////////////////////////////////////////////
 
-CMSITSCAOpDeleteTask::CMSITSCAOpDeleteTask(LPCWSTR pszTaskName) :
-    CMSITSCAOpSingleStringOperation(pszTaskName)
+CMSITSCAOpDeleteTask::CMSITSCAOpDeleteTask(LPCWSTR pszTaskName, int iTicks) :
+    CMSITSCAOpSingleStringOperation(pszTaskName, iTicks)
 {
 }
 
@@ -415,9 +426,9 @@ CMSITSCAOpDeleteTask::CMSITSCAOpDeleteTask(LPCWSTR pszTaskName) :
 HRESULT CMSITSCAOpDeleteTask::Execute(CMSITSCASession *pSession)
 {
     assert(pSession);
+    HRESULT hr;
 
     if (pSession->m_bRollbackEnabled) {
-        HRESULT hr;
         CComPtr<ITask> pTask;
         DWORD dwFlags;
         CString sDisplayNameOrig;
@@ -425,7 +436,8 @@ HRESULT CMSITSCAOpDeleteTask::Execute(CMSITSCASession *pSession)
 
         // Load the task.
         hr = pSession->m_pTaskScheduler->Activate(m_sValue, IID_ITask, (IUnknown**)&pTask);
-        if (FAILED(hr)) return hr;
+        if (hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) return S_OK;
+        else if (FAILED(hr)) return hr;
 
         // Disable the task.
         hr = pTask->GetFlags(&dwFlags);
@@ -469,7 +481,9 @@ HRESULT CMSITSCAOpDeleteTask::Execute(CMSITSCASession *pSession)
         return S_OK;
     } else {
         // Delete the task.
-        return pSession->m_pTaskScheduler->Delete(m_sValue);
+        hr = pSession->m_pTaskScheduler->Delete(m_sValue);
+        if (hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) return S_OK;
+        else return hr;
     }
 }
 
@@ -478,9 +492,9 @@ HRESULT CMSITSCAOpDeleteTask::Execute(CMSITSCASession *pSession)
 // CMSITSCAOpEnableTask
 ////////////////////////////////////////////////////////////////////////////
 
-CMSITSCAOpEnableTask::CMSITSCAOpEnableTask(LPCWSTR pszTaskName, BOOL bEnable) :
+CMSITSCAOpEnableTask::CMSITSCAOpEnableTask(LPCWSTR pszTaskName, BOOL bEnable, int iTicks) :
     m_bEnable(bEnable),
-    CMSITSCAOpSingleStringOperation(pszTaskName)
+    CMSITSCAOpSingleStringOperation(pszTaskName, iTicks)
 {
 }
 
@@ -535,8 +549,8 @@ HRESULT CMSITSCAOpEnableTask::Execute(CMSITSCASession *pSession)
 // CMSITSCAOpCopyTask
 ////////////////////////////////////////////////////////////////////////////
 
-CMSITSCAOpCopyTask::CMSITSCAOpCopyTask(LPCWSTR pszTaskSrc, LPCWSTR pszTaskDst) :
-    CMSITSCAOpSrcDstStringOperation(pszTaskSrc, pszTaskDst)
+CMSITSCAOpCopyTask::CMSITSCAOpCopyTask(LPCWSTR pszTaskSrc, LPCWSTR pszTaskDst, int iTicks) :
+    CMSITSCAOpSrcDstStringOperation(pszTaskSrc, pszTaskDst, iTicks)
 {
 }
 
@@ -572,7 +586,8 @@ HRESULT CMSITSCAOpCopyTask::Execute(CMSITSCASession *pSession)
 // CMSITSCAOpList
 ////////////////////////////////////////////////////////////////////////////
 
-CMSITSCAOpList::CMSITSCAOpList() :
+CMSITSCAOpList::CMSITSCAOpList(int iTicks) :
+    CMSITSCAOp(iTicks),
     CAtlList<CMSITSCAOp*>(sizeof(CMSITSCAOp*))
 {
 }
@@ -634,11 +649,32 @@ HRESULT CMSITSCAOpList::Execute(CMSITSCASession *pSession)
     assert(pSession);
     POSITION pos;
     HRESULT hr;
+    PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
+
+    // Tell the installer to use explicit progress messages.
+    verify(::MsiRecordSetInteger(hRecordProg, 1, 1) == ERROR_SUCCESS);
+    verify(::MsiRecordSetInteger(hRecordProg, 2, 1) == ERROR_SUCCESS);
+    verify(::MsiRecordSetInteger(hRecordProg, 3, 0) == ERROR_SUCCESS);
+    ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_PROGRESS, hRecordProg);
+
+    // Prepare hRecordProg for progress messages.
+    verify(::MsiRecordSetInteger(hRecordProg, 1, 2) == ERROR_SUCCESS);
+    verify(::MsiRecordSetInteger(hRecordProg, 3, 0) == ERROR_SUCCESS);
 
     for (pos = GetHeadPosition(); pos;) {
-        hr = GetNext(pos)->Execute(pSession);
+        CMSITSCAOp *pOp = GetNext(pos);
+        assert(pOp);
+
+        hr = pOp->Execute(pSession);
         if (!pSession->m_bContinueOnError && FAILED(hr)) return hr;
+
+        verify(::MsiRecordSetInteger(hRecordProg, 2, pOp->m_iTicks) == ERROR_SUCCESS);
+        if (::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_PROGRESS, hRecordProg) == IDCANCEL)
+            return AtlHresultFromWin32(ERROR_INSTALL_USEREXIT);
     }
+
+    verify(::MsiRecordSetInteger(hRecordProg, 2, m_iTicks) == ERROR_SUCCESS);
+    ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_PROGRESS, hRecordProg);
 
     return S_OK;
 }
@@ -653,16 +689,3 @@ CMSITSCASession::CMSITSCASession() :
     m_bRollbackEnabled(FALSE)
 {
 }
-
-
-CMSITSCASession::~CMSITSCASession()
-{
-}
-
-
-HRESULT CMSITSCASession::Initialize()
-{
-    return m_pTaskScheduler.CoCreateInstance(CLSID_CTaskScheduler, NULL, CLSCTX_ALL);
-}
-
-
