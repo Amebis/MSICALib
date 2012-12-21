@@ -39,6 +39,11 @@
 #define MSITSCA_API
 #endif
 
+#define ERROR_INSTALL_SCHEDULED_TASKS_DATABASE_OPEN    2550L
+#define ERROR_INSTALL_SCHEDULED_TASKS_OPLIST_CREATE    2551L
+#define ERROR_INSTALL_SCHEDULED_TASKS_SCRIPT_WRITE     2552L
+#define ERROR_INSTALL_SCHEDULED_TASKS_PROPERTY_SET     2553L
+
 
 ////////////////////////////////////////////////////////////////////
 // Exported functions
@@ -50,7 +55,6 @@ extern "C" {
 
     UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall);
     UINT MSITSCA_API InstallScheduledTasks(MSIHANDLE hInstall);
-    UINT MSITSCA_API FinalizeScheduledTasks(MSIHANDLE hInstall);
 
 #ifdef __cplusplus
 }
@@ -364,172 +368,15 @@ inline HRESULT operator >>(CAtlFile &f, CStringW &str)
 }
 
 
-inline HRESULT operator >>(CAtlFile &f, ITask *pTask)
+inline HRESULT operator <<(CAtlFile &f, const TASK_TRIGGER &ttData)
 {
-    assert(pTask);
+    return f.Write(&ttData, sizeof(TASK_TRIGGER));
+}
 
-    HRESULT hr;
-    CStringW sValue, sValue2;
-    int iValue, iValue2;
-    UINT nTriggers;
 
-    hr = f >> sValue;
-    if (FAILED(hr)) return hr;
-    hr = pTask->SetApplicationName(sValue);
-    if (FAILED(hr)) return hr;
-
-    hr = f >> sValue;
-    if (FAILED(hr)) return hr;
-    hr = pTask->SetParameters(sValue);
-    if (FAILED(hr)) return hr;
-
-    hr = f >> sValue;
-    if (FAILED(hr)) return hr;
-    hr = pTask->SetWorkingDirectory(sValue);
-    if (FAILED(hr)) return hr;
-
-    hr = f >> iValue;
-    if (FAILED(hr)) return hr;
-    hr = pTask->SetFlags(iValue);
-    if (FAILED(hr)) return hr;
-
-    hr = f >> iValue;
-    if (FAILED(hr)) return hr;
-    hr = pTask->SetPriority(iValue);
-    if (FAILED(hr)) return hr;
-
-    hr = f >> sValue;
-    if (FAILED(hr)) return hr;
-    hr = f >> sValue2;
-    if (FAILED(hr)) return hr;
-    hr = !sValue.IsEmpty() ? pTask->SetAccountInformation(sValue, sValue2.IsEmpty() ? NULL : sValue2) : S_OK;
-    {
-        // Clear the password in memory before proceeding.
-        int iLength = sValue2.GetLength();
-        LPWSTR pszValue2 = sValue2.GetBuffer(iLength);
-        ::SecureZeroMemory(pszValue2, sizeof(WCHAR) * iLength);
-        sValue2.ReleaseBuffer(0);
-    }
-    if (FAILED(hr)) return hr;
-
-    hr = f >> sValue;
-    if (FAILED(hr)) return hr;
-    hr = pTask->SetComment(sValue);
-    if (FAILED(hr)) return hr;
-
-    hr = f >> iValue;
-    if (FAILED(hr)) return hr;
-    hr = f >> iValue2;
-    if (FAILED(hr)) return hr;
-    hr = pTask->SetIdleWait((WORD)iValue, (WORD)iValue2);
-    if (FAILED(hr)) return hr;
-
-    hr = f >> iValue;
-    if (FAILED(hr)) return hr;
-    hr = pTask->SetMaxRunTime(iValue);
-    if (FAILED(hr)) return hr;
-
-    // Read and add triggers.
-    hr = f >> (int&)nTriggers;
-    if (FAILED(hr)) return hr;
-
-    while (nTriggers--) {
-        CComPtr<ITaskTrigger> pTrigger;
-        TASK_TRIGGER ttData;
-        WORD wTriggerIdx;
-        ULONGLONG ullValue;
-        FILETIME ftValue;
-        SYSTEMTIME stValue;
-        int iDaysInterval, iWeeksInterval, iDaysOfTheWeek, iDaysOfMonth, iWeekOfMonth, iMonthsOfYear;
-
-        ZeroMemory(&ttData, sizeof(TASK_TRIGGER));
-        ttData.cbTriggerSize = sizeof(TASK_TRIGGER);
-
-        hr = pTask->CreateTrigger(&wTriggerIdx, &pTrigger);
-        if (FAILED(hr)) return hr;
-
-        hr = f >> iValue;
-        if (FAILED(hr)) return hr;
-        ullValue = ((ULONGLONG)iValue + 138426) * 864000000000;
-        ftValue.dwHighDateTime = ullValue >> 32;
-        ftValue.dwLowDateTime  = ullValue & 0xffffffff;
-        if (!::FileTimeToSystemTime(&ftValue, &stValue))
-            return AtlHresultFromLastError();
-        ttData.wBeginYear  = stValue.wYear;
-        ttData.wBeginMonth = stValue.wMonth;
-        ttData.wBeginDay   = stValue.wDay;
-
-        hr = f >> iValue;
-        if (FAILED(hr)) return hr;
-        if (iValue != MSI_NULL_INTEGER) {
-            ullValue = ((ULONGLONG)iValue + 138426) * 864000000000;
-            ftValue.dwHighDateTime = ullValue >> 32;
-            ftValue.dwLowDateTime  = ullValue & 0xffffffff;
-            if (!::FileTimeToSystemTime(&ftValue, &stValue))
-                return AtlHresultFromLastError();
-            ttData.wEndYear  = stValue.wYear;
-            ttData.wEndMonth = stValue.wMonth;
-            ttData.wEndDay   = stValue.wDay;
-            ttData.rgFlags  |= TASK_TRIGGER_FLAG_HAS_END_DATE;
-        }
-
-        hr = f >> iValue;
-        if (FAILED(hr)) return hr;
-        ttData.wStartHour   = (WORD)(iValue / 60);
-        ttData.wStartMinute = (WORD)(iValue % 60);
-
-        hr = f >> iValue;
-        if (FAILED(hr)) return hr;
-        ttData.MinutesDuration = iValue;
-
-        hr = f >> iValue;
-        if (FAILED(hr)) return hr;
-        ttData.MinutesInterval = iValue;
-
-        hr = f >> iValue;
-        if (FAILED(hr)) return hr;
-        ttData.rgFlags |= iValue & ~TASK_TRIGGER_FLAG_HAS_END_DATE;
-
-        hr = f >> iValue;
-        if (FAILED(hr)) return hr;
-        ttData.TriggerType = (TASK_TRIGGER_TYPE)iValue;
-
-        hr = f >> iDaysInterval;
-        if (FAILED(hr)) return hr;
-        hr = f >> iWeeksInterval;
-        if (FAILED(hr)) return hr;
-        hr = f >> iDaysOfTheWeek;
-        if (FAILED(hr)) return hr;
-        hr = f >> iDaysOfMonth;
-        if (FAILED(hr)) return hr;
-        hr = f >> iWeekOfMonth;
-        if (FAILED(hr)) return hr;
-        hr = f >> iMonthsOfYear;
-        if (FAILED(hr)) return hr;
-        switch (ttData.TriggerType) {
-        case TASK_TIME_TRIGGER_DAILY:
-            ttData.Type.Daily.DaysInterval          = (WORD)iDaysInterval;
-            break;
-        case TASK_TIME_TRIGGER_WEEKLY:
-            ttData.Type.Weekly.WeeksInterval        = (WORD)iWeeksInterval;
-            ttData.Type.Weekly.rgfDaysOfTheWeek     = (WORD)iDaysOfTheWeek;
-            break;
-        case TASK_TIME_TRIGGER_MONTHLYDATE:
-            ttData.Type.MonthlyDate.rgfDays         = iDaysOfMonth;
-            ttData.Type.MonthlyDate.rgfMonths       = (WORD)iMonthsOfYear;
-            break;
-        case TASK_TIME_TRIGGER_MONTHLYDOW:
-            ttData.Type.MonthlyDOW.wWhichWeek       = (WORD)iWeekOfMonth;
-            ttData.Type.MonthlyDOW.rgfDaysOfTheWeek = (WORD)iDaysOfTheWeek;
-            ttData.Type.MonthlyDOW.rgfMonths        = (WORD)iMonthsOfYear;
-            break;
-        }
-
-        hr = pTrigger->SetTrigger(&ttData);
-        if (FAILED(hr)) return hr;
-    }
-
-    return S_OK;
+inline HRESULT operator >>(CAtlFile &f, TASK_TRIGGER &ttData)
+{
+    return f.Read(&ttData, sizeof(TASK_TRIGGER));
 }
 
 #endif // !defined(RC_INVOKED) && !defined(MIDL_PASS)

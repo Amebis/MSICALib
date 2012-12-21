@@ -66,7 +66,7 @@ Vse :: "$(JEZIK).$(CFG).$(PLAT).ActionText-2.idt"
 Action	Description	Template
 s$(MSI_TIP_ID)	L0	L0
 1250	ActionText	Action
-caInstallScheduledTasks	Registracija razporejenih opravil	Opravilo: [1]
+InstallScheduledTasks	Registracija razporejenih opravil	Opravilo: [1]
 <<NOKEEP
 
 "De.$(CFG).$(PLAT).ActionText-2.idt" : "Sl.$(CFG).$(PLAT).ActionText-2.idtx" "..\res\de_DE.po"
@@ -113,10 +113,10 @@ Vse :: "$(JEZIK).$(CFG).$(PLAT).CustomAction-1.idt"
 Action	Type	Source	Target
 s$(MSI_TIP_ID)	i2	S$(MSI_TIP_ID)	S255
 CustomAction	Action
-caEvaluateScheduledTasks	1	binMSITSCA.dll	EvaluateScheduledTasks
-caInstallScheduledTasks	1025	binMSITSCA.dll	InstallScheduledTasks
-caRollbackScheduledTasks	1281	binMSITSCA.dll	FinalizeScheduledTasks
-caCommitScheduledTasks	1537	binMSITSCA.dll	FinalizeScheduledTasks
+EvaluateScheduledTasks	1	binMSITSCA.dll	EvaluateScheduledTasks
+InstallScheduledTasks	1025	binMSITSCA.dll	InstallScheduledTasks
+RollbackScheduledTasks	1281	binMSITSCA.dll	InstallScheduledTasks
+CommitScheduledTasks	1537	binMSITSCA.dll	InstallScheduledTasks
 <<NOKEEP
 
 
@@ -131,6 +131,10 @@ Vse :: "$(JEZIK).$(CFG).$(PLAT).Error-2.idt"
 Error	Message
 i2	L0
 1250	Error	Error
+2550	Pri odpiranju namestitvenega paketa je prišlo do napake.
+2551	Pri pripravi seznama razvršèenih opravil je prišlo do napake [2].
+2552	Pri pisanju v datoteko seznama razporejenih opravil »[2]« je prišlo do napake [3].
+2553	Pri nastavljanju parametra »[2]« je prišlo do napake [3].
 <<NOKEEP
 
 "De.$(CFG).$(PLAT).Error-2.idt" : "Sl.$(CFG).$(PLAT).Error-2.idtx" "..\res\de_DE.po"
@@ -157,10 +161,10 @@ Vse :: "$(JEZIK).$(CFG).$(PLAT).InstallExecuteSequence-1.idt"
 Action	Condition	Sequence
 s$(MSI_TIP_ID)	S255	I2
 InstallExecuteSequence	Action
-caEvaluateScheduledTasks		6580
-caInstallScheduledTasks		6581
-caRollbackScheduledTasks		6582
-caCommitScheduledTasks		6583
+EvaluateScheduledTasks		6580
+InstallScheduledTasks		6581
+RollbackScheduledTasks		6582
+CommitScheduledTasks		6583
 <<NOKEEP
 
 
