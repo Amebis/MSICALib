@@ -128,7 +128,7 @@ public:
 class CMSITSCAOpCreateTask : public CMSITSCAOpSingleStringOperation
 {
 public:
-    CMSITSCAOpCreateTask(LPCWSTR pszTaskName = L"", BOOL bForce = FALSE, int iTicks = 0);
+    CMSITSCAOpCreateTask(LPCWSTR pszTaskName = L"", int iTicks = 0);
     virtual ~CMSITSCAOpCreateTask();
     virtual HRESULT Execute(CMSITSCASession *pSession);
 
@@ -139,7 +139,6 @@ public:
     friend inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpCreateTask &op);
 
 protected:
-    BOOL     m_bForce;
     CStringW m_sApplicationName;
     CStringW m_sParameters;
     CStringW m_sWorkingDirectory;
@@ -351,7 +350,6 @@ inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpCreateTask &op)
     POSITION pos;
 
     hr = f << (const CMSITSCAOpSingleStringOperation&)op;              if (FAILED(hr)) return hr;
-    hr = f << (int)op.m_bForce;                                        if (FAILED(hr)) return hr;
     hr = f << op.m_sApplicationName;                                   if (FAILED(hr)) return hr;
     hr = f << op.m_sParameters;                                        if (FAILED(hr)) return hr;
     hr = f << op.m_sWorkingDirectory;                                  if (FAILED(hr)) return hr;
@@ -378,7 +376,6 @@ inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpCreateTask &op)
     DWORD dwValue;
 
     hr = f >> (CMSITSCAOpSingleStringOperation&)op; if (FAILED(hr)) return hr;
-    hr = f >> (int&)dwValue;                        if (FAILED(hr)) return hr; op.m_bForce = dwValue ? TRUE : FALSE;
     hr = f >> op.m_sApplicationName;                if (FAILED(hr)) return hr;
     hr = f >> op.m_sParameters;                     if (FAILED(hr)) return hr;
     hr = f >> op.m_sWorkingDirectory;               if (FAILED(hr)) return hr;

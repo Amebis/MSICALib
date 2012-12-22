@@ -140,8 +140,7 @@ HRESULT CMSITSCAOpMoveFile::Execute(CMSITSCASession *pSession)
 // CMSITSCAOpCreateTask
 ////////////////////////////////////////////////////////////////////////////
 
-CMSITSCAOpCreateTask::CMSITSCAOpCreateTask(LPCWSTR pszTaskName, BOOL bForce, int iTicks) :
-    m_bForce(bForce),
+CMSITSCAOpCreateTask::CMSITSCAOpCreateTask(LPCWSTR pszTaskName, int iTicks) :
     m_dwFlags(0),
     m_dwPriority(NORMAL_PRIORITY_CLASS),
     m_wIdleMinutes(0),
@@ -173,21 +172,13 @@ HRESULT CMSITSCAOpCreateTask::Execute(CMSITSCASession *pSession)
     if (MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ACTIONDATA, hRecordMsg) == IDCANCEL)
         return AtlHresultFromWin32(ERROR_INSTALL_USEREXIT);
 
-    // Load the task to see if it exists.
-    hr = pSession->m_pTaskScheduler->Activate(m_sValue, IID_ITask, (IUnknown**)&pTask);
-    if (SUCCEEDED(hr)) {
-        // The task exists. Release it prematurely before proceeding.
-        pTask.Detach()->Release();
-        if (m_bForce) {
-            // We're supposed to overwrite it. Delete the existing task first.
-            // Since task deleting is a complicated job (when rollback/commit support is required), and we do have an operation for just that, we use it.
-            CMSITSCAOpDeleteTask opDeleteTask(m_sValue);
-            hr = opDeleteTask.Execute(pSession);
-            if (FAILED(hr)) return hr;
-        } else {
-            // The task exists, and we're happy with that.
-            return S_OK;
-        }
+    {
+        // Delete existing task first.
+        // Since task deleting is a complicated job (when rollback/commit support is required), and we do have an operation just for that, we use it.
+        // Don't worry, CMSITSCAOpDeleteTask::Execute() returns S_OK if task doesn't exist.
+        CMSITSCAOpDeleteTask opDeleteTask(m_sValue);
+        hr = opDeleteTask.Execute(pSession);
+        if (FAILED(hr)) return hr;
     }
 
     // Create the new task.

@@ -115,7 +115,7 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
                         if (iAction >= INSTALLSTATE_LOCAL) {
                             // Installing component. Add the task.
                             PMSIHANDLE hViewTT;
-                            CMSITSCAOpCreateTask *opCreateTask = new CMSITSCAOpCreateTask(sDisplayName, iAction < INSTALLSTATE_LOCAL, MSITSCA_TASK_TICK_SIZE);
+                            CMSITSCAOpCreateTask *opCreateTask = new CMSITSCAOpCreateTask(sDisplayName, MSITSCA_TASK_TICK_SIZE);
                             assert(opCreateTask);
 
                             // Populate the operation with task's data.
