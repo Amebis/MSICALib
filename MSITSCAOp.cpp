@@ -88,21 +88,27 @@ HRESULT CMSITSCAOpDeleteFile::Execute(CMSITSCASession *pSession)
             sBackupName.Format(L"%ls (orig %u)", (LPCWSTR)m_sValue, ++uiCount);
             dwError = ::MoveFileW(m_sValue, sBackupName) ? ERROR_SUCCESS : ::GetLastError();
         } while (dwError == ERROR_ALREADY_EXISTS);
-        if (dwError == ERROR_FILE_NOT_FOUND) return S_OK;
-        if (dwError != ERROR_SUCCESS) return AtlHresultFromWin32(dwError);
+        if (dwError == ERROR_SUCCESS) {
+            // Order rollback action to restore from backup copy.
+            pSession->m_olRollback.AddHead(new CMSITSCAOpMoveFile(sBackupName, m_sValue));
 
-        // Order rollback action to restore from backup copy.
-        pSession->m_olRollback.AddHead(new CMSITSCAOpMoveFile(sBackupName, m_sValue));
-
-        // Order commit action to delete backup copy.
-        pSession->m_olCommit.AddTail(new CMSITSCAOpDeleteFile(sBackupName));
-
-        return S_OK;
+            // Order commit action to delete backup copy.
+            pSession->m_olCommit.AddTail(new CMSITSCAOpDeleteFile(sBackupName));
+        }
     } else {
         // Delete the file.
-        if (::DeleteFileW(m_sValue)) return S_OK;
-        dwError = ::GetLastError();
-        return dwError == ERROR_FILE_NOT_FOUND ? S_OK : AtlHresultFromWin32(dwError);
+        dwError = ::DeleteFileW(m_sValue) ? ERROR_SUCCESS : ::GetLastError();
+    }
+
+    if (dwError == ERROR_SUCCESS || dwError == ERROR_FILE_NOT_FOUND)
+        return S_OK;
+    else {
+        PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
+        verify(::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_DELETE_FAILED) == ERROR_SUCCESS);
+        verify(::MsiRecordSetStringW(hRecordProg, 2, m_sValue                   ) == ERROR_SUCCESS);
+        verify(::MsiRecordSetInteger(hRecordProg, 3, dwError                    ) == ERROR_SUCCESS);
+        ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
+        return AtlHresultFromWin32(dwError);
     }
 }
 
@@ -120,18 +126,25 @@ CMSITSCAOpMoveFile::CMSITSCAOpMoveFile(LPCWSTR pszFileSrc, LPCWSTR pszFileDst, i
 HRESULT CMSITSCAOpMoveFile::Execute(CMSITSCASession *pSession)
 {
     assert(pSession);
+    DWORD dwError;
 
-    if (pSession->m_bRollbackEnabled) {
-        // Move the file.
-        if (::MoveFileW(m_sValue1, m_sValue2)) {
+    // Move the file.
+    dwError = ::MoveFileW(m_sValue1, m_sValue2) ? ERROR_SUCCESS : ::GetLastError();
+    if (dwError == ERROR_SUCCESS) {
+        if (pSession->m_bRollbackEnabled) {
             // Order rollback action to move it back.
             pSession->m_olRollback.AddHead(new CMSITSCAOpMoveFile(m_sValue2, m_sValue1));
-            return S_OK;
-        } else
-            return AtlHresultFromLastError();
+        }
+
+        return S_OK;
     } else {
-        // Move the file.
-        return ::MoveFileW(m_sValue1, m_sValue2) ? S_OK : AtlHresultFromLastError();
+        PMSIHANDLE hRecordProg = ::MsiCreateRecord(4);
+        verify(::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_MOVE_FAILED) == ERROR_SUCCESS);
+        verify(::MsiRecordSetStringW(hRecordProg, 2, m_sValue1                ) == ERROR_SUCCESS);
+        verify(::MsiRecordSetStringW(hRecordProg, 3, m_sValue2                ) == ERROR_SUCCESS);
+        verify(::MsiRecordSetInteger(hRecordProg, 4, dwError                  ) == ERROR_SUCCESS);
+        ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
+        return AtlHresultFromWin32(dwError);
     }
 }
 

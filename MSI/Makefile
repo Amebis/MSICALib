@@ -135,6 +135,8 @@ i2	L0
 2551	Pri pripravi seznama razvršèenih opravil je prišlo do napake [2].
 2552	Pri pisanju v datoteko seznama razporejenih opravil »[2]« je prišlo do napake [3].
 2553	Pri nastavljanju parametra »[2]« je prišlo do napake [3].
+2554	Pri brisanju datoteke »[2]« je prišlo do napake [3].
+2555	Pri premikanju datoteke »[2]« v »[3]« je prišlo do napake [4].
 <<NOKEEP
 
 "De.$(CFG).$(PLAT).Error-2.idt" : "Sl.$(CFG).$(PLAT).Error-2.idtx" "..\res\de_DE.po"
