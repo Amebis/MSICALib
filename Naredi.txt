@@ -1,3 +1,2 @@
 -	Dodano opravilo se ne vidi med opravili v Task Scheduler-ju.
--	Nadgradnja med odstranitvijo prejšnje verzije, izbriše opravilo, ki ga je nova verzija malo prej namestila.
 -	Tudi akcije deferred/commit/rollback naj pošiljajo obvestila o napakah.

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MSITSCA\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-12-21 22:56+0100\n"
+"POT-Creation-Date: 2012-12-24 14:20+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Simon Rozman <simon.rozman@amebis.si>\n"
 "Language-Team: Amebis, d. o. o., Kamnik <simon.rozman@amebis.si>\n"
@@ -36,10 +36,6 @@ msgstr "0x409"
 #: ..\MSI/Sl.DebugU.Win32.Error-2.idtx:3
 #: ..\MSI/Sl.DebugU.x64.ActionText-2.idtx:3
 #: ..\MSI/Sl.DebugU.x64.Error-2.idtx:3
-#: ..\MSI/Sl.ReleaseU.Win32.ActionText-2.idtx:3
-#: ..\MSI/Sl.ReleaseU.Win32.Error-2.idtx:3
-#: ..\MSI/Sl.ReleaseU.x64.ActionText-2.idtx:3
-#: ..\MSI/Sl.ReleaseU.x64.Error-2.idtx:3
 msgid "1250"
 msgstr "1252"
 
@@ -75,47 +71,45 @@ msgid "Vse pravice pridržane © Amebis, d. o. o., Kamnik, 2012"
 msgstr "Copyright © Amebis, d. o. o., Kamnik, 2012"
 
 # !!! Lektorirati !!!
+#: ..\MSI/Sl.DebugU.Win32.Error-2.idtx:8 ..\MSI/Sl.DebugU.x64.Error-2.idtx:8
+msgid "Pri brisanju datoteke »[2]« je prišlo do napake [3]."
+msgstr "Error [3] deleting \"[2]\" file."
+
+# !!! Lektorirati !!!
 #: ..\MSI/Sl.DebugU.Win32.Error-2.idtx:7 ..\MSI/Sl.DebugU.x64.Error-2.idtx:7
-#: ..\MSI/Sl.ReleaseU.Win32.Error-2.idtx:7
-#: ..\MSI/Sl.ReleaseU.x64.Error-2.idtx:7
 msgid "Pri nastavljanju parametra »[2]« je prišlo do napake [3]."
 msgstr "Error [3] setting \"[2]\" parameter."
 
 # !!! Lektorirati !!!
 #: ..\MSI/Sl.DebugU.Win32.Error-2.idtx:4 ..\MSI/Sl.DebugU.x64.Error-2.idtx:4
-#: ..\MSI/Sl.ReleaseU.Win32.Error-2.idtx:4
-#: ..\MSI/Sl.ReleaseU.x64.Error-2.idtx:4
 msgid "Pri odpiranju namestitvenega paketa je prišlo do napake."
 msgstr "Error opening installation package."
 
 # !!! Lektorirati !!!
 #: ..\MSI/Sl.DebugU.Win32.Error-2.idtx:6 ..\MSI/Sl.DebugU.x64.Error-2.idtx:6
-#: ..\MSI/Sl.ReleaseU.Win32.Error-2.idtx:6
-#: ..\MSI/Sl.ReleaseU.x64.Error-2.idtx:6
 msgid ""
 "Pri pisanju v datoteko seznama razporejenih opravil »[2]« je prišlo do "
 "napake [3]."
 msgstr "Error [3] writing to \"[2]\" scheduled task list file."
 
 # !!! Lektorirati !!!
+#: ..\MSI/Sl.DebugU.Win32.Error-2.idtx:9 ..\MSI/Sl.DebugU.x64.Error-2.idtx:9
+msgid "Pri premikanju datoteke »[2]« v »[3]« je prišlo do napake [4]."
+msgstr "Error [4] moving \"[2]\" file to \"[3]\"."
+
+# !!! Lektorirati !!!
 #: ..\MSI/Sl.DebugU.Win32.Error-2.idtx:5 ..\MSI/Sl.DebugU.x64.Error-2.idtx:5
-#: ..\MSI/Sl.ReleaseU.Win32.Error-2.idtx:5
-#: ..\MSI/Sl.ReleaseU.x64.Error-2.idtx:5
 msgid "Pri pripravi seznama razvrščenih opravil je prišlo do napake [2]."
 msgstr "Error [2] creating scheduled task list."
 
 # !!! Lektorirati !!!
 #: ..\MSI/Sl.DebugU.Win32.ActionText-2.idtx:4
 #: ..\MSI/Sl.DebugU.x64.ActionText-2.idtx:4
-#: ..\MSI/Sl.ReleaseU.Win32.ActionText-2.idtx:4
-#: ..\MSI/Sl.ReleaseU.x64.ActionText-2.idtx:4
 msgid "Razporejeno opravilo: [1]"
 msgstr "Scheduled task: [1]"
 
 # !!! Lektorirati !!!
 #: ..\MSI/Sl.DebugU.Win32.ActionText-2.idtx:4
 #: ..\MSI/Sl.DebugU.x64.ActionText-2.idtx:4
-#: ..\MSI/Sl.ReleaseU.Win32.ActionText-2.idtx:4
-#: ..\MSI/Sl.ReleaseU.x64.ActionText-2.idtx:4
 msgid "Registracija razporejenih opravil"
 msgstr "Registering scheduled tasks"
