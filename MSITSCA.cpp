@@ -113,7 +113,7 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
                         uiResult = ::MsiRecordFormatStringW(hInstall, hRecord, 2, sDisplayName);
 
                         if (iAction >= INSTALLSTATE_LOCAL) {
-                            // Installing component. Add the task.
+                            // Component is or should be installed. Create the task.
                             PMSIHANDLE hViewTT;
                             CMSITSCAOpCreateTask *opCreateTask = new CMSITSCAOpCreateTask(sDisplayName, MSITSCA_TASK_TICK_SIZE);
                             assert(opCreateTask);
@@ -136,8 +136,8 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
                                 break;
 
                             olExecute.AddTail(opCreateTask);
-                        } else {
-                            // Removing component. Remove the task.
+                        } else if (iInstalled >= INSTALLSTATE_LOCAL && iAction >= INSTALLSTATE_ADVERTISED) {
+                            // Component is installed, but should be degraded to advertised. Delete the task.
                             olExecute.AddTail(new CMSITSCAOpDeleteTask(sDisplayName, MSITSCA_TASK_TICK_SIZE));
                         }
 
