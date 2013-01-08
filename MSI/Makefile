@@ -27,7 +27,7 @@ ScheduledTask	Application	N					Formatted		Task application name.
 ScheduledTask	Parameters	Y					Formatted		Task command line parameters.
 ScheduledTask	WorkingDir	N					Formatted		Task working directory. If the working directory is set to "", when the application is run, the current directory will be the directory in which the task scheduler service executable, Mstask.exe, resides.
 ScheduledTask	Flags	N					DoubleInteger		Task's flags to pass in IScheduledWorkItem::SetFlags() call.
-ScheduledTask	Priority	N					DoubleInteger	32;64;128;256	Task's priority to pass in ITask::SetPriority() call.
+ScheduledTask	Priority	N					DoubleInteger	32;64;128;256;16384,32768	Task's priority to pass in ITask::SetPriority() call.
 ScheduledTask	User	Y					Formatted		Account name to run task as. Use empty string for system account.
 ScheduledTask	Password	Y					Formatted		Account password to run task as. Use NULL for system account.
 ScheduledTask	Description	Y					Formatted		Task description.

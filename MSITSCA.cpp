@@ -136,8 +136,8 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
                                 break;
 
                             olExecute.AddTail(opCreateTask);
-                        } else if (iAction >= INSTALLSTATE_ADVERTISED) {
-                            // Component is installed, but should be degraded to advertised. Delete the task.
+                        } else if (iAction >= INSTALLSTATE_REMOVED) {
+                            // Component is installed, but should be degraded to advertised/removed. Delete the task.
                             olExecute.AddTail(new CMSITSCAOpDeleteTask(sDisplayName, MSITSCA_TASK_TICK_SIZE));
                         }
 

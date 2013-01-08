@@ -43,6 +43,7 @@ using namespace ATL;
 #include <msiquery.h>
 #include <mstask.h>
 #include <stdlib.h>
+#include <taskschd.h>
 #include <time.h>
 
 #ifdef NDEBUG

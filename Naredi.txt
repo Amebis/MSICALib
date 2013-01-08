@@ -1,2 +1,3 @@
--	Dodano opravilo se ne vidi med opravili v Task Scheduler-ju.
+-	Naredi še o(ne)mogoèanje opravil z uporabo Task Scheduler 2.0.
+-	Preizkusi vse nastavitve opravila in vrste sprožilcev, èe se pravilno izdelajo.
 -	Tudi akcije deferred/commit/rollback naj pošiljajo obvestila o napakah.

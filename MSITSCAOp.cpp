@@ -1,5 +1,7 @@
 #include "StdAfx.h"
 
+#pragma comment(lib, "taskschd.lib")
+
 
 ////////////////////////////////////////////////////////////////////////////
 // CMSITSCAOp
@@ -176,9 +178,9 @@ CMSITSCAOpCreateTask::~CMSITSCAOpCreateTask()
 HRESULT CMSITSCAOpCreateTask::Execute(CMSITSCASession *pSession)
 {
     HRESULT hr;
-    CComPtr<ITask> pTask;
     POSITION pos;
     PMSIHANDLE hRecordMsg = ::MsiCreateRecord(1);
+    CComPtr<ITaskService> pService;
 
     // Display our custom message in the progress bar.
     verify(::MsiRecordSetStringW(hRecordMsg, 1, m_sValue) == ERROR_SUCCESS);
@@ -194,51 +196,349 @@ HRESULT CMSITSCAOpCreateTask::Execute(CMSITSCASession *pSession)
         if (FAILED(hr)) return hr;
     }
 
-    // Create the new task.
-    hr = pSession->m_pTaskScheduler->NewWorkItem(m_sValue, CLSID_CTask, IID_ITask, (IUnknown**)&pTask);
-    if (pSession->m_bRollbackEnabled) {
-        // Order rollback action to delete the task. ITask::NewWorkItem() might made a blank task already.
-        pSession->m_olRollback.AddHead(new CMSITSCAOpDeleteTask(m_sValue));
-    }
-    if (FAILED(hr)) return hr;
+    hr = pService.CoCreateInstance(CLSID_TaskScheduler, NULL, CLSCTX_INPROC_SERVER);
+    if (SUCCEEDED(hr)) {
+        // Windows Vista or newer.
+        CComVariant vEmpty;
+        CComPtr<ITaskDefinition> pTaskDefinition;
+        CComPtr<ITaskSettings> pTaskSettings;
+        CComPtr<IPrincipal> pPrincipal;
+        CComPtr<IActionCollection> pActionCollection;
+        CComPtr<IAction> pAction;
+        CComPtr<IIdleSettings> pIdleSettings;
+        CComPtr<IExecAction> pExecAction;
+        CComPtr<IRegistrationInfo> pRegististrationInfo;
+        CComPtr<ITriggerCollection> pTriggerCollection;
+        CComPtr<IRegisteredTask> pTask;
+        CStringW str;
+        UINT iTrigger;
+        TASK_LOGON_TYPE logonType;
+        CComBSTR bstrContext(L"Author");
 
-    // Set its properties.
-    hr = pTask->SetApplicationName (m_sApplicationName ); if (FAILED(hr)) return hr;
-    hr = pTask->SetComment         (m_sComment         ); if (FAILED(hr)) return hr;
-    hr = pTask->SetParameters      (m_sParameters      ); if (FAILED(hr)) return hr;
-    hr = pTask->SetWorkingDirectory(m_sWorkingDirectory); if (FAILED(hr)) return hr;
-    if (pSession->m_bRollbackEnabled && (m_dwFlags & TASK_FLAG_DISABLED) == 0) {
-        // The task is supposed to be enabled.
-        // However, we shall enable it at commit to prevent it from accidentally starting in the very installation phase.
-        pSession->m_olCommit.AddTail(new CMSITSCAOpEnableTask(m_sValue, TRUE));
-        m_dwFlags |= TASK_FLAG_DISABLED;
-    }
-    hr = pTask->SetFlags           (m_dwFlags          ); if (FAILED(hr)) return hr;
-    hr = pTask->SetPriority        (m_dwPriority       ); if (FAILED(hr)) return hr;
-    if (!m_sAccountName.IsEmpty()) {
-        hr = pTask->SetAccountInformation(m_sAccountName, m_sPassword.IsEmpty() ? NULL : m_sPassword);
-        if (FAILED(hr)) return hr;
-    }
-
-    hr = pTask->SetIdleWait  (m_wIdleMinutes, m_wDeadlineMinutes); if (FAILED(hr)) return hr;
-    hr = pTask->SetMaxRunTime(m_dwMaxRuntimeMS                  ); if (FAILED(hr)) return hr;
-
-    // Add triggers.
-    for (pos = m_lTriggers.GetHeadPosition(); pos;) {
-        WORD wTriggerIdx;
-        CComPtr<ITaskTrigger> pTrigger;
-        TASK_TRIGGER &ttData = m_lTriggers.GetNext(pos);
-
-        hr = pTask->CreateTrigger(&wTriggerIdx, &pTrigger);
+        // Connect to local task service.
+        hr = pService->Connect(vEmpty, vEmpty, vEmpty, vEmpty);
         if (FAILED(hr)) return hr;
 
-        hr = pTrigger->SetTrigger(&ttData);
+        // Prepare the definition for a new task.
+        hr = pService->NewTask(0, &pTaskDefinition);
+        if (FAILED(hr)) return hr;
+
+        // Get the task's settings.
+        hr = pTaskDefinition->get_Settings(&pTaskSettings);
+        if (FAILED(hr)) return hr;
+
+        // Configure Task Scheduler 1.0 compatible task.
+        hr = pTaskSettings->put_Compatibility(TASK_COMPATIBILITY_V1);
+        if (FAILED(hr)) return hr;
+
+        // Enable/disable task.
+        if (pSession->m_bRollbackEnabled && (m_dwFlags & TASK_FLAG_DISABLED) == 0) {
+            // The task is supposed to be enabled.
+            // However, we shall enable it at commit to prevent it from accidentally starting in the very installation phase.
+            pSession->m_olCommit.AddTail(new CMSITSCAOpEnableTask(m_sValue, TRUE));
+            m_dwFlags |= TASK_FLAG_DISABLED;
+        }
+        hr = pTaskSettings->put_Enabled(m_dwFlags & TASK_FLAG_DISABLED ? VARIANT_FALSE : VARIANT_TRUE); if (FAILED(hr)) return hr;
+
+        // Get task actions.
+        hr = pTaskDefinition->get_Actions(&pActionCollection);
+        if (FAILED(hr)) return hr;
+
+        // Add execute action.
+        hr = pActionCollection->Create(TASK_ACTION_EXEC, &pAction);
+        if (FAILED(hr)) return hr;
+        hr = pAction.QueryInterface(&pExecAction);
+        if (FAILED(hr)) return hr;
+
+        // Configure the action.
+        hr = pExecAction->put_Path            (CComBSTR(m_sApplicationName )); if (FAILED(hr)) return hr;
+        hr = pExecAction->put_Arguments       (CComBSTR(m_sParameters      )); if (FAILED(hr)) return hr;
+        hr = pExecAction->put_WorkingDirectory(CComBSTR(m_sWorkingDirectory)); if (FAILED(hr)) return hr;
+
+        // Set task description.
+        hr = pTaskDefinition->get_RegistrationInfo(&pRegististrationInfo);
+        if (FAILED(hr)) return hr;
+        hr = pRegististrationInfo->put_Description(CComBSTR(m_sComment));
+        if (FAILED(hr)) return hr;
+
+        hr = pRegististrationInfo->put_Author(CComBSTR(L"Amebis, d. o. o., Kamnik"));
+
+        // Configure task "flags".
+        if (m_dwFlags & TASK_FLAG_DELETE_WHEN_DONE) {
+            hr = pTaskSettings->put_DeleteExpiredTaskAfter(CComBSTR(L"PT24H"));
+            if (FAILED(hr)) return hr;
+        }
+        hr = pTaskSettings->put_Hidden(m_dwFlags & TASK_FLAG_HIDDEN ? VARIANT_TRUE : VARIANT_FALSE);
+        if (FAILED(hr)) return hr;
+        hr = pTaskSettings->put_WakeToRun(m_dwFlags & TASK_FLAG_SYSTEM_REQUIRED ? VARIANT_TRUE : VARIANT_FALSE);
+        if (FAILED(hr)) return hr;
+        hr = pTaskSettings->put_DisallowStartIfOnBatteries(m_dwFlags & TASK_FLAG_DONT_START_IF_ON_BATTERIES ? VARIANT_TRUE : VARIANT_FALSE);
+        if (FAILED(hr)) return hr;
+        hr = pTaskSettings->put_StopIfGoingOnBatteries(m_dwFlags & TASK_FLAG_KILL_IF_GOING_ON_BATTERIES ? VARIANT_TRUE : VARIANT_FALSE);
+        if (FAILED(hr)) return hr;
+
+        // Configure task priority.
+        hr = pTaskSettings->put_Priority(
+            m_dwPriority == REALTIME_PRIORITY_CLASS     ? 0 :
+            m_dwPriority == HIGH_PRIORITY_CLASS         ? 1 :
+            m_dwPriority == ABOVE_NORMAL_PRIORITY_CLASS ? 2 :
+            m_dwPriority == NORMAL_PRIORITY_CLASS       ? 4 :
+            m_dwPriority == BELOW_NORMAL_PRIORITY_CLASS ? 7 :
+            m_dwPriority == IDLE_PRIORITY_CLASS         ? 9 : 7);
+        if (FAILED(hr)) return hr;
+
+        // Get task principal.
+        hr = pTaskDefinition->get_Principal(&pPrincipal);
+        if (FAILED(hr)) return hr;
+
+        if (m_sAccountName.IsEmpty()) {
+            logonType = TASK_LOGON_SERVICE_ACCOUNT;
+            hr = pPrincipal->put_LogonType(logonType);             if (FAILED(hr)) return hr;
+            hr = pPrincipal->put_UserId(CComBSTR(L"S-1-5-18"));    if (FAILED(hr)) return hr;
+            hr = pPrincipal->put_RunLevel(TASK_RUNLEVEL_HIGHEST);  if (FAILED(hr)) return hr;
+        } else if (m_dwFlags & TASK_FLAG_RUN_ONLY_IF_LOGGED_ON) {
+            logonType = TASK_LOGON_INTERACTIVE_TOKEN;
+            hr = pPrincipal->put_LogonType(logonType);             if (FAILED(hr)) return hr;
+            hr = pPrincipal->put_RunLevel(TASK_RUNLEVEL_LUA);      if (FAILED(hr)) return hr;
+        } else {
+            logonType = TASK_LOGON_PASSWORD;
+            hr = pPrincipal->put_LogonType(logonType);             if (FAILED(hr)) return hr;
+            hr = pPrincipal->put_UserId(CComBSTR(m_sAccountName)); if (FAILED(hr)) return hr;
+            hr = pPrincipal->put_RunLevel(TASK_RUNLEVEL_HIGHEST);  if (FAILED(hr)) return hr;
+        }
+
+        // Connect principal and action collection.
+        hr = pPrincipal->put_Id(bstrContext);
+        if (FAILED(hr)) return hr;
+        hr = pActionCollection->put_Context(bstrContext);
+        if (FAILED(hr)) return hr;
+
+        // Configure idle settings.
+        hr = pTaskSettings->put_RunOnlyIfIdle(m_dwFlags & TASK_FLAG_START_ONLY_IF_IDLE ? VARIANT_TRUE : VARIANT_FALSE);
+        if (FAILED(hr)) return hr;
+        hr = pTaskSettings->get_IdleSettings(&pIdleSettings);
+        if (FAILED(hr)) return hr;
+        str.Format(L"PT%uS", m_wIdleMinutes*60);
+        hr = pIdleSettings->put_IdleDuration(CComBSTR(str));
+        if (FAILED(hr)) return hr;
+        str.Format(L"PT%uS", m_wDeadlineMinutes*60);
+        hr = pIdleSettings->put_WaitTimeout(CComBSTR(str));
+        if (FAILED(hr)) return hr;
+        hr = pIdleSettings->put_RestartOnIdle(m_dwFlags & TASK_FLAG_RESTART_ON_IDLE_RESUME ? VARIANT_TRUE : VARIANT_FALSE);
+        if (FAILED(hr)) return hr;
+        hr = pIdleSettings->put_StopOnIdleEnd(m_dwFlags & TASK_FLAG_KILL_ON_IDLE_END ? VARIANT_TRUE : VARIANT_FALSE);
+        if (FAILED(hr)) return hr;
+
+        // Configure task runtime limit.
+        str.Format(L"PT%uS", m_dwMaxRuntimeMS != INFINITE ? (m_dwMaxRuntimeMS + 500) / 1000 : 0);
+        hr = pTaskSettings->put_ExecutionTimeLimit(CComBSTR(str));
+        if (FAILED(hr)) return hr;
+
+        // Get task trigger colection.
+        hr = pTaskDefinition->get_Triggers(&pTriggerCollection);
+        if (FAILED(hr)) return hr;
+
+        // Add triggers.
+        for (pos = m_lTriggers.GetHeadPosition(), iTrigger = 0; pos; iTrigger++) {
+            CComPtr<ITrigger> pTrigger;
+            TASK_TRIGGER &ttData = m_lTriggers.GetNext(pos);
+
+            switch (ttData.TriggerType) {
+                case TASK_TIME_TRIGGER_ONCE: {
+                    CComPtr<ITimeTrigger> pTriggerTime;
+                    hr = pTriggerCollection->Create(TASK_TRIGGER_TIME, &pTrigger); if (FAILED(hr)) return hr;
+                    hr = pTrigger.QueryInterface(&pTriggerTime);                   if (FAILED(hr)) return hr;
+                    str.Format(L"PT%uM", ttData.wRandomMinutesInterval);
+                    hr = pTriggerTime->put_RandomDelay(CComBSTR(str));             if (FAILED(hr)) return hr;
+                    break;
+                }
+
+                case TASK_TIME_TRIGGER_DAILY: {
+                    CComPtr<IDailyTrigger> pTriggerDaily;
+                    hr = pTriggerCollection->Create(TASK_TRIGGER_DAILY, &pTrigger);       if (FAILED(hr)) return hr;
+                    hr = pTrigger.QueryInterface(&pTriggerDaily);                         if (FAILED(hr)) return hr;
+                    hr = pTriggerDaily->put_DaysInterval(ttData.Type.Daily.DaysInterval); if (FAILED(hr)) return hr;
+                    str.Format(L"PT%uM", ttData.wRandomMinutesInterval);
+                    hr = pTriggerDaily->put_RandomDelay(CComBSTR(str));                   if (FAILED(hr)) return hr;
+                    break;
+                }
+
+                case TASK_TIME_TRIGGER_WEEKLY: {
+                    CComPtr<IWeeklyTrigger> pTriggerWeekly;
+                    hr = pTriggerCollection->Create(TASK_TRIGGER_WEEKLY, &pTrigger);          if (FAILED(hr)) return hr;
+                    hr = pTrigger.QueryInterface(&pTriggerWeekly);                            if (FAILED(hr)) return hr;
+                    hr = pTriggerWeekly->put_WeeksInterval(ttData.Type.Weekly.WeeksInterval); if (FAILED(hr)) return hr;
+                    hr = pTriggerWeekly->put_DaysOfWeek(ttData.Type.Weekly.rgfDaysOfTheWeek); if (FAILED(hr)) return hr;
+                    str.Format(L"PT%uM", ttData.wRandomMinutesInterval);
+                    hr = pTriggerWeekly->put_RandomDelay(CComBSTR(str));                      if (FAILED(hr)) return hr;
+                    break;
+                }
+
+                case TASK_TIME_TRIGGER_MONTHLYDATE: {
+                    CComPtr<IMonthlyTrigger> pTriggerMonthly;
+                    hr = pTriggerCollection->Create(TASK_TRIGGER_MONTHLY, &pTrigger);          if (FAILED(hr)) return hr;
+                    hr = pTrigger.QueryInterface(&pTriggerMonthly);                            if (FAILED(hr)) return hr;
+                    hr = pTriggerMonthly->put_DaysOfMonth(ttData.Type.MonthlyDate.rgfDays);    if (FAILED(hr)) return hr;
+                    hr = pTriggerMonthly->put_MonthsOfYear(ttData.Type.MonthlyDate.rgfMonths); if (FAILED(hr)) return hr;
+                    str.Format(L"PT%uM", ttData.wRandomMinutesInterval);
+                    hr = pTriggerMonthly->put_RandomDelay(CComBSTR(str));                      if (FAILED(hr)) return hr;
+                    break;
+                }
+
+                case TASK_TIME_TRIGGER_MONTHLYDOW: {
+                    CComPtr<IMonthlyDOWTrigger> pTriggerMonthlyDOW;
+                    hr = pTriggerCollection->Create(TASK_TRIGGER_MONTHLYDOW, &pTrigger);              if (FAILED(hr)) return hr;
+                    hr = pTrigger.QueryInterface(&pTriggerMonthlyDOW);                                if (FAILED(hr)) return hr;
+                    hr = pTriggerMonthlyDOW->put_WeeksOfMonth(
+                        ttData.Type.MonthlyDOW.wWhichWeek == TASK_FIRST_WEEK  ? 0x01 :
+                        ttData.Type.MonthlyDOW.wWhichWeek == TASK_SECOND_WEEK ? 0x02 :
+                        ttData.Type.MonthlyDOW.wWhichWeek == TASK_THIRD_WEEK  ? 0x04 :
+                        ttData.Type.MonthlyDOW.wWhichWeek == TASK_FOURTH_WEEK ? 0x08 :
+                        ttData.Type.MonthlyDOW.wWhichWeek == TASK_LAST_WEEK   ? 0x10 : 0x00);         if (FAILED(hr)) return hr;
+                    hr = pTriggerMonthlyDOW->put_DaysOfWeek(ttData.Type.MonthlyDOW.rgfDaysOfTheWeek); if (FAILED(hr)) return hr;
+                    hr = pTriggerMonthlyDOW->put_MonthsOfYear(ttData.Type.MonthlyDOW.rgfMonths);      if (FAILED(hr)) return hr;
+                    str.Format(L"PT%uM", ttData.wRandomMinutesInterval);
+                    hr = pTriggerMonthlyDOW->put_RandomDelay(CComBSTR(str));                          if (FAILED(hr)) return hr;
+                    break;
+                }
+
+                case TASK_EVENT_TRIGGER_ON_IDLE: {
+                    hr = pTriggerCollection->Create(TASK_TRIGGER_IDLE, &pTrigger); if (FAILED(hr)) return hr;
+                    break;
+                }
+
+                case TASK_EVENT_TRIGGER_AT_SYSTEMSTART: {
+                    CComPtr<IBootTrigger> pTriggerBoot;
+                    hr = pTriggerCollection->Create(TASK_TRIGGER_BOOT, &pTrigger); if (FAILED(hr)) return hr;
+                    hr = pTrigger.QueryInterface(&pTriggerBoot);                   if (FAILED(hr)) return hr;
+                    str.Format(L"PT%uM", ttData.wRandomMinutesInterval);
+                    hr = pTriggerBoot->put_Delay(CComBSTR(str));                   if (FAILED(hr)) return hr;
+                    break;
+                }
+
+                case TASK_EVENT_TRIGGER_AT_LOGON: {
+                    CComPtr<ILogonTrigger> pTriggerLogon;
+                    hr = pTriggerCollection->Create(TASK_TRIGGER_LOGON, &pTrigger); if (FAILED(hr)) return hr;
+                    hr = pTrigger.QueryInterface(&pTriggerLogon);                   if (FAILED(hr)) return hr;
+                    str.Format(L"PT%uM", ttData.wRandomMinutesInterval);
+                    hr = pTriggerLogon->put_Delay(CComBSTR(str));                   if (FAILED(hr)) return hr;
+                    break;
+                }
+            }
+
+            // Set trigger ID.
+            str.Format(L"%u", iTrigger);
+            hr = pTrigger->put_Id(CComBSTR(str));
+            if (FAILED(hr)) return hr;
+
+            // Set trigger start date.
+            str.Format(L"%04u-%02u-%02uT%02u:%02u:00", ttData.wBeginYear, ttData.wBeginMonth, ttData.wBeginDay, ttData.wStartHour, ttData.wStartMinute);
+            hr = pTrigger->put_StartBoundary(CComBSTR(str));
+            if (FAILED(hr)) return hr;
+
+            if (ttData.rgFlags & TASK_TRIGGER_FLAG_HAS_END_DATE) {
+                // Set trigger end date.
+                str.Format(L"%04u-%02u-%02u", ttData.wEndYear, ttData.wEndMonth, ttData.wEndDay);
+                hr = pTrigger->put_EndBoundary(CComBSTR(str));
+                if (FAILED(hr)) return hr;
+            }
+
+            // Set trigger repetition duration and interval.
+            if (ttData.MinutesDuration || ttData.MinutesInterval) {
+                CComPtr<IRepetitionPattern> pRepetitionPattern;
+
+                hr = pTrigger->get_Repetition(&pRepetitionPattern);
+                if (FAILED(hr)) return hr;
+                str.Format(L"PT%uM", ttData.MinutesDuration);
+                hr = pRepetitionPattern->put_Duration(CComBSTR(str));
+                if (FAILED(hr)) return hr;
+                str.Format(L"PT%uM", ttData.MinutesInterval);
+                hr = pRepetitionPattern->put_Interval(CComBSTR(str));
+                if (FAILED(hr)) return hr;
+                hr = pRepetitionPattern->put_StopAtDurationEnd(ttData.rgFlags & TASK_TRIGGER_FLAG_KILL_AT_DURATION_END ? VARIANT_TRUE : VARIANT_FALSE);
+                if (FAILED(hr)) return hr;
+            }
+
+            // Enable/disable trigger.
+            hr = pTrigger->put_Enabled(ttData.rgFlags & TASK_TRIGGER_FLAG_DISABLED ? VARIANT_FALSE : VARIANT_TRUE);
+            if (FAILED(hr)) return hr;
+        }
+
+        // Get the task folder.
+        CComPtr<ITaskFolder> pTaskFolder;
+        hr = pService->GetFolder(CComBSTR(L"\\"), &pTaskFolder);
+        if (FAILED(hr)) return hr;
+
+#ifdef _DEBUG
+        CComBSTR xml;
+        hr = pTaskDefinition->get_XmlText(&xml);
+#endif
+
+        // Register the task.
+        hr = pTaskFolder->RegisterTaskDefinition(
+            CComBSTR(m_sValue), // path
+            pTaskDefinition,    // pDefinition
+            TASK_CREATE,        // flags
+            vEmpty,             // userId
+            logonType != TASK_LOGON_SERVICE_ACCOUNT && !m_sPassword.IsEmpty() ? CComVariant(m_sPassword) : vEmpty, // password
+            logonType,          // logonType
+            vEmpty,             // sddl
+            &pTask);            // ppTask
+        if (FAILED(hr)) return hr;
+    } else {
+        // Windows XP or older.
+        CComPtr<ITask> pTask;
+
+        // Create the new task.
+        hr = pSession->m_pTaskScheduler->NewWorkItem(m_sValue, CLSID_CTask, IID_ITask, (IUnknown**)&pTask);
+        if (pSession->m_bRollbackEnabled) {
+            // Order rollback action to delete the task. ITask::NewWorkItem() might made a blank task already.
+            pSession->m_olRollback.AddHead(new CMSITSCAOpDeleteTask(m_sValue));
+        }
+        if (FAILED(hr)) return hr;
+
+        // Set its properties.
+        hr = pTask->SetApplicationName (m_sApplicationName ); if (FAILED(hr)) return hr;
+        hr = pTask->SetParameters      (m_sParameters      ); if (FAILED(hr)) return hr;
+        hr = pTask->SetWorkingDirectory(m_sWorkingDirectory); if (FAILED(hr)) return hr;
+        hr = pTask->SetComment         (m_sComment         ); if (FAILED(hr)) return hr;
+        if (pSession->m_bRollbackEnabled && (m_dwFlags & TASK_FLAG_DISABLED) == 0) {
+            // The task is supposed to be enabled.
+            // However, we shall enable it at commit to prevent it from accidentally starting in the very installation phase.
+            pSession->m_olCommit.AddTail(new CMSITSCAOpEnableTask(m_sValue, TRUE));
+            m_dwFlags |= TASK_FLAG_DISABLED;
+        }
+        hr = pTask->SetFlags           (m_dwFlags          ); if (FAILED(hr)) return hr;
+        hr = pTask->SetPriority        (m_dwPriority       ); if (FAILED(hr)) return hr;
+
+        if (!m_sAccountName.IsEmpty()) {
+            hr = pTask->SetAccountInformation(m_sAccountName, m_sPassword.IsEmpty() ? NULL : m_sPassword);
+            if (FAILED(hr)) return hr;
+        }
+
+        hr = pTask->SetIdleWait  (m_wIdleMinutes, m_wDeadlineMinutes); if (FAILED(hr)) return hr;
+        hr = pTask->SetMaxRunTime(m_dwMaxRuntimeMS                  ); if (FAILED(hr)) return hr;
+
+        // Add triggers.
+        for (pos = m_lTriggers.GetHeadPosition(); pos;) {
+            WORD wTriggerIdx;
+            CComPtr<ITaskTrigger> pTrigger;
+            TASK_TRIGGER &ttData = m_lTriggers.GetNext(pos);
+
+            hr = pTask->CreateTrigger(&wTriggerIdx, &pTrigger);
+            if (FAILED(hr)) return hr;
+
+            hr = pTrigger->SetTrigger(&ttData);
+            if (FAILED(hr)) return hr;
+        }
+
+        // Save the task.
+        CComQIPtr<IPersistFile> pTaskFile(pTask);
+        if (!pTaskFile) return E_NOINTERFACE;
+
+        hr = pTaskFile->Save(NULL, TRUE);
         if (FAILED(hr)) return hr;
     }
-
-    // Save the task.
-    CComQIPtr<IPersistFile> pTaskFile(pTask);
-    hr = pTaskFile->Save(NULL, TRUE);
 
     return S_OK;
 }
@@ -257,6 +557,10 @@ UINT CMSITSCAOpCreateTask::SetFromRecord(MSIHANDLE hInstall, MSIHANDLE hRecord)
 
     uiResult = ::MsiRecordFormatStringW(hInstall, hRecord,  5, m_sWorkingDirectory);
     if (uiResult != ERROR_SUCCESS) return uiResult;
+    if (!m_sWorkingDirectory.IsEmpty() && m_sWorkingDirectory.GetAt(m_sWorkingDirectory.GetLength() - 1) == L'\\') {
+        // Trim trailing backslash.
+        m_sWorkingDirectory.Truncate(m_sWorkingDirectory.GetLength() - 1);
+    }
 
     uiResult = ::MsiRecordFormatStringW(hInstall, hRecord, 10, m_sComment);
     if (uiResult != ERROR_SUCCESS) return uiResult;
@@ -295,7 +599,7 @@ UINT CMSITSCAOpCreateTask::SetTriggersFromView(MSIHANDLE hView)
         ULONGLONG ullValue;
         FILETIME ftValue;
         SYSTEMTIME stValue;
-        int iValue, iStartTime, iStartTimeRand;
+        int iValue;
 
         // Fetch one record from the view.
         uiResult = ::MsiViewFetch(hView, &hRecord);
@@ -331,16 +635,15 @@ UINT CMSITSCAOpCreateTask::SetTriggersFromView(MSIHANDLE hView)
             ttData.rgFlags  |= TASK_TRIGGER_FLAG_HAS_END_DATE;
         }
 
-        // Get StartTime and StartTimeRand.
-        iStartTime = ::MsiRecordGetInteger(hRecord, 4);
-        if (iStartTime == MSI_NULL_INTEGER) return ERROR_INVALID_FIELD;
-        iStartTimeRand = ::MsiRecordGetInteger(hRecord, 5);
-        if (iStartTimeRand != MSI_NULL_INTEGER) {
-            // Add random delay to StartTime.
-            iStartTime += ::MulDiv(rand(), iStartTimeRand, RAND_MAX);
-        }
-        ttData.wStartHour   = (WORD)(iStartTime / 60);
-        ttData.wStartMinute = (WORD)(iStartTime % 60);
+        // Get StartTime.
+        iValue = ::MsiRecordGetInteger(hRecord, 4);
+        if (iValue == MSI_NULL_INTEGER) return ERROR_INVALID_FIELD;
+        ttData.wStartHour   = (WORD)(iValue / 60);
+        ttData.wStartMinute = (WORD)(iValue % 60);
+
+        // Get StartTimeRand.
+        iValue = ::MsiRecordGetInteger(hRecord, 5);
+        ttData.wRandomMinutesInterval = iValue != MSI_NULL_INTEGER ? (WORD)iValue : 0;
 
         // Get MinutesDuration.
         iValue = ::MsiRecordGetInteger(hRecord, 6);
@@ -469,6 +772,8 @@ HRESULT CMSITSCAOpDeleteTask::Execute(CMSITSCASession *pSession)
 
         // Save the backup copy.
         CComQIPtr<IPersistFile> pTaskFile(pTask);
+        if (!pTaskFile) return E_NOINTERFACE;
+
         hr = pTaskFile->Save(NULL, TRUE);
         if (FAILED(hr)) return hr;
 
@@ -540,7 +845,7 @@ HRESULT CMSITSCAOpEnableTask::Execute(CMSITSCASession *pSession)
             if (SUCCEEDED(hr)) {
                 // Save the task.
                 CComQIPtr<IPersistFile> pTaskFile(pTask);
-                hr = pTaskFile->Save(NULL, TRUE);
+                hr = pTaskFile ? pTaskFile->Save(NULL, TRUE) : E_NOINTERFACE;
             }
         }
     }
@@ -579,6 +884,8 @@ HRESULT CMSITSCAOpCopyTask::Execute(CMSITSCASession *pSession)
 
     // Save the task.
     CComQIPtr<IPersistFile> pTaskFile(pTask);
+    if (!pTaskFile) return E_NOINTERFACE;
+
     hr = pTaskFile->Save(NULL, TRUE);
     if (FAILED(hr)) return hr;
 
