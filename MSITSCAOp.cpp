@@ -524,10 +524,44 @@ HRESULT CMSITSCAOpTaskCreate::Execute(CMSITSCASession *pSession)
         for (pos = m_lTriggers.GetHeadPosition(); pos;) {
             WORD wTriggerIdx;
             CComPtr<ITaskTrigger> pTrigger;
-            TASK_TRIGGER &ttData = m_lTriggers.GetNext(pos);
+            TASK_TRIGGER ttData = m_lTriggers.GetNext(pos); // Don't use reference! We don't want to modify original trigger data by adding random startup delay.
 
             hr = pTask->CreateTrigger(&wTriggerIdx, &pTrigger);
             if (FAILED(hr)) goto finish;
+
+            if (ttData.wRandomMinutesInterval) {
+                // Windows XP doesn't support random startup delay. However, we can add fixed "random" delay when creating the trigger.
+                WORD wStartTime = ttData.wStartHour * 60 + ttData.wStartMinute + (WORD)::MulDiv(rand(), ttData.wRandomMinutesInterval, RAND_MAX);
+                FILETIME ftValue;
+                SYSTEMTIME stValue;
+                ULONGLONG ullValue;
+
+                // Convert MDY date to numerical date (SYSTEMTIME -> FILETIME -> ULONGLONG).
+                memset(&stValue, 0, sizeof(SYSTEMTIME));
+                stValue.wYear  = ttData.wBeginYear;
+                stValue.wMonth = ttData.wBeginMonth;
+                stValue.wDay   = ttData.wBeginDay;
+                verify(::SystemTimeToFileTime(&stValue, &ftValue));
+                ullValue = ((ULONGLONG)(ftValue.dwHighDateTime) << 32) | ftValue.dwLowDateTime;
+
+                // Wrap days.
+                while (wStartTime >= 1440) {
+                    ullValue   += (ULONGLONG)864000000000;
+                    wStartTime -= 1440;
+                }
+
+                // Convert numerical date to DMY (ULONGLONG -> FILETIME -> SYSTEMTIME).
+                ftValue.dwHighDateTime = ullValue >> 32;
+                ftValue.dwLowDateTime  = ullValue & 0xffffffff;
+                verify(::FileTimeToSystemTime(&ftValue, &stValue));
+
+                // Set new trigger date and time.
+                ttData.wBeginYear   = stValue.wYear;
+                ttData.wBeginMonth  = stValue.wMonth;
+                ttData.wBeginDay    = stValue.wDay;
+                ttData.wStartHour   = wStartTime / 60;
+                ttData.wStartMinute = wStartTime % 60;
+            }
 
             hr = pTrigger->SetTrigger(&ttData);
             if (FAILED(hr)) goto finish;

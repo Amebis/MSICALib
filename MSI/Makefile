@@ -115,9 +115,9 @@ Action	Type	Source	Target
 s$(MSI_TIP_ID)	i2	S$(MSI_TIP_ID)	S255
 CustomAction	Action
 EvaluateScheduledTasks	1	binMSITSCA.dll	EvaluateScheduledTasks
-InstallScheduledTasks	1025	binMSITSCA.dll	InstallScheduledTasks
-RollbackScheduledTasks	1281	binMSITSCA.dll	InstallScheduledTasks
-CommitScheduledTasks	1537	binMSITSCA.dll	InstallScheduledTasks
+InstallScheduledTasks	3073	binMSITSCA.dll	InstallScheduledTasks
+RollbackScheduledTasks	3329	binMSITSCA.dll	InstallScheduledTasks
+CommitScheduledTasks	3585	binMSITSCA.dll	InstallScheduledTasks
 <<NOKEEP
 
 
