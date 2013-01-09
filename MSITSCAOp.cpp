@@ -511,10 +511,11 @@ HRESULT CMSITSCAOpTaskCreate::Execute(CMSITSCASession *pSession)
         hr = pTask->SetFlags           (m_dwFlags          ); if (FAILED(hr)) goto finish;
         hr = pTask->SetPriority        (m_dwPriority       ); if (FAILED(hr)) goto finish;
 
-        if (!m_sAccountName.IsEmpty()) {
-            hr = pTask->SetAccountInformation(m_sAccountName, m_sPassword.IsEmpty() ? NULL : m_sPassword);
-            if (FAILED(hr)) goto finish;
-        }
+        // Set task credentials.
+        hr = m_sAccountName.IsEmpty() ?
+            pTask->SetAccountInformation(L"",            NULL       ) :
+            pTask->SetAccountInformation(m_sAccountName, m_sPassword);
+        if (FAILED(hr)) goto finish;
 
         hr = pTask->SetIdleWait  (m_wIdleMinutes, m_wDeadlineMinutes); if (FAILED(hr)) goto finish;
         hr = pTask->SetMaxRunTime(m_dwMaxRuntimeMS                  ); if (FAILED(hr)) goto finish;
