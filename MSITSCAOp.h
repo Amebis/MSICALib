@@ -34,16 +34,16 @@ protected:
 
 
 ////////////////////////////////////////////////////////////////////////////
-// CMSITSCAOpSingleStringOperation
+// CMSITSCAOpTypeSingleString
 ////////////////////////////////////////////////////////////////////////////
 
-class CMSITSCAOpSingleStringOperation : public CMSITSCAOp
+class CMSITSCAOpTypeSingleString : public CMSITSCAOp
 {
 public:
-    CMSITSCAOpSingleStringOperation(LPCWSTR pszValue = L"", int iTicks = 0);
+    CMSITSCAOpTypeSingleString(LPCWSTR pszValue = L"", int iTicks = 0);
 
-    friend inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpSingleStringOperation &op);
-    friend inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpSingleStringOperation &op);
+    friend inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpTypeSingleString &op);
+    friend inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpTypeSingleString &op);
 
 protected:
     CStringW m_sValue;
@@ -54,13 +54,13 @@ protected:
 // CMSITSCAOpDoubleStringOperation
 ////////////////////////////////////////////////////////////////////////////
 
-class CMSITSCAOpSrcDstStringOperation : public CMSITSCAOp
+class CMSITSCAOpTypeSrcDstString : public CMSITSCAOp
 {
 public:
-    CMSITSCAOpSrcDstStringOperation(LPCWSTR pszValue1 = L"", LPCWSTR pszValue2 = L"", int iTicks = 0);
+    CMSITSCAOpTypeSrcDstString(LPCWSTR pszValue1 = L"", LPCWSTR pszValue2 = L"", int iTicks = 0);
 
-    friend inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpSrcDstStringOperation &op);
-    friend inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpSrcDstStringOperation &op);
+    friend inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpTypeSrcDstString &op);
+    friend inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpTypeSrcDstString &op);
 
 protected:
     CStringW m_sValue1;
@@ -69,16 +69,16 @@ protected:
 
 
 ////////////////////////////////////////////////////////////////////////////
-// CMSITSCAOpBooleanOperation
+// CMSITSCAOpTypeBoolean
 ////////////////////////////////////////////////////////////////////////////
 
-class CMSITSCAOpBooleanOperation : public CMSITSCAOp
+class CMSITSCAOpTypeBoolean : public CMSITSCAOp
 {
 public:
-    CMSITSCAOpBooleanOperation(BOOL bValue = TRUE, int iTicks = 0);
+    CMSITSCAOpTypeBoolean(BOOL bValue = TRUE, int iTicks = 0);
 
-    friend inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpBooleanOperation &op);
-    friend inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpBooleanOperation &op);
+    friend inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpTypeBoolean &op);
+    friend inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpTypeBoolean &op);
 
 protected:
     BOOL m_bValue;
@@ -86,62 +86,63 @@ protected:
 
 
 ////////////////////////////////////////////////////////////////////////////
-// CMSITSCAOpEnableRollback
+// CMSITSCAOpRollbackEnable
 ////////////////////////////////////////////////////////////////////////////
 
-class CMSITSCAOpEnableRollback : public CMSITSCAOpBooleanOperation
+class CMSITSCAOpRollbackEnable : public CMSITSCAOpTypeBoolean
 {
 public:
-    CMSITSCAOpEnableRollback(BOOL bEnable = TRUE, int iTicks = 0);
+    CMSITSCAOpRollbackEnable(BOOL bEnable = TRUE, int iTicks = 0);
     virtual HRESULT Execute(CMSITSCASession *pSession);
 };
 
 
 ////////////////////////////////////////////////////////////////////////////
-// CMSITSCAOpDeleteFile
+// CMSITSCAOpFileDelete
 ////////////////////////////////////////////////////////////////////////////
 
-class CMSITSCAOpDeleteFile : public CMSITSCAOpSingleStringOperation
+class CMSITSCAOpFileDelete : public CMSITSCAOpTypeSingleString
 {
 public:
-    CMSITSCAOpDeleteFile(LPCWSTR pszFileName = L"", int iTicks = 0);
+    CMSITSCAOpFileDelete(LPCWSTR pszFileName = L"", int iTicks = 0);
     virtual HRESULT Execute(CMSITSCASession *pSession);
 };
 
 
 ////////////////////////////////////////////////////////////////////////////
-// CMSITSCAOpMoveFile
+// CMSITSCAOpFileMove
 ////////////////////////////////////////////////////////////////////////////
 
-class CMSITSCAOpMoveFile : public CMSITSCAOpSrcDstStringOperation
+class CMSITSCAOpFileMove : public CMSITSCAOpTypeSrcDstString
 {
 public:
-    CMSITSCAOpMoveFile(LPCWSTR pszFileSrc = L"", LPCWSTR pszFileDst = L"", int iTicks = 0);
+    CMSITSCAOpFileMove(LPCWSTR pszFileSrc = L"", LPCWSTR pszFileDst = L"", int iTicks = 0);
     virtual HRESULT Execute(CMSITSCASession *pSession);
 };
 
 
 ////////////////////////////////////////////////////////////////////////////
-// CMSITSCAOpCreateTask
+// CMSITSCAOpTaskCreate
 ////////////////////////////////////////////////////////////////////////////
 
-class CMSITSCAOpCreateTask : public CMSITSCAOpSingleStringOperation
+class CMSITSCAOpTaskCreate : public CMSITSCAOpTypeSingleString
 {
 public:
-    CMSITSCAOpCreateTask(LPCWSTR pszTaskName = L"", int iTicks = 0);
-    virtual ~CMSITSCAOpCreateTask();
+    CMSITSCAOpTaskCreate(LPCWSTR pszTaskName = L"", int iTicks = 0);
+    virtual ~CMSITSCAOpTaskCreate();
     virtual HRESULT Execute(CMSITSCASession *pSession);
 
     UINT SetFromRecord(MSIHANDLE hInstall, MSIHANDLE hRecord);
     UINT SetTriggersFromView(MSIHANDLE hView);
 
-    friend inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpCreateTask &op);
-    friend inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpCreateTask &op);
+    friend inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpTaskCreate &op);
+    friend inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpTaskCreate &op);
 
 protected:
     CStringW m_sApplicationName;
     CStringW m_sParameters;
     CStringW m_sWorkingDirectory;
+    CStringW m_sAuthor;
     CStringW m_sComment;
     DWORD    m_dwFlags;
     DWORD    m_dwPriority;
@@ -156,29 +157,29 @@ protected:
 
 
 ////////////////////////////////////////////////////////////////////////////
-// CMSITSCAOpDeleteTask
+// CMSITSCAOpTaskDelete
 ////////////////////////////////////////////////////////////////////////////
 
-class CMSITSCAOpDeleteTask : public CMSITSCAOpSingleStringOperation
+class CMSITSCAOpTaskDelete : public CMSITSCAOpTypeSingleString
 {
 public:
-    CMSITSCAOpDeleteTask(LPCWSTR pszTaskName = L"", int iTicks = 0);
+    CMSITSCAOpTaskDelete(LPCWSTR pszTaskName = L"", int iTicks = 0);
     virtual HRESULT Execute(CMSITSCASession *pSession);
 };
 
 
 ////////////////////////////////////////////////////////////////////////////
-// CMSITSCAOpEnableTask
+// CMSITSCAOpTaskEnable
 ////////////////////////////////////////////////////////////////////////////
 
-class CMSITSCAOpEnableTask : public CMSITSCAOpSingleStringOperation
+class CMSITSCAOpTaskEnable : public CMSITSCAOpTypeSingleString
 {
 public:
-    CMSITSCAOpEnableTask(LPCWSTR pszTaskName = L"", BOOL bEnable = TRUE, int iTicks = 0);
+    CMSITSCAOpTaskEnable(LPCWSTR pszTaskName = L"", BOOL bEnable = TRUE, int iTicks = 0);
     virtual HRESULT Execute(CMSITSCASession *pSession);
 
-    friend inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpEnableTask &op);
-    friend inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpEnableTask &op);
+    friend inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpTaskEnable &op);
+    friend inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpTaskEnable &op);
 
 protected:
     BOOL m_bEnable;
@@ -186,13 +187,13 @@ protected:
 
 
 ////////////////////////////////////////////////////////////////////////////
-// CMSITSCAOpCopyTask
+// CMSITSCAOpTaskCopy
 ////////////////////////////////////////////////////////////////////////////
 
-class CMSITSCAOpCopyTask : public CMSITSCAOpSrcDstStringOperation
+class CMSITSCAOpTaskCopy : public CMSITSCAOpTypeSrcDstString
 {
 public:
-    CMSITSCAOpCopyTask(LPCWSTR pszTaskSrc = L"", LPCWSTR pszTaskDst = L"", int iTicks = 0);
+    CMSITSCAOpTaskCopy(LPCWSTR pszTaskSrc = L"", LPCWSTR pszTaskDst = L"", int iTicks = 0);
     virtual HRESULT Execute(CMSITSCASession *pSession);
 };
 
@@ -242,12 +243,11 @@ class CMSITSCASession
 public:
     CMSITSCASession();
 
-    MSIHANDLE m_hInstall;                       // Installer handle
-    CComPtr<ITaskScheduler> m_pTaskScheduler;   // Task scheduler interface
-    BOOL m_bContinueOnError;                    // Continue execution on operation error?
-    BOOL m_bRollbackEnabled;                    // Is rollback enabled?
-    CMSITSCAOpList m_olRollback;                // Rollback operation list
-    CMSITSCAOpList m_olCommit;                  // Commit operation list
+    MSIHANDLE m_hInstall;        // Installer handle
+    BOOL m_bContinueOnError;     // Continue execution on operation error?
+    BOOL m_bRollbackEnabled;     // Is rollback enabled?
+    CMSITSCAOpList m_olRollback; // Rollback operation list
+    CMSITSCAOpList m_olCommit;   // Commit operation list
 };
 
 
@@ -267,7 +267,7 @@ inline HRESULT operator >>(CAtlFile &f, CMSITSCAOp &op)
 }
 
 
-inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpSingleStringOperation &op)
+inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpTypeSingleString &op)
 {
     HRESULT hr;
 
@@ -278,7 +278,7 @@ inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpSingleStringOperation &o
 }
 
 
-inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpSingleStringOperation &op)
+inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpTypeSingleString &op)
 {
     HRESULT hr;
 
@@ -289,7 +289,7 @@ inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpSingleStringOperation &op)
 }
 
 
-inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpSrcDstStringOperation &op)
+inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpTypeSrcDstString &op)
 {
     HRESULT hr;
 
@@ -303,7 +303,7 @@ inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpSrcDstStringOperation &o
 }
 
 
-inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpSrcDstStringOperation &op)
+inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpTypeSrcDstString &op)
 {
     HRESULT hr;
 
@@ -317,7 +317,7 @@ inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpSrcDstStringOperation &op)
 }
 
 
-inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpBooleanOperation &op)
+inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpTypeBoolean &op)
 {
     HRESULT hr;
 
@@ -328,7 +328,7 @@ inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpBooleanOperation &op)
 }
 
 
-inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpBooleanOperation &op)
+inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpTypeBoolean &op)
 {
     int iValue;
     HRESULT hr;
@@ -344,15 +344,16 @@ inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpBooleanOperation &op)
 }
 
 
-inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpCreateTask &op)
+inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpTaskCreate &op)
 {
     HRESULT hr;
     POSITION pos;
 
-    hr = f << (const CMSITSCAOpSingleStringOperation&)op;              if (FAILED(hr)) return hr;
+    hr = f << (const CMSITSCAOpTypeSingleString&)op;              if (FAILED(hr)) return hr;
     hr = f << op.m_sApplicationName;                                   if (FAILED(hr)) return hr;
     hr = f << op.m_sParameters;                                        if (FAILED(hr)) return hr;
     hr = f << op.m_sWorkingDirectory;                                  if (FAILED(hr)) return hr;
+    hr = f << op.m_sAuthor;                                            if (FAILED(hr)) return hr;
     hr = f << op.m_sComment;                                           if (FAILED(hr)) return hr;
     hr = f << (int)op.m_dwFlags;                                       if (FAILED(hr)) return hr;
     hr = f << (int)op.m_dwPriority;                                    if (FAILED(hr)) return hr;
@@ -370,15 +371,16 @@ inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpCreateTask &op)
 }
 
 
-inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpCreateTask &op)
+inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpTaskCreate &op)
 {
     HRESULT hr;
     DWORD dwValue;
 
-    hr = f >> (CMSITSCAOpSingleStringOperation&)op; if (FAILED(hr)) return hr;
+    hr = f >> (CMSITSCAOpTypeSingleString&)op; if (FAILED(hr)) return hr;
     hr = f >> op.m_sApplicationName;                if (FAILED(hr)) return hr;
     hr = f >> op.m_sParameters;                     if (FAILED(hr)) return hr;
     hr = f >> op.m_sWorkingDirectory;               if (FAILED(hr)) return hr;
+    hr = f >> op.m_sAuthor;                         if (FAILED(hr)) return hr;
     hr = f >> op.m_sComment;                        if (FAILED(hr)) return hr;
     hr = f >> (int&)op.m_dwFlags;                   if (FAILED(hr)) return hr;
     hr = f >> (int&)op.m_dwPriority;                if (FAILED(hr)) return hr;
@@ -398,23 +400,23 @@ inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpCreateTask &op)
 }
 
 
-inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpEnableTask &op)
+inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpTaskEnable &op)
 {
     HRESULT hr;
 
-    hr = f << (const CMSITSCAOpSingleStringOperation&)op;
+    hr = f << (const CMSITSCAOpTypeSingleString&)op;
     if (FAILED(hr)) return hr;
 
     return f << (int)op.m_bEnable;
 }
 
 
-inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpEnableTask &op)
+inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpTaskEnable &op)
 {
     HRESULT hr;
     int iTemp;
 
-    hr = f >> (CMSITSCAOpSingleStringOperation&)op;
+    hr = f >> (CMSITSCAOpTypeSingleString&)op;
     if (FAILED(hr)) return hr;
 
     hr = f >> iTemp;
@@ -438,20 +440,20 @@ inline HRESULT operator <<(CAtlFile &f, const CMSITSCAOpList &list)
 
     for (pos = list.GetHeadPosition(); pos;) {
         const CMSITSCAOp *pOp = list.GetNext(pos);
-        if (dynamic_cast<const CMSITSCAOpEnableRollback*>(pOp))
-            hr = list.Save<CMSITSCAOpEnableRollback, CMSITSCAOpList::OPERATION_ENABLE_ROLLBACK>(f, pOp);
-        else if (dynamic_cast<const CMSITSCAOpDeleteFile*>(pOp))
-            hr = list.Save<CMSITSCAOpDeleteFile, CMSITSCAOpList::OPERATION_DELETE_FILE>(f, pOp);
-        else if (dynamic_cast<const CMSITSCAOpMoveFile*>(pOp))
-            hr = list.Save<CMSITSCAOpMoveFile, CMSITSCAOpList::OPERATION_MOVE_FILE>(f, pOp);
-        else if (dynamic_cast<const CMSITSCAOpCreateTask*>(pOp))
-            hr = list.Save<CMSITSCAOpCreateTask, CMSITSCAOpList::OPERATION_CREATE_TASK>(f, pOp);
-        else if (dynamic_cast<const CMSITSCAOpDeleteTask*>(pOp))
-            hr = list.Save<CMSITSCAOpDeleteTask, CMSITSCAOpList::OPERATION_DELETE_TASK>(f, pOp);
-        else if (dynamic_cast<const CMSITSCAOpEnableTask*>(pOp))
-            hr = list.Save<CMSITSCAOpEnableTask, CMSITSCAOpList::OPERATION_ENABLE_TASK>(f, pOp);
-        else if (dynamic_cast<const CMSITSCAOpCopyTask*>(pOp))
-            hr = list.Save<CMSITSCAOpCopyTask, CMSITSCAOpList::OPERATION_COPY_TASK>(f, pOp);
+        if (dynamic_cast<const CMSITSCAOpRollbackEnable*>(pOp))
+            hr = list.Save<CMSITSCAOpRollbackEnable, CMSITSCAOpList::OPERATION_ENABLE_ROLLBACK>(f, pOp);
+        else if (dynamic_cast<const CMSITSCAOpFileDelete*>(pOp))
+            hr = list.Save<CMSITSCAOpFileDelete, CMSITSCAOpList::OPERATION_DELETE_FILE>(f, pOp);
+        else if (dynamic_cast<const CMSITSCAOpFileMove*>(pOp))
+            hr = list.Save<CMSITSCAOpFileMove, CMSITSCAOpList::OPERATION_MOVE_FILE>(f, pOp);
+        else if (dynamic_cast<const CMSITSCAOpTaskCreate*>(pOp))
+            hr = list.Save<CMSITSCAOpTaskCreate, CMSITSCAOpList::OPERATION_CREATE_TASK>(f, pOp);
+        else if (dynamic_cast<const CMSITSCAOpTaskDelete*>(pOp))
+            hr = list.Save<CMSITSCAOpTaskDelete, CMSITSCAOpList::OPERATION_DELETE_TASK>(f, pOp);
+        else if (dynamic_cast<const CMSITSCAOpTaskEnable*>(pOp))
+            hr = list.Save<CMSITSCAOpTaskEnable, CMSITSCAOpList::OPERATION_ENABLE_TASK>(f, pOp);
+        else if (dynamic_cast<const CMSITSCAOpTaskCopy*>(pOp))
+            hr = list.Save<CMSITSCAOpTaskCopy, CMSITSCAOpList::OPERATION_COPY_TASK>(f, pOp);
         else if (dynamic_cast<const CMSITSCAOpList*>(pOp))
             hr = list.Save<CMSITSCAOpList, CMSITSCAOpList::OPERATION_SUBLIST>(f, pOp);
         else {
@@ -486,25 +488,25 @@ inline HRESULT operator >>(CAtlFile &f, CMSITSCAOpList &list)
 
         switch ((CMSITSCAOpList::OPERATION)iTemp) {
         case CMSITSCAOpList::OPERATION_ENABLE_ROLLBACK:
-            hr = list.LoadAndAddTail<CMSITSCAOpEnableRollback>(f);
+            hr = list.LoadAndAddTail<CMSITSCAOpRollbackEnable>(f);
             break;
         case CMSITSCAOpList::OPERATION_DELETE_FILE:
-            hr = list.LoadAndAddTail<CMSITSCAOpDeleteFile>(f);
+            hr = list.LoadAndAddTail<CMSITSCAOpFileDelete>(f);
             break;
         case CMSITSCAOpList::OPERATION_MOVE_FILE:
-            hr = list.LoadAndAddTail<CMSITSCAOpMoveFile>(f);
+            hr = list.LoadAndAddTail<CMSITSCAOpFileMove>(f);
             break;
         case CMSITSCAOpList::OPERATION_CREATE_TASK:
-            hr = list.LoadAndAddTail<CMSITSCAOpCreateTask>(f);
+            hr = list.LoadAndAddTail<CMSITSCAOpTaskCreate>(f);
             break;
         case CMSITSCAOpList::OPERATION_DELETE_TASK:
-            hr = list.LoadAndAddTail<CMSITSCAOpDeleteTask>(f);
+            hr = list.LoadAndAddTail<CMSITSCAOpTaskDelete>(f);
             break;
         case CMSITSCAOpList::OPERATION_ENABLE_TASK:
-            hr = list.LoadAndAddTail<CMSITSCAOpEnableTask>(f);
+            hr = list.LoadAndAddTail<CMSITSCAOpTaskEnable>(f);
             break;
         case CMSITSCAOpList::OPERATION_COPY_TASK:
-            hr = list.LoadAndAddTail<CMSITSCAOpCopyTask>(f);
+            hr = list.LoadAndAddTail<CMSITSCAOpTaskCopy>(f);
             break;
         case CMSITSCAOpList::OPERATION_SUBLIST:
             hr = list.LoadAndAddTail<CMSITSCAOpList>(f);

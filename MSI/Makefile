@@ -30,6 +30,7 @@ ScheduledTask	Flags	N					DoubleInteger		Task's flags to pass in IScheduledWorkI
 ScheduledTask	Priority	N					DoubleInteger	32;64;128;256;16384,32768	Task's priority to pass in ITask::SetPriority() call.
 ScheduledTask	User	Y					Formatted		Account name to run task as. Use empty string for system account.
 ScheduledTask	Password	Y					Formatted		Account password to run task as. Use NULL for system account.
+ScheduledTask	Author	Y					Formatted		Task author.
 ScheduledTask	Description	Y					Formatted		Task description.
 ScheduledTask	IdleMin	Y					Integer		A value that specifies how long, in minutes, the system must remain idle before the work item can run.
 ScheduledTask	IdleDeadline	Y					Integer		A value that specifies the maximum number of minutes that the Task Scheduler will wait for the idle-time period.
@@ -131,12 +132,16 @@ Vse :: "$(JEZIK).$(CFG).$(PLAT).Error-2.idt"
 Error	Message
 i2	L0
 1250	Error	Error
-2550	Pri odpiranju namestitvenega paketa je prišlo do napake.
-2551	Pri pripravi seznama razvršèenih opravil je prišlo do napake [2].
-2552	Pri pisanju v datoteko seznama razporejenih opravil »[2]« je prišlo do napake [3].
-2553	Pri nastavljanju parametra »[2]« je prišlo do napake [3].
-2554	Pri brisanju datoteke »[2]« je prišlo do napake [3].
-2555	Pri premikanju datoteke »[2]« v »[3]« je prišlo do napake [4].
+2550	Pri odpiranju namestitvenega paketa je prišlo do napake. Obrnite se na svojo tehnièno službo.
+2551	Pri pripravi seznama razvršèenih opravil je prišlo do napake [2]. Obrnite se na svojo tehnièno službo.
+2552	Pri pisanju v datoteko seznama razporejenih opravil »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
+2553	Pri nastavljanju parametra »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
+2554	Pri brisanju datoteke »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
+2555	Pri premikanju datoteke »[2]« v »[3]« je prišlo do napake [4]. Obrnite se na svojo tehnièno službo.
+2556	Pri ustvarjanju razporejenega opravila »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
+2557	Pri brisanju razporejenega opravila »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
+2558	Pri o(ne)mogoèanju razporejenega opravila »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
+2559	Pri kopiranju razporejenega opravila »[2]« v »[3]« je prišlo do napake [4]. Obrnite se na svojo tehnièno službo.
 <<NOKEEP
 
 "De.$(CFG).$(PLAT).Error-2.idt" : "Sl.$(CFG).$(PLAT).Error-2.idtx" "..\res\de_DE.po"
@@ -178,8 +183,8 @@ Vse :: "$(JEZIK).$(CFG).$(PLAT).ScheduledTask-1.idt"
 "$(JEZIK).$(CFG).$(PLAT).ScheduledTask-1.idt" : "Makefile" "..\..\include\MSINast.mak"
 	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
-Task	DisplayName	Application	Parameters	WorkingDir	Flags	Priority	User	Password	Description	IdleMin	IdleDeadline	MaxRuntime	Condition	Component_
-s$(MSI_TIP_ID)	s255	s255	S255	s255	i4	i4	S255	S255	S255	I2	I2	i4	S255	s$(MSI_TIP_ID)
+Task	DisplayName	Application	Parameters	WorkingDir	Flags	Priority	User	Password	Author	Description	IdleMin	IdleDeadline	MaxRuntime	Condition	Component_
+s$(MSI_TIP_ID)	s255	s255	S255	s255	i4	i4	S255	S255	S255	S255	I2	I2	i4	S255	s$(MSI_TIP_ID)
 ScheduledTask	Task
 <<NOKEEP
 

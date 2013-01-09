@@ -52,14 +52,16 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
     CString sValue;
 
     assert(hRecordProg);
+#ifdef ASSERT_TO_DEBUG
     assert(0); // Attach debugger here, or press "Ignore"!
+#endif
 
     // Check and add the rollback enabled state.
     uiResult = ::MsiGetProperty(hInstall, _T("RollbackDisabled"), sValue);
     bRollbackEnabled = uiResult == ERROR_SUCCESS ?
         _wtoi(sValue) || !sValue.IsEmpty() && towlower(sValue.GetAt(0)) == L'y' ? FALSE : TRUE :
         TRUE;
-    olExecute.AddTail(new CMSITSCAOpEnableRollback(bRollbackEnabled));
+    olExecute.AddTail(new CMSITSCAOpRollbackEnable(bRollbackEnabled));
 
     // Open MSI database.
     hDatabase = ::MsiGetActiveDatabase(hInstall);
@@ -70,7 +72,7 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
             PMSIHANDLE hViewST;
 
             // Prepare a query to get a list/view of tasks.
-            uiResult = ::MsiDatabaseOpenView(hDatabase, _T("SELECT Task,DisplayName,Application,Parameters,WorkingDir,Flags,Priority,User,Password,Description,IdleMin,IdleDeadline,MaxRuntime,Condition,Component_ FROM ScheduledTask"), &hViewST);
+            uiResult = ::MsiDatabaseOpenView(hDatabase, _T("SELECT Task,DisplayName,Application,Parameters,WorkingDir,Flags,Priority,User,Password,Author,Description,IdleMin,IdleDeadline,MaxRuntime,Condition,Component_ FROM ScheduledTask"), &hViewST);
             if (uiResult == ERROR_SUCCESS) {
                 // Execute query!
                 uiResult = ::MsiViewExecute(hViewST, NULL);
@@ -91,8 +93,8 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
                             break;
 
                         // Read and evaluate task's condition.
-                        uiResult = ::MsiRecordGetString(hRecord, 14, sValue);
-                        if (uiResult != ERROR_SUCCESS) break; // TODO: If condition is empty string ommit evaluation.
+                        uiResult = ::MsiRecordGetString(hRecord, 15, sValue);
+                        if (uiResult != ERROR_SUCCESS) break;
                         condition = ::MsiEvaluateCondition(hInstall, sValue);
                         if (condition == MSICONDITION_FALSE)
                             continue;
@@ -102,7 +104,7 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
                         }
 
                         // Read task's Component ID.
-                        uiResult = ::MsiRecordGetString(hRecord, 15, sValue);
+                        uiResult = ::MsiRecordGetString(hRecord, 16, sValue);
                         if (uiResult != ERROR_SUCCESS) break;
 
                         // Get the component state.
@@ -115,11 +117,12 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
                         if (iAction >= INSTALLSTATE_LOCAL) {
                             // Component is or should be installed. Create the task.
                             PMSIHANDLE hViewTT;
-                            CMSITSCAOpCreateTask *opCreateTask = new CMSITSCAOpCreateTask(sDisplayName, MSITSCA_TASK_TICK_SIZE);
+                            CMSITSCAOpTaskCreate *opCreateTask = new CMSITSCAOpTaskCreate(sDisplayName, MSITSCA_TASK_TICK_SIZE);
                             assert(opCreateTask);
 
                             // Populate the operation with task's data.
-                            opCreateTask->SetFromRecord(hInstall, hRecord);
+                            uiResult = opCreateTask->SetFromRecord(hInstall, hRecord);
+                            if (uiResult != ERROR_SUCCESS) break;
 
                             // Perform another query to get task's triggers.
                             uiResult = ::MsiDatabaseOpenView(hDatabase, _T("SELECT Trigger,BeginDate,EndDate,StartTime,StartTimeRand,MinutesDuration,MinutesInterval,Flags,Type,DaysInterval,WeeksInterval,DaysOfTheWeek,DaysOfMonth,WeekOfMonth,MonthsOfYear FROM TaskTrigger WHERE Task_=?"), &hViewTT);
@@ -138,7 +141,7 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
                             olExecute.AddTail(opCreateTask);
                         } else if (iAction >= INSTALLSTATE_REMOVED) {
                             // Component is installed, but should be degraded to advertised/removed. Delete the task.
-                            olExecute.AddTail(new CMSITSCAOpDeleteTask(sDisplayName, MSITSCA_TASK_TICK_SIZE));
+                            olExecute.AddTail(new CMSITSCAOpTaskDelete(sDisplayName, MSITSCA_TASK_TICK_SIZE));
                         }
 
                         // The amount of tick space to add for each task to progress indicator.
@@ -235,7 +238,9 @@ UINT MSITSCA_API InstallScheduledTasks(MSIHANDLE hInstall)
     BOOL bIsCoInitialized = SUCCEEDED(::CoInitialize(NULL));
     CString sSequenceFilename;
 
+#ifdef ASSERT_TO_DEBUG
     assert(0); // Attach debugger here, or press "Ignore"!
+#endif
 
     uiResult = ::MsiGetProperty(hInstall, _T("CustomActionData"), sSequenceFilename);
     if (uiResult == ERROR_SUCCESS) {
@@ -252,58 +257,51 @@ UINT MSITSCA_API InstallScheduledTasks(MSIHANDLE hInstall)
             // In case of commit/rollback, continue sequence on error, to do as much cleanup as possible.
             session.m_bContinueOnError = bIsCleanup;
 
-            // Get task scheduler object.
-            hr = session.m_pTaskScheduler.CoCreateInstance(CLSID_CTaskScheduler, NULL, CLSCTX_ALL);
+            // Execute the operations.
+            hr = lstOperations.Execute(&session);
             if (SUCCEEDED(hr)) {
-                // Execute the operations.
-                hr = lstOperations.Execute(&session);
-                if (SUCCEEDED(hr)) {
-                    if (!bIsCleanup && session.m_bRollbackEnabled) {
-                        // Save cleanup scripts.
-                        LPCTSTR pszExtension = ::PathFindExtension(sSequenceFilename);
-                        CString sSequenceFilenameCM, sSequenceFilenameRB;
+                if (!bIsCleanup && session.m_bRollbackEnabled) {
+                    // Save cleanup scripts.
+                    LPCTSTR pszExtension = ::PathFindExtension(sSequenceFilename);
+                    CString sSequenceFilenameCM, sSequenceFilenameRB;
 
-                        sSequenceFilenameRB.Format(_T("%.*ls-rb%ls"), pszExtension - (LPCTSTR)sSequenceFilename, (LPCTSTR)sSequenceFilename, pszExtension);
-                        sSequenceFilenameCM.Format(_T("%.*ls-cm%ls"), pszExtension - (LPCTSTR)sSequenceFilename, (LPCTSTR)sSequenceFilename, pszExtension);
+                    sSequenceFilenameRB.Format(_T("%.*ls-rb%ls"), pszExtension - (LPCTSTR)sSequenceFilename, (LPCTSTR)sSequenceFilename, pszExtension);
+                    sSequenceFilenameCM.Format(_T("%.*ls-cm%ls"), pszExtension - (LPCTSTR)sSequenceFilename, (LPCTSTR)sSequenceFilename, pszExtension);
 
-                        // After end of commit, delete rollback file too. After end of rollback, delete commit file too.
-                        session.m_olCommit.AddTail(new CMSITSCAOpDeleteFile(sSequenceFilenameRB));
-                        session.m_olRollback.AddTail(new CMSITSCAOpDeleteFile(sSequenceFilenameCM));
+                    // After end of commit, delete rollback file too. After end of rollback, delete commit file too.
+                    session.m_olCommit.AddTail(new CMSITSCAOpFileDelete(sSequenceFilenameRB));
+                    session.m_olRollback.AddTail(new CMSITSCAOpFileDelete(sSequenceFilenameCM));
 
-                        // Save commit file first.
-                        hr = session.m_olCommit.SaveToFile(sSequenceFilenameCM);
+                    // Save commit file first.
+                    hr = session.m_olCommit.SaveToFile(sSequenceFilenameCM);
+                    if (SUCCEEDED(hr)) {
+                        // Save rollback file next.
+                        hr = session.m_olRollback.SaveToFile(sSequenceFilenameRB);
                         if (SUCCEEDED(hr)) {
-                            // Save rollback file next.
-                            hr = session.m_olRollback.SaveToFile(sSequenceFilenameRB);
-                            if (SUCCEEDED(hr)) {
-                                uiResult = ERROR_SUCCESS;
-                            } else {
-                                // Saving rollback file failed.
-                                uiResult = HRESULT_CODE(hr);
-                            }
+                            uiResult = ERROR_SUCCESS;
                         } else {
-                            // Saving commit file failed.
+                            // Saving rollback file failed.
                             uiResult = HRESULT_CODE(hr);
                         }
                     } else {
-                        // No cleanup support required.
-                        uiResult = ERROR_SUCCESS;
+                        // Saving commit file failed.
+                        uiResult = HRESULT_CODE(hr);
                     }
                 } else {
-                    // Execution failed.
-                    uiResult = HRESULT_CODE(hr);
-                }
-
-                if (uiResult != ERROR_SUCCESS) {
-                    // Perform the cleanup now. The rollback script might not have been written to file yet.
-                    // And even if it was, the rollback action might not get invoked at all (if scheduled in InstallExecuteSequence later than this action).
-                    session.m_bContinueOnError = TRUE;
-                    session.m_bRollbackEnabled = FALSE;
-                    verify(SUCCEEDED(session.m_olRollback.Execute(&session)));
+                    // No cleanup support required.
+                    uiResult = ERROR_SUCCESS;
                 }
             } else {
-                // Task scheduler creation failed.
+                // Execution failed.
                 uiResult = HRESULT_CODE(hr);
+            }
+
+            if (uiResult != ERROR_SUCCESS) {
+                // Perform the cleanup now. The rollback script might not have been written to file yet.
+                // And even if it was, the rollback action might not get invoked at all (if scheduled in InstallExecuteSequence later than this action).
+                session.m_bContinueOnError = TRUE;
+                session.m_bRollbackEnabled = FALSE;
+                verify(SUCCEEDED(session.m_olRollback.Execute(&session)));
             }
         } else {
             // Sequence loading failed. Don't panic => do nothing.

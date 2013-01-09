@@ -20,7 +20,8 @@
 #define _WIN32_WINNT 0x0501                // Include Windows XP symbols
 #define _WINSOCKAPI_                       // Prevent inclusion of winsock.h in windows.h
 #ifdef _WINDLL
-#define MSITSCA_DLL                        // Gradimo knjižnico DLL
+#define MSITSCA_DLL                        // This is a DLL
+//#ifdef ASSERT_TO_DEBUG                     // Enable false asserts to provide opportunity to attach debuger
 #endif
 #define _ATL_APARTMENT_THREADED
 #define _ATL_NO_AUTOMATIC_NAMESPACE

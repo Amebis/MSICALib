@@ -50,6 +50,5 @@
     <None Include="res\en_GB.po">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Naredi.txt" />
   </ItemGroup>
 </Project>

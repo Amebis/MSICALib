@@ -45,6 +45,10 @@
 #define ERROR_INSTALL_SCHEDULED_TASKS_PROPERTY_SET     2553L
 #define ERROR_INSTALL_DELETE_FAILED                    2554L
 #define ERROR_INSTALL_MOVE_FAILED                      2555L
+#define ERROR_INSTALL_TASK_CREATE_FAILED               2556L
+#define ERROR_INSTALL_TASK_DELETE_FAILED               2557L
+#define ERROR_INSTALL_TASK_ENABLE_FAILED               2558L
+#define ERROR_INSTALL_TASK_COPY_FAILED                 2559L
 
 
 ////////////////////////////////////////////////////////////////////

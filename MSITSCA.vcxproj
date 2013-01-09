@@ -273,7 +273,6 @@
     <ResourceLocalizator Include="res\MSITSCA.rcx" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Naredi.txt" />
     <None Include="res\en_GB.po" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
