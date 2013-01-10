@@ -304,8 +304,12 @@ UINT MSITSCA_API InstallScheduledTasks(MSIHANDLE hInstall)
                 verify(SUCCEEDED(session.m_olRollback.Execute(&session)));
             }
         } else {
-            // Sequence loading failed. Don't panic => do nothing.
-            uiResult = ERROR_SUCCESS;
+            // Sequence loading failed. Probably, LOCAL SYSTEM doesn't have read access to user's temp directory.
+            uiResult = ERROR_INSTALL_SCHEDULED_TASKS_SCRIPT_READ;
+            verify(::MsiRecordSetInteger(hRecordProg, 1, uiResult         ) == ERROR_SUCCESS);
+            verify(::MsiRecordSetString (hRecordProg, 2, sSequenceFilename) == ERROR_SUCCESS);
+            verify(::MsiRecordSetInteger(hRecordProg, 3, hr               ) == ERROR_SUCCESS);
+            ::MsiProcessMessage(hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         }
 
         lstOperations.Free();

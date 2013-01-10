@@ -142,6 +142,7 @@ i2	L0
 2557	Pri brisanju razporejenega opravila »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
 2558	Pri o(ne)mogoèanju razporejenega opravila »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
 2559	Pri kopiranju razporejenega opravila »[2]« v »[3]« je prišlo do napake [4]. Obrnite se na svojo tehnièno službo.
+2560	Pri branju iz datoteke seznama razporejenih opravil »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
 <<NOKEEP
 
 "De.$(CFG).$(PLAT).Error-2.idt" : "Sl.$(CFG).$(PLAT).Error-2.idtx" "..\res\de_DE.po"

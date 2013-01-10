@@ -39,9 +39,14 @@
 #define MSITSCA_API
 #endif
 
+////////////////////////////////////////////////////////////////////
+// Error codes (last unused 2561L)
+////////////////////////////////////////////////////////////////////
+
 #define ERROR_INSTALL_SCHEDULED_TASKS_DATABASE_OPEN    2550L
 #define ERROR_INSTALL_SCHEDULED_TASKS_OPLIST_CREATE    2551L
 #define ERROR_INSTALL_SCHEDULED_TASKS_SCRIPT_WRITE     2552L
+#define ERROR_INSTALL_SCHEDULED_TASKS_SCRIPT_READ      2560L
 #define ERROR_INSTALL_SCHEDULED_TASKS_PROPERTY_SET     2553L
 #define ERROR_INSTALL_DELETE_FAILED                    2554L
 #define ERROR_INSTALL_MOVE_FAILED                      2555L
