@@ -59,7 +59,7 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
     // Check and add the rollback enabled state.
     uiResult = ::MsiGetProperty(hInstall, _T("RollbackDisabled"), sValue);
     bRollbackEnabled = uiResult == ERROR_SUCCESS ?
-        _wtoi(sValue) || !sValue.IsEmpty() && towlower(sValue.GetAt(0)) == L'y' ? FALSE : TRUE :
+        _ttoi(sValue) || !sValue.IsEmpty() && _totlower(sValue.GetAt(0)) == _T('y') ? FALSE : TRUE :
         TRUE;
     olExecute.AddTail(new CMSITSCAOpRollbackEnable(bRollbackEnabled));
 
@@ -269,8 +269,20 @@ UINT MSITSCA_API InstallScheduledTasks(MSIHANDLE hInstall)
                     sSequenceFilenameCM.Format(_T("%.*ls-cm%ls"), pszExtension - (LPCTSTR)sSequenceFilename, (LPCTSTR)sSequenceFilename, pszExtension);
 
                     // After end of commit, delete rollback file too. After end of rollback, delete commit file too.
-                    session.m_olCommit.AddTail(new CMSITSCAOpFileDelete(sSequenceFilenameRB));
-                    session.m_olRollback.AddTail(new CMSITSCAOpFileDelete(sSequenceFilenameCM));
+                    session.m_olCommit.AddTail(new CMSITSCAOpFileDelete(
+#ifdef _UNICODE
+                        sSequenceFilenameRB
+#else
+                        CStringW(sSequenceFilenameRB)
+#endif
+                        ));
+                    session.m_olRollback.AddTail(new CMSITSCAOpFileDelete(
+#ifdef _UNICODE
+                        sSequenceFilenameCM
+#else
+                        CStringW(sSequenceFilenameCM)
+#endif
+                        ));
 
                     // Save commit file first.
                     hr = session.m_olCommit.SaveToFile(sSequenceFilenameCM);

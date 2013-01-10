@@ -802,7 +802,7 @@ HRESULT CMSITSCAOpTaskDelete::Execute(CMSITSCASession *pSession)
             TASK_LOGON_TYPE logonType;
             CComBSTR sSSDL;
             CComVariant vSSDL;
-            CString sDisplayNameOrig;
+            CStringW sDisplayNameOrig;
             UINT uiCount = 0;
 
             // Get the source task.
@@ -887,7 +887,7 @@ HRESULT CMSITSCAOpTaskDelete::Execute(CMSITSCASession *pSession)
         if (pSession->m_bRollbackEnabled) {
             CComPtr<ITask> pTask;
             DWORD dwFlags;
-            CString sDisplayNameOrig;
+            CStringW sDisplayNameOrig;
             UINT uiCount = 0;
 
             // Load the task.
