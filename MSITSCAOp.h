@@ -533,7 +533,7 @@ template <class T, int ID> inline static HRESULT CMSITSCAOpList::Save(CAtlFile &
     assert(p);
     HRESULT hr;
     const T *pp = dynamic_cast<const T*>(p);
-    assert(pp);
+    if (!pp) return E_UNEXPECTED;
 
     hr = f << (int)ID;
     if (FAILED(hr)) return hr;
