@@ -208,4 +208,4 @@ TaskTrigger	Trigger
 # Izdelava modula MSM
 ######################################################################
 
-!INCLUDE "..\..\AOsn\AOsnMSI\MSM.mak"
+!INCLUDE "..\..\AOsn\msm\MSM.mak"
