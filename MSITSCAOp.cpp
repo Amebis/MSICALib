@@ -589,6 +589,7 @@ UINT CMSITSCAOpTaskCreate::SetFromRecord(MSIHANDLE hInstall, MSIHANDLE hRecord)
 {
     UINT uiResult;
     int iValue;
+    CStringW sFolder;
 
     uiResult = ::MsiRecordFormatStringW(hInstall, hRecord,  3, m_sApplicationName);
     if (uiResult != ERROR_SUCCESS) return uiResult;
@@ -596,7 +597,9 @@ UINT CMSITSCAOpTaskCreate::SetFromRecord(MSIHANDLE hInstall, MSIHANDLE hRecord)
     uiResult = ::MsiRecordFormatStringW(hInstall, hRecord,  4, m_sParameters);
     if (uiResult != ERROR_SUCCESS) return uiResult;
 
-    uiResult = ::MsiRecordFormatStringW(hInstall, hRecord,  5, m_sWorkingDirectory);
+    uiResult = ::MsiRecordGetStringW(hRecord, 5, sFolder);
+    if (uiResult != ERROR_SUCCESS) return uiResult;
+    uiResult = ::MsiGetTargetPathW(hInstall, sFolder, m_sWorkingDirectory);
     if (uiResult != ERROR_SUCCESS) return uiResult;
     if (!m_sWorkingDirectory.IsEmpty() && m_sWorkingDirectory.GetAt(m_sWorkingDirectory.GetLength() - 1) == L'\\') {
         // Trim trailing backslash.

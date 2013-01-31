@@ -25,7 +25,7 @@ ScheduledTask	Task	N					Identifier		Primary key, non-localized token.
 ScheduledTask	DisplayName	N					Formatted		Task name.
 ScheduledTask	Application	N					Formatted		Task application name.
 ScheduledTask	Parameters	Y					Formatted		Task command line parameters.
-ScheduledTask	WorkingDir	N					Formatted		Task working directory. If the working directory is set to "", when the application is run, the current directory will be the directory in which the task scheduler service executable, Mstask.exe, resides.
+ScheduledTask	Directory_	N			Directory	1	Identifier		Task working directory.
 ScheduledTask	Flags	N					DoubleInteger		Task's flags to pass in IScheduledWorkItem::SetFlags() call.
 ScheduledTask	Priority	N					DoubleInteger	32;64;128;256;16384,32768	Task's priority to pass in ITask::SetPriority() call.
 ScheduledTask	User	Y					Formatted		Account name to run task as. Use empty string for system account.
@@ -184,8 +184,8 @@ Vse :: "$(JEZIK).$(CFG).$(PLAT).ScheduledTask-1.idt"
 "$(JEZIK).$(CFG).$(PLAT).ScheduledTask-1.idt" : "Makefile" "..\..\include\MSINast.mak"
 	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
-Task	DisplayName	Application	Parameters	WorkingDir	Flags	Priority	User	Password	Author	Description	IdleMin	IdleDeadline	MaxRuntime	Condition	Component_
-s$(MSI_TIP_ID)	s255	s255	S255	s255	i4	i4	S255	S255	S255	S255	I2	I2	i4	S255	s$(MSI_TIP_ID)
+Task	DisplayName	Application	Parameters	Directory_	Flags	Priority	User	Password	Author	Description	IdleMin	IdleDeadline	MaxRuntime	Condition	Component_
+s$(MSI_TIP_ID)	s255	s255	S255	s$(MSI_TIP_ID)	i4	i4	S255	S255	S255	S255	I2	I2	i4	S255	s$(MSI_TIP_ID)
 ScheduledTask	Task
 <<NOKEEP
 

@@ -72,7 +72,7 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
             PMSIHANDLE hViewST;
 
             // Prepare a query to get a list/view of tasks.
-            uiResult = ::MsiDatabaseOpenView(hDatabase, _T("SELECT Task,DisplayName,Application,Parameters,WorkingDir,Flags,Priority,User,Password,Author,Description,IdleMin,IdleDeadline,MaxRuntime,Condition,Component_ FROM ScheduledTask"), &hViewST);
+            uiResult = ::MsiDatabaseOpenView(hDatabase, _T("SELECT Task,DisplayName,Application,Parameters,Directory_,Flags,Priority,User,Password,Author,Description,IdleMin,IdleDeadline,MaxRuntime,Condition,Component_ FROM ScheduledTask"), &hViewST);
             if (uiResult == ERROR_SUCCESS) {
                 // Execute query!
                 uiResult = ::MsiViewExecute(hViewST, NULL);

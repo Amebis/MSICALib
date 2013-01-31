@@ -6,14 +6,14 @@
 // Constants
 ////////////////////////////////////////////////////////////////////////////
 
-#define MSITSCA_VERSION       0x01000000
+#define MSITSCA_VERSION       0x01000100
 
 #define MSITSCA_VERSION_MAJ   1
 #define MSITSCA_VERSION_MIN   0
-#define MSITSCA_VERSION_REV   0
+#define MSITSCA_VERSION_REV   1
 
-#define MSITSCA_VERSION_STR   "1.0"
-#define MSITSCA_VERSION_INST  "1.0.0.0"
+#define MSITSCA_VERSION_STR   "1.0.1"
+#define MSITSCA_VERSION_INST  "1.0.1.0"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -291,6 +291,56 @@ inline UINT MsiRecordFormatStringW(MSIHANDLE hInstall, MSIHANDLE hRecord, unsign
 #else
 #define MsiRecordFormatString  MsiRecordFormatStringA
 #endif // !UNICODE
+
+
+inline UINT MsiGetTargetPathA(MSIHANDLE hInstall, LPCSTR szFolder, CStringA &sValue)
+{
+    DWORD dwSize = 0;
+    UINT uiResult;
+
+    // Query the final string length first.
+    uiResult = ::MsiGetTargetPathA(hInstall, szFolder, "", &dwSize);
+    if (uiResult == ERROR_MORE_DATA) {
+        // Prepare the buffer to format the string data into and read it.
+        LPSTR szBuffer = sValue.GetBuffer(dwSize++);
+        if (!szBuffer) return ERROR_OUTOFMEMORY;
+        uiResult = ::MsiGetTargetPathA(hInstall, szFolder, szBuffer, &dwSize);
+        sValue.ReleaseBuffer(uiResult == ERROR_SUCCESS ? dwSize : 0);
+        return uiResult;
+    } else if (uiResult == ERROR_SUCCESS) {
+        // The result is empty.
+        sValue.Empty();
+        return ERROR_SUCCESS;
+    } else {
+        // Return error code.
+        return uiResult;
+    }
+}
+
+
+inline UINT MsiGetTargetPathW(MSIHANDLE hInstall, LPCWSTR szFolder, CStringW &sValue)
+{
+    DWORD dwSize = 0;
+    UINT uiResult;
+
+    // Query the final string length first.
+    uiResult = ::MsiGetTargetPathW(hInstall, szFolder, L"", &dwSize);
+    if (uiResult == ERROR_MORE_DATA) {
+        // Prepare the buffer to format the string data into and read it.
+        LPWSTR szBuffer = sValue.GetBuffer(dwSize++);
+        if (!szBuffer) return ERROR_OUTOFMEMORY;
+        uiResult = ::MsiGetTargetPathW(hInstall, szFolder, szBuffer, &dwSize);
+        sValue.ReleaseBuffer(uiResult == ERROR_SUCCESS ? dwSize : 0);
+        return uiResult;
+    } else if (uiResult == ERROR_SUCCESS) {
+        // The result is empty.
+        sValue.Empty();
+        return ERROR_SUCCESS;
+    } else {
+        // Return error code.
+        return uiResult;
+    }
+}
 
 
 ////////////////////////////////////////////////////////////////////
