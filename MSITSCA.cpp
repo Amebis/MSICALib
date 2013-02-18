@@ -22,6 +22,8 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpRes
 
     switch (dwReason) {
         case DLL_PROCESS_ATTACH:
+            //assert(0); // Attach debugger here, or press "Ignore"!
+
             // Randomize!
             srand((unsigned)time(NULL));
 
@@ -52,9 +54,6 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
     CString sValue;
 
     assert(hRecordProg);
-#ifdef ASSERT_TO_DEBUG
-    assert(0); // Attach debugger here, or press "Ignore"!
-#endif
 
     // Check and add the rollback enabled state.
     uiResult = ::MsiGetProperty(hInstall, _T("RollbackDisabled"), sValue);
@@ -237,10 +236,6 @@ UINT MSITSCA_API InstallScheduledTasks(MSIHANDLE hInstall)
     HRESULT hr;
     BOOL bIsCoInitialized = SUCCEEDED(::CoInitialize(NULL));
     CString sSequenceFilename;
-
-#ifdef ASSERT_TO_DEBUG
-    assert(0); // Attach debugger here, or press "Ignore"!
-#endif
 
     uiResult = ::MsiGetProperty(hInstall, _T("CustomActionData"), sSequenceFilename);
     if (uiResult == ERROR_SUCCESS) {

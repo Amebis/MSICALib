@@ -19,7 +19,6 @@
 #define VC_EXTRALEAN                       // Exclude rarely-used stuff from Windows headers
 #define _WIN32_WINNT 0x0501                // Include Windows XP symbols
 #define _WINSOCKAPI_                       // Prevent inclusion of winsock.h in windows.h
-//#define ASSERT_TO_DEBUG                    // Enable false asserts to provide opportunity to attach debuger
 #ifdef _WINDLL
 #define MSITSCA_DLL                        // This is a DLL
 #endif
