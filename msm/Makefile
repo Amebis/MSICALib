@@ -185,7 +185,7 @@ Vse :: "$(JEZIK).$(CFG).$(PLAT).ScheduledTask-1.idt"
 	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
 Task	DisplayName	Application	Parameters	Directory_	Flags	Priority	User	Password	Author	Description	IdleMin	IdleDeadline	MaxRuntime	Condition	Component_
-s$(MSI_TIP_ID)	s255	s255	S255	s$(MSI_TIP_ID)	i4	i4	S255	S255	S255	S255	I2	I2	i4	S255	s$(MSI_TIP_ID)
+s$(MSI_TIP_ID)	l255	s255	S255	s$(MSI_TIP_ID)	i4	i4	S255	S255	L255	L0	I2	I2	i4	S255	s$(MSI_TIP_ID)
 ScheduledTask	Task
 <<NOKEEP
 
