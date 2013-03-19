@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MSITSCA\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-01-09 12:10+0100\n"
+"POT-Creation-Date: 2013-03-19 15:23+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Simon Rozman <simon.rozman@amebis.si>\n"
 "Language-Team: Amebis, d. o. o., Kamnik <simon.rozman@amebis.si>\n"
@@ -13,80 +13,81 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-KeywordsList: __\n"
 "X-Poedit-Basepath: .\n"
-"X-Generator: Poedit 1.5.4\n"
+"X-Generator: Poedit 1.5.5\n"
 "X-Poedit-SearchPath-0: .\n"
-"X-Poedit-SearchPath-1: ..\\MSI\n"
+"X-Poedit-SearchPath-1: ..\\msm\n"
 
 # Koda jezika in privzeta kodna stran ANSI za ta jezik (šesnajstiško)
 # Če ne prevajamo ločeno vsake lokalne različice jezika, uporabimo kodo privzetega podjezika.
 # Na primer: LANGUAGE_ENGLISH + SUBLANGUAGE_DEFAULT = 0x409, čeprav 0x409 predstavlja (tudi) ameriško angleščino (SUBLANGUAGE_ENGLISH_US = SUBLANGUAGE_DEFAULT), sami pa uporabljamo britansko.
-#: MSITSCA.rcx:46
+#: MSITSCA.rcx:43
 msgid "042404e2"
 msgstr "040904e4"
 
 # Koda jezika (šesnajstiško)
 # Če ne prevajamo ločeno vsake lokalne različice jezika, uporabimo kodo privzetega podjezika.
 # Na primer: LANGUAGE_ENGLISH + SUBLANGUAGE_DEFAULT = 0x409, čeprav 0x409 predstavlja (tudi) ameriško angleščino (SUBLANGUAGE_ENGLISH_US = SUBLANGUAGE_DEFAULT), sami pa uporabljamo britansko.
-#: MSITSCA.rcx:64
+#: MSITSCA.rcx:61
 msgid "0x424"
 msgstr "0x409"
 
 # Privzeta kodna stran ANSI za ta jezik (desetiško)
-#: MSITSCA.rcx:64 ..\MSI/Sl.DebugU.Win32.ActionText-2.idtx:3
-#: ..\MSI/Sl.DebugU.Win32.Error-2.idtx:3
-#: ..\MSI/Sl.DebugU.x64.ActionText-2.idtx:3
-#: ..\MSI/Sl.DebugU.x64.Error-2.idtx:3
-#: ..\MSI/Sl.ReleaseU.Win32.ActionText-2.idtx:3
-#: ..\MSI/Sl.ReleaseU.Win32.Error-2.idtx:3
-#: ..\MSI/Sl.ReleaseU.x64.ActionText-2.idtx:3
-#: ..\MSI/Sl.ReleaseU.x64.Error-2.idtx:3
+#: MSITSCA.rcx:61 ..\msm/Sl.DebugU.Win32.ActionText-2.idtx:3
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:3
+#: ..\msm/Sl.DebugU.x64.ActionText-2.idtx:3
+#: ..\msm/Sl.DebugU.x64.Error-2.idtx:3
 msgid "1250"
 msgstr "1252"
 
 # Ime konstante, s katero vklopimo vire v tem jeziku.
-#: MSITSCA.rcx:45 MSITSCA.rcx:63 MSITSCA.rcx:79
+#: MSITSCA.rcx:42 MSITSCA.rcx:60 MSITSCA.rcx:76
 msgid "AFX_TARG_SLV"
 msgstr "AFX_TARG_ENU"
 
-#: MSITSCA.rcx:48
+#: MSITSCA.rcx:45
 msgid "Amebis, d. o. o., Kamnik"
 msgstr "Amebis, d. o. o., Kamnik"
 
 # Konstanta s kodo jezika
-#: MSITSCA.rcx:81
+#: MSITSCA.rcx:78
 msgid "LANG_SLOVENIAN"
 msgstr "LANG_ENGLISH"
 
-#: MSITSCA.rcx:51 MSITSCA.rcx:53
+#: MSITSCA.rcx:48 MSITSCA.rcx:50
 msgid "MSITSCA"
 msgstr "MSITSCA"
 
-#: MSITSCA.rcx:49
+#: MSITSCA.rcx:46
 msgid "Podporna knjižnica za nameščanje načrtovanih opravil"
 msgstr "Scheduled Task Installation Support Library"
 
 # Konstanta s kodo lokalne različice jezika
-#: MSITSCA.rcx:81
+#: MSITSCA.rcx:78
 msgid "SUBLANG_DEFAULT"
 msgstr "SUBLANG_DEFAULT"
 
-#: MSITSCA.rcx:52
+#: MSITSCA.rcx:49
 msgid "Vse pravice pridržane © Amebis, d. o. o., Kamnik, 2012"
 msgstr "Copyright © Amebis, d. o. o., Kamnik, 2012"
 
 # !!! Lektorirati !!!
-#: ..\MSI/Sl.DebugU.Win32.Error-2.idtx:8 ..\MSI/Sl.DebugU.x64.Error-2.idtx:8
-#: ..\MSI/Sl.ReleaseU.Win32.Error-2.idtx:8
-#: ..\MSI/Sl.ReleaseU.x64.Error-2.idtx:8
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:14 ..\msm/Sl.DebugU.x64.Error-2.idtx:14
+msgid ""
+"Pri branju iz datoteke seznama razporejenih opravil »[2]« je prišlo do "
+"napake [3]. Obrnite se na svojo tehnično službo."
+msgstr ""
+"Error [3] reading from \"[2]\" scheduled task list file. Contact your "
+"support personnel."
+
+# !!! Lektorirati !!!
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:8 ..\msm/Sl.DebugU.x64.Error-2.idtx:8
 msgid ""
 "Pri brisanju datoteke »[2]« je prišlo do napake [3]. Obrnite se na svojo "
 "tehnično službo."
 msgstr "Error [3] deleting \"[2]\" file. Contact your support personnel."
 
 # !!! Lektorirati !!!
-#: ..\MSI/Sl.DebugU.Win32.Error-2.idtx:11 ..\MSI/Sl.DebugU.x64.Error-2.idtx:11
-#: ..\MSI/Sl.ReleaseU.Win32.Error-2.idtx:11
-#: ..\MSI/Sl.ReleaseU.x64.Error-2.idtx:11
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:11 ..\msm/Sl.DebugU.x64.Error-2.idtx:11
 msgid ""
 "Pri brisanju razporejenega opravila »[2]« je prišlo do napake [3]. Obrnite "
 "se na svojo tehnično službo."
@@ -94,9 +95,7 @@ msgstr ""
 "Error [3] deleting \"[2]\" scheduled task. Contact your support personnel."
 
 # !!! Lektorirati !!!
-#: ..\MSI/Sl.DebugU.Win32.Error-2.idtx:13 ..\MSI/Sl.DebugU.x64.Error-2.idtx:13
-#: ..\MSI/Sl.ReleaseU.Win32.Error-2.idtx:13
-#: ..\MSI/Sl.ReleaseU.x64.Error-2.idtx:13
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:13 ..\msm/Sl.DebugU.x64.Error-2.idtx:13
 msgid ""
 "Pri kopiranju razporejenega opravila »[2]« v »[3]« je prišlo do napake [4]. "
 "Obrnite se na svojo tehnično službo."
@@ -105,18 +104,14 @@ msgstr ""
 "personnel."
 
 # !!! Lektorirati !!!
-#: ..\MSI/Sl.DebugU.Win32.Error-2.idtx:7 ..\MSI/Sl.DebugU.x64.Error-2.idtx:7
-#: ..\MSI/Sl.ReleaseU.Win32.Error-2.idtx:7
-#: ..\MSI/Sl.ReleaseU.x64.Error-2.idtx:7
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:7 ..\msm/Sl.DebugU.x64.Error-2.idtx:7
 msgid ""
 "Pri nastavljanju parametra »[2]« je prišlo do napake [3]. Obrnite se na "
 "svojo tehnično službo."
 msgstr "Error [3] setting \"[2]\" parameter. Contact your support personnel."
 
 # !!! Lektorirati !!!
-#: ..\MSI/Sl.DebugU.Win32.Error-2.idtx:12 ..\MSI/Sl.DebugU.x64.Error-2.idtx:12
-#: ..\MSI/Sl.ReleaseU.Win32.Error-2.idtx:12
-#: ..\MSI/Sl.ReleaseU.x64.Error-2.idtx:12
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:12 ..\msm/Sl.DebugU.x64.Error-2.idtx:12
 msgid ""
 "Pri o(ne)mogočanju razporejenega opravila »[2]« je prišlo do napake [3]. "
 "Obrnite se na svojo tehnično službo."
@@ -125,18 +120,14 @@ msgstr ""
 "personnel."
 
 # !!! Lektorirati !!!
-#: ..\MSI/Sl.DebugU.Win32.Error-2.idtx:4 ..\MSI/Sl.DebugU.x64.Error-2.idtx:4
-#: ..\MSI/Sl.ReleaseU.Win32.Error-2.idtx:4
-#: ..\MSI/Sl.ReleaseU.x64.Error-2.idtx:4
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:4 ..\msm/Sl.DebugU.x64.Error-2.idtx:4
 msgid ""
 "Pri odpiranju namestitvenega paketa je prišlo do napake. Obrnite se na svojo "
 "tehnično službo."
 msgstr "Error opening installation package. Contact your support personnel."
 
 # !!! Lektorirati !!!
-#: ..\MSI/Sl.DebugU.Win32.Error-2.idtx:6 ..\MSI/Sl.DebugU.x64.Error-2.idtx:6
-#: ..\MSI/Sl.ReleaseU.Win32.Error-2.idtx:6
-#: ..\MSI/Sl.ReleaseU.x64.Error-2.idtx:6
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:6 ..\msm/Sl.DebugU.x64.Error-2.idtx:6
 msgid ""
 "Pri pisanju v datoteko seznama razporejenih opravil »[2]« je prišlo do "
 "napake [3]. Obrnite se na svojo tehnično službo."
@@ -145,9 +136,7 @@ msgstr ""
 "personnel."
 
 # !!! Lektorirati !!!
-#: ..\MSI/Sl.DebugU.Win32.Error-2.idtx:9 ..\MSI/Sl.DebugU.x64.Error-2.idtx:9
-#: ..\MSI/Sl.ReleaseU.Win32.Error-2.idtx:9
-#: ..\MSI/Sl.ReleaseU.x64.Error-2.idtx:9
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:9 ..\msm/Sl.DebugU.x64.Error-2.idtx:9
 msgid ""
 "Pri premikanju datoteke »[2]« v »[3]« je prišlo do napake [4]. Obrnite se na "
 "svojo tehnično službo."
@@ -155,9 +144,7 @@ msgstr ""
 "Error [4] moving \"[2]\" file to \"[3]\". Contact your support personnel."
 
 # !!! Lektorirati !!!
-#: ..\MSI/Sl.DebugU.Win32.Error-2.idtx:5 ..\MSI/Sl.DebugU.x64.Error-2.idtx:5
-#: ..\MSI/Sl.ReleaseU.Win32.Error-2.idtx:5
-#: ..\MSI/Sl.ReleaseU.x64.Error-2.idtx:5
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:5 ..\msm/Sl.DebugU.x64.Error-2.idtx:5
 msgid ""
 "Pri pripravi seznama razvrščenih opravil je prišlo do napake [2]. Obrnite se "
 "na svojo tehnično službo."
@@ -165,9 +152,7 @@ msgstr ""
 "Error [2] creating scheduled task list. Contact your support personnel."
 
 # !!! Lektorirati !!!
-#: ..\MSI/Sl.DebugU.Win32.Error-2.idtx:10 ..\MSI/Sl.DebugU.x64.Error-2.idtx:10
-#: ..\MSI/Sl.ReleaseU.Win32.Error-2.idtx:10
-#: ..\MSI/Sl.ReleaseU.x64.Error-2.idtx:10
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:10 ..\msm/Sl.DebugU.x64.Error-2.idtx:10
 msgid ""
 "Pri ustvarjanju razporejenega opravila »[2]« je prišlo do napake [3]. "
 "Obrnite se na svojo tehnično službo."
@@ -175,17 +160,13 @@ msgstr ""
 "Error [3] creating \"[2]\" scheduled task. Contact your support personnel."
 
 # !!! Lektorirati !!!
-#: ..\MSI/Sl.DebugU.Win32.ActionText-2.idtx:4
-#: ..\MSI/Sl.DebugU.x64.ActionText-2.idtx:4
-#: ..\MSI/Sl.ReleaseU.Win32.ActionText-2.idtx:4
-#: ..\MSI/Sl.ReleaseU.x64.ActionText-2.idtx:4
+#: ..\msm/Sl.DebugU.Win32.ActionText-2.idtx:4
+#: ..\msm/Sl.DebugU.x64.ActionText-2.idtx:4
 msgid "Razporejeno opravilo: [1]"
 msgstr "Scheduled task: [1]"
 
 # !!! Lektorirati !!!
-#: ..\MSI/Sl.DebugU.Win32.ActionText-2.idtx:4
-#: ..\MSI/Sl.DebugU.x64.ActionText-2.idtx:4
-#: ..\MSI/Sl.ReleaseU.Win32.ActionText-2.idtx:4
-#: ..\MSI/Sl.ReleaseU.x64.ActionText-2.idtx:4
+#: ..\msm/Sl.DebugU.Win32.ActionText-2.idtx:4
+#: ..\msm/Sl.DebugU.x64.ActionText-2.idtx:4
 msgid "Registracija razporejenih opravil"
 msgstr "Registering scheduled tasks"
