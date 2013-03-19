@@ -76,15 +76,16 @@ msgid ""
 "Pri branju iz datoteke seznama razporejenih opravil »[2]« je prišlo do "
 "napake [3]. Obrnite se na svojo tehnično službo."
 msgstr ""
-"Error [3] reading from \"[2]\" scheduled task list file. Contact your "
-"support personnel."
+"Error [3] reading from \"[2]\" scheduled task list file. Please, contact "
+"your support personnel."
 
 # !!! Lektorirati !!!
 #: ..\msm/Sl.DebugU.Win32.Error-2.idtx:8 ..\msm/Sl.DebugU.x64.Error-2.idtx:8
 msgid ""
 "Pri brisanju datoteke »[2]« je prišlo do napake [3]. Obrnite se na svojo "
 "tehnično službo."
-msgstr "Error [3] deleting \"[2]\" file. Contact your support personnel."
+msgstr ""
+"Error [3] deleting \"[2]\" file. Please, contact your support personnel."
 
 # !!! Lektorirati !!!
 #: ..\msm/Sl.DebugU.Win32.Error-2.idtx:11 ..\msm/Sl.DebugU.x64.Error-2.idtx:11
@@ -92,7 +93,8 @@ msgid ""
 "Pri brisanju razporejenega opravila »[2]« je prišlo do napake [3]. Obrnite "
 "se na svojo tehnično službo."
 msgstr ""
-"Error [3] deleting \"[2]\" scheduled task. Contact your support personnel."
+"Error [3] deleting \"[2]\" scheduled task. Please, contact your support "
+"personnel."
 
 # !!! Lektorirati !!!
 #: ..\msm/Sl.DebugU.Win32.Error-2.idtx:13 ..\msm/Sl.DebugU.x64.Error-2.idtx:13
@@ -100,15 +102,16 @@ msgid ""
 "Pri kopiranju razporejenega opravila »[2]« v »[3]« je prišlo do napake [4]. "
 "Obrnite se na svojo tehnično službo."
 msgstr ""
-"Error [4] copying \"[2]\" scheduled task to \"[3]\". Contact your support "
-"personnel."
+"Error [4] copying \"[2]\" scheduled task to \"[3]\". Please, contact your "
+"support personnel."
 
 # !!! Lektorirati !!!
 #: ..\msm/Sl.DebugU.Win32.Error-2.idtx:7 ..\msm/Sl.DebugU.x64.Error-2.idtx:7
 msgid ""
 "Pri nastavljanju parametra »[2]« je prišlo do napake [3]. Obrnite se na "
 "svojo tehnično službo."
-msgstr "Error [3] setting \"[2]\" parameter. Contact your support personnel."
+msgstr ""
+"Error [3] setting \"[2]\" parameter. Please, contact your support personnel."
 
 # !!! Lektorirati !!!
 #: ..\msm/Sl.DebugU.Win32.Error-2.idtx:12 ..\msm/Sl.DebugU.x64.Error-2.idtx:12
@@ -116,15 +119,16 @@ msgid ""
 "Pri o(ne)mogočanju razporejenega opravila »[2]« je prišlo do napake [3]. "
 "Obrnite se na svojo tehnično službo."
 msgstr ""
-"Error [3] enabling/disabling \"[2]\" scheduled task. Contact your support "
-"personnel."
+"Error [3] enabling/disabling \"[2]\" scheduled task. Please, contact your "
+"support personnel."
 
 # !!! Lektorirati !!!
 #: ..\msm/Sl.DebugU.Win32.Error-2.idtx:4 ..\msm/Sl.DebugU.x64.Error-2.idtx:4
 msgid ""
 "Pri odpiranju namestitvenega paketa je prišlo do napake. Obrnite se na svojo "
 "tehnično službo."
-msgstr "Error opening installation package. Contact your support personnel."
+msgstr ""
+"Error opening installation package. Please, contact your support personnel."
 
 # !!! Lektorirati !!!
 #: ..\msm/Sl.DebugU.Win32.Error-2.idtx:6 ..\msm/Sl.DebugU.x64.Error-2.idtx:6
@@ -132,8 +136,8 @@ msgid ""
 "Pri pisanju v datoteko seznama razporejenih opravil »[2]« je prišlo do "
 "napake [3]. Obrnite se na svojo tehnično službo."
 msgstr ""
-"Error [3] writing to \"[2]\" scheduled task list file. Contact your support "
-"personnel."
+"Error [3] writing to \"[2]\" scheduled task list file. Please, contact your "
+"support personnel."
 
 # !!! Lektorirati !!!
 #: ..\msm/Sl.DebugU.Win32.Error-2.idtx:9 ..\msm/Sl.DebugU.x64.Error-2.idtx:9
@@ -141,7 +145,8 @@ msgid ""
 "Pri premikanju datoteke »[2]« v »[3]« je prišlo do napake [4]. Obrnite se na "
 "svojo tehnično službo."
 msgstr ""
-"Error [4] moving \"[2]\" file to \"[3]\". Contact your support personnel."
+"Error [4] moving \"[2]\" file to \"[3]\". Please, contact your support "
+"personnel."
 
 # !!! Lektorirati !!!
 #: ..\msm/Sl.DebugU.Win32.Error-2.idtx:5 ..\msm/Sl.DebugU.x64.Error-2.idtx:5
@@ -149,7 +154,8 @@ msgid ""
 "Pri pripravi seznama razvrščenih opravil je prišlo do napake [2]. Obrnite se "
 "na svojo tehnično službo."
 msgstr ""
-"Error [2] creating scheduled task list. Contact your support personnel."
+"Error [2] creating scheduled task list. Please, contact your support "
+"personnel."
 
 # !!! Lektorirati !!!
 #: ..\msm/Sl.DebugU.Win32.Error-2.idtx:10 ..\msm/Sl.DebugU.x64.Error-2.idtx:10
@@ -157,7 +163,8 @@ msgid ""
 "Pri ustvarjanju razporejenega opravila »[2]« je prišlo do napake [3]. "
 "Obrnite se na svojo tehnično službo."
 msgstr ""
-"Error [3] creating \"[2]\" scheduled task. Contact your support personnel."
+"Error [3] creating \"[2]\" scheduled task. Please, contact your support "
+"personnel."
 
 # !!! Lektorirati !!!
 #: ..\msm/Sl.DebugU.Win32.ActionText-2.idtx:4
