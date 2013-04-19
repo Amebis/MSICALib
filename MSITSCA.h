@@ -6,14 +6,14 @@
 // Constants
 ////////////////////////////////////////////////////////////////////////////
 
-#define MSITSCA_VERSION       0x01000100
+#define MSITSCA_VERSION       0x01010000
 
 #define MSITSCA_VERSION_MAJ   1
-#define MSITSCA_VERSION_MIN   0
-#define MSITSCA_VERSION_REV   1
+#define MSITSCA_VERSION_MIN   1
+#define MSITSCA_VERSION_REV   0
 
-#define MSITSCA_VERSION_STR   "1.0.1"
-#define MSITSCA_VERSION_INST  "1.0.1.0"
+#define MSITSCA_VERSION_STR   "1.1"
+#define MSITSCA_VERSION_INST  "1.1.0.0"
 
 
 #if !defined(RC_INVOKED) && !defined(MIDL_PASS)
