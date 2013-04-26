@@ -136,12 +136,6 @@ i2	L0
 2551	Pri pripravi seznama razvršèenih opravil je prišlo do napake [2]. Obrnite se na svojo tehnièno službo.
 2552	Pri pisanju v datoteko seznama razporejenih opravil »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
 2553	Pri nastavljanju parametra »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
-2554	Pri brisanju datoteke »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
-2555	Pri premikanju datoteke »[2]« v »[3]« je prišlo do napake [4]. Obrnite se na svojo tehnièno službo.
-2556	Pri ustvarjanju razporejenega opravila »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
-2557	Pri brisanju razporejenega opravila »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
-2558	Pri o(ne)mogoèanju razporejenega opravila »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
-2559	Pri kopiranju razporejenega opravila »[2]« v »[3]« je prišlo do napake [4]. Obrnite se na svojo tehnièno službo.
 2560	Pri branju iz datoteke seznama razporejenih opravil »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
 <<NOKEEP
 

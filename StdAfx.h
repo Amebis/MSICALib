@@ -23,27 +23,20 @@
 #define MSITSCA_DLL                        // This is a DLL
 #endif
 #define _ATL_APARTMENT_THREADED
-#define _ATL_NO_AUTOMATIC_NAMESPACE
-#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS // Some CString constructors will be explicit
 
 #include <atlbase.h>
 #include <atlfile.h>
 #include <atlstr.h>
 
-using namespace ATL;
-
 #include "BuildNum.h"
 
 #include "MSITSCA.h"
-#include "MSITSCAOp.h"
+
+#include "AMSICA.h"
 
 #include <assert.h>
 #include <corerror.h>
-#include <msi.h>
-#include <msiquery.h>
-#include <mstask.h>
 #include <stdlib.h>
-#include <taskschd.h>
 #include <time.h>
 
 #ifdef NDEBUG

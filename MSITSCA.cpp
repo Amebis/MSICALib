@@ -46,12 +46,12 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
     UINT uiResult;
     HRESULT hr;
     BOOL bIsCoInitialized = SUCCEEDED(::CoInitialize(NULL));
-    CMSITSCAOpList olExecute;
+    AMSICA::COpList olExecute;
     BOOL bRollbackEnabled;
     PMSIHANDLE
         hDatabase,
         hRecordProg = ::MsiCreateRecord(3);
-    CString sValue;
+    ATL::CAtlString sValue;
 
     assert(hRecordProg);
 
@@ -60,7 +60,7 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
     bRollbackEnabled = uiResult == ERROR_SUCCESS ?
         _ttoi(sValue) || !sValue.IsEmpty() && _totlower(sValue.GetAt(0)) == _T('y') ? FALSE : TRUE :
         TRUE;
-    olExecute.AddTail(new CMSITSCAOpRollbackEnable(bRollbackEnabled));
+    olExecute.AddTail(new AMSICA::COpRollbackEnable(bRollbackEnabled));
 
     // Open MSI database.
     hDatabase = ::MsiGetActiveDatabase(hInstall);
@@ -76,8 +76,8 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
                 // Execute query!
                 uiResult = ::MsiViewExecute(hViewST, NULL);
                 if (uiResult == ERROR_SUCCESS) {
-                    //CString sComponent;
-                    CStringW sDisplayName;
+                    //ATL::CAtlString sComponent;
+                    ATL::CAtlStringW sDisplayName;
 
                     for (;;) {
                         PMSIHANDLE hRecord;
@@ -116,7 +116,7 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
                         if (iAction >= INSTALLSTATE_LOCAL) {
                             // Component is or should be installed. Create the task.
                             PMSIHANDLE hViewTT;
-                            CMSITSCAOpTaskCreate *opCreateTask = new CMSITSCAOpTaskCreate(sDisplayName, MSITSCA_TASK_TICK_SIZE);
+                            AMSICA::COpTaskCreate *opCreateTask = new AMSICA::COpTaskCreate(sDisplayName, MSITSCA_TASK_TICK_SIZE);
                             assert(opCreateTask);
 
                             // Populate the operation with task's data.
@@ -140,7 +140,7 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
                             olExecute.AddTail(opCreateTask);
                         } else if (iAction >= INSTALLSTATE_REMOVED) {
                             // Component is installed, but should be degraded to advertised/removed. Delete the task.
-                            olExecute.AddTail(new CMSITSCAOpTaskDelete(sDisplayName, MSITSCA_TASK_TICK_SIZE));
+                            olExecute.AddTail(new AMSICA::COpTaskDelete(sDisplayName, MSITSCA_TASK_TICK_SIZE));
                         }
 
                         // The amount of tick space to add for each task to progress indicator.
@@ -151,8 +151,8 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
                     verify(::MsiViewClose(hViewST) == ERROR_SUCCESS);
 
                     if (SUCCEEDED(uiResult)) {
-                        CString sSequenceFilename;
-                        CAtlFile fSequence;
+                        ATL::CAtlString sSequenceFilename;
+                        ATL::CAtlFile fSequence;
 
                         // Prepare our own sequence script file.
                         // The InstallScheduledTasks is a deferred custom action, thus all this information will be unavailable to it.
@@ -171,7 +171,7 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
                             uiResult = ::MsiSetProperty(hInstall, _T("InstallScheduledTasks"),  sSequenceFilename);
                             if (uiResult == ERROR_SUCCESS) {
                                 LPCTSTR pszExtension = ::PathFindExtension(sSequenceFilename);
-                                CString sSequenceFilename2;
+                                ATL::CAtlString sSequenceFilename2;
 
                                 sSequenceFilename2.Format(_T("%.*ls-rb%ls"), pszExtension - (LPCTSTR)sSequenceFilename, (LPCTSTR)sSequenceFilename, pszExtension);
                                 uiResult = ::MsiSetProperty(hInstall, _T("RollbackScheduledTasks"), sSequenceFilename2);
@@ -235,16 +235,16 @@ UINT MSITSCA_API InstallScheduledTasks(MSIHANDLE hInstall)
     UINT uiResult;
     HRESULT hr;
     BOOL bIsCoInitialized = SUCCEEDED(::CoInitialize(NULL));
-    CString sSequenceFilename;
+    ATL::CAtlString sSequenceFilename;
 
     uiResult = ::MsiGetProperty(hInstall, _T("CustomActionData"), sSequenceFilename);
     if (uiResult == ERROR_SUCCESS) {
-        CMSITSCAOpList lstOperations;
+        AMSICA::COpList lstOperations;
 
         // Load operation sequence.
         hr = lstOperations.LoadFromFile(sSequenceFilename);
         if (SUCCEEDED(hr)) {
-            CMSITSCASession session;
+            AMSICA::CSession session;
             BOOL bIsCleanup = ::MsiGetMode(hInstall, MSIRUNMODE_COMMIT) || ::MsiGetMode(hInstall, MSIRUNMODE_ROLLBACK);
 
             session.m_hInstall = hInstall;
@@ -258,24 +258,24 @@ UINT MSITSCA_API InstallScheduledTasks(MSIHANDLE hInstall)
                 if (!bIsCleanup && session.m_bRollbackEnabled) {
                     // Save cleanup scripts.
                     LPCTSTR pszExtension = ::PathFindExtension(sSequenceFilename);
-                    CString sSequenceFilenameCM, sSequenceFilenameRB;
+                    ATL::CAtlString sSequenceFilenameCM, sSequenceFilenameRB;
 
                     sSequenceFilenameRB.Format(_T("%.*ls-rb%ls"), pszExtension - (LPCTSTR)sSequenceFilename, (LPCTSTR)sSequenceFilename, pszExtension);
                     sSequenceFilenameCM.Format(_T("%.*ls-cm%ls"), pszExtension - (LPCTSTR)sSequenceFilename, (LPCTSTR)sSequenceFilename, pszExtension);
 
                     // After end of commit, delete rollback file too. After end of rollback, delete commit file too.
-                    session.m_olCommit.AddTail(new CMSITSCAOpFileDelete(
+                    session.m_olCommit.AddTail(new AMSICA::COpFileDelete(
 #ifdef _UNICODE
                         sSequenceFilenameRB
 #else
-                        CStringW(sSequenceFilenameRB)
+                        ATL::CAtlStringW(sSequenceFilenameRB)
 #endif
                         ));
-                    session.m_olRollback.AddTail(new CMSITSCAOpFileDelete(
+                    session.m_olRollback.AddTail(new AMSICA::COpFileDelete(
 #ifdef _UNICODE
                         sSequenceFilenameCM
 #else
-                        CStringW(sSequenceFilenameCM)
+                        ATL::CAtlStringW(sSequenceFilenameCM)
 #endif
                         ));
 
