@@ -132,11 +132,7 @@ Vse :: "$(JEZIK).$(CFG).$(PLAT).Error-2.idt"
 Error	Message
 i2	L0
 1250	Error	Error
-2550	Pri odpiranju namestitvenega paketa je prišlo do napake. Obrnite se na svojo tehnièno službo.
 2551	Pri pripravi seznama razvršèenih opravil je prišlo do napake [2]. Obrnite se na svojo tehnièno službo.
-2552	Pri pisanju v datoteko seznama razporejenih opravil »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
-2553	Pri nastavljanju parametra »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
-2560	Pri branju iz datoteke seznama razporejenih opravil »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
 <<NOKEEP
 
 "De.$(CFG).$(PLAT).Error-2.idt" : "Sl.$(CFG).$(PLAT).Error-2.idtx" "..\res\de_DE.po"

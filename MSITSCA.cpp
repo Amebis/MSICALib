@@ -1,8 +1,5 @@
 #include "StdAfx.h"
 
-#pragma comment(lib, "msi.lib")
-#pragma comment(lib, "mstask.lib")
-
 
 ////////////////////////////////////////////////////////////////////////////
 // Local constants
@@ -179,26 +176,26 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
                                     sSequenceFilename2.Format(_T("%.*ls-cm%ls"), pszExtension - (LPCTSTR)sSequenceFilename, (LPCTSTR)sSequenceFilename, pszExtension);
                                     uiResult = ::MsiSetProperty(hInstall, _T("CommitScheduledTasks"),   sSequenceFilename2);
                                     if (uiResult != ERROR_SUCCESS) {
-                                        verify(::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_SCHEDULED_TASKS_PROPERTY_SET) == ERROR_SUCCESS);
-                                        verify(::MsiRecordSetString (hRecordProg, 2, _T("CommitScheduledTasks")                ) == ERROR_SUCCESS);
-                                        verify(::MsiRecordSetInteger(hRecordProg, 3, uiResult                                  ) == ERROR_SUCCESS);
+                                        verify(::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_PROPERTY_SET) == ERROR_SUCCESS);
+                                        verify(::MsiRecordSetString (hRecordProg, 2, _T("CommitScheduledTasks")) == ERROR_SUCCESS);
+                                        verify(::MsiRecordSetInteger(hRecordProg, 3, uiResult                  ) == ERROR_SUCCESS);
                                         ::MsiProcessMessage(hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
                                     }
                                 } else {
-                                    verify(::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_SCHEDULED_TASKS_PROPERTY_SET) == ERROR_SUCCESS);
-                                    verify(::MsiRecordSetString (hRecordProg, 2, _T("RollbackScheduledTasks")              ) == ERROR_SUCCESS);
-                                    verify(::MsiRecordSetInteger(hRecordProg, 3, uiResult                                  ) == ERROR_SUCCESS);
+                                    verify(::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_PROPERTY_SET  ) == ERROR_SUCCESS);
+                                    verify(::MsiRecordSetString (hRecordProg, 2, _T("RollbackScheduledTasks")) == ERROR_SUCCESS);
+                                    verify(::MsiRecordSetInteger(hRecordProg, 3, uiResult                    ) == ERROR_SUCCESS);
                                     ::MsiProcessMessage(hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
                                 }
                             } else {
-                                verify(::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_SCHEDULED_TASKS_PROPERTY_SET) == ERROR_SUCCESS);
-                                verify(::MsiRecordSetString (hRecordProg, 2, _T("InstallScheduledTasks")               ) == ERROR_SUCCESS);
-                                verify(::MsiRecordSetInteger(hRecordProg, 3, uiResult                                  ) == ERROR_SUCCESS);
+                                verify(::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_PROPERTY_SET ) == ERROR_SUCCESS);
+                                verify(::MsiRecordSetString (hRecordProg, 2, _T("InstallScheduledTasks")) == ERROR_SUCCESS);
+                                verify(::MsiRecordSetInteger(hRecordProg, 3, uiResult                   ) == ERROR_SUCCESS);
                                 ::MsiProcessMessage(hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
                             }
                             if (uiResult != ERROR_SUCCESS) ::DeleteFile(sSequenceFilename);
                         } else {
-                            uiResult = ERROR_INSTALL_SCHEDULED_TASKS_SCRIPT_WRITE;
+                            uiResult = ERROR_INSTALL_SCRIPT_WRITE;
                             verify(::MsiRecordSetInteger(hRecordProg, 1, uiResult         ) == ERROR_SUCCESS);
                             verify(::MsiRecordSetString (hRecordProg, 2, sSequenceFilename) == ERROR_SUCCESS);
                             verify(::MsiRecordSetInteger(hRecordProg, 3, hr               ) == ERROR_SUCCESS);
@@ -219,7 +216,7 @@ UINT MSITSCA_API EvaluateScheduledTasks(MSIHANDLE hInstall)
             }
         }
     } else {
-        uiResult = ERROR_INSTALL_SCHEDULED_TASKS_DATABASE_OPEN;
+        uiResult = ERROR_INSTALL_DATABASE_OPEN;
         verify(::MsiRecordSetInteger(hRecordProg, 1, uiResult) == ERROR_SUCCESS);
         ::MsiProcessMessage(hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
     }
@@ -314,7 +311,7 @@ UINT MSITSCA_API InstallScheduledTasks(MSIHANDLE hInstall)
             // Sequence loading failed. Probably, LOCAL SYSTEM doesn't have read access to user's temp directory.
             PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
             assert(hRecordProg);
-            uiResult = ERROR_INSTALL_SCHEDULED_TASKS_SCRIPT_READ;
+            uiResult = ERROR_INSTALL_SCRIPT_READ;
             verify(::MsiRecordSetInteger(hRecordProg, 1, uiResult         ) == ERROR_SUCCESS);
             verify(::MsiRecordSetString (hRecordProg, 2, sSequenceFilename) == ERROR_SUCCESS);
             verify(::MsiRecordSetInteger(hRecordProg, 3, hr               ) == ERROR_SUCCESS);

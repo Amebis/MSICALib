@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MSITSCA\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-04-26 11:07+0100\n"
+"POT-Creation-Date: 2013-06-07 20:27+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Simon Rozman <simon.rozman@amebis.si>\n"
 "Language-Team: Amebis, d. o. o., Kamnik <simon.rozman@amebis.si>\n"
@@ -34,8 +34,6 @@ msgstr "0x409"
 # Privzeta kodna stran ANSI za ta jezik (desetiško)
 #: MSITSCA.rcx:61 ..\msm/Sl.DebugU.Win32.ActionText-2.idtx:3
 #: ..\msm/Sl.DebugU.Win32.Error-2.idtx:3
-#: ..\msm/Sl.DebugU.x64.ActionText-2.idtx:3
-#: ..\msm/Sl.DebugU.x64.Error-2.idtx:3
 msgid "1250"
 msgstr "1252"
 
@@ -70,37 +68,7 @@ msgstr "SUBLANG_DEFAULT"
 msgid "Vse pravice pridržane © Amebis, d. o. o., Kamnik, 2012"
 msgstr "Copyright © Amebis, d. o. o., Kamnik, 2012"
 
-#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:8 ..\msm/Sl.DebugU.x64.Error-2.idtx:8
-msgid ""
-"Pri branju iz datoteke seznama razporejenih opravil »[2]« je prišlo do "
-"napake [3]. Obrnite se na svojo tehnično službo."
-msgstr ""
-"Error [3] reading from \"[2]\" scheduled task list file. Please, contact "
-"your support personnel."
-
-#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:7 ..\msm/Sl.DebugU.x64.Error-2.idtx:7
-msgid ""
-"Pri nastavljanju parametra »[2]« je prišlo do napake [3]. Obrnite se na "
-"svojo tehnično službo."
-msgstr ""
-"Error [3] setting \"[2]\" parameter. Please, contact your support personnel."
-
-#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:4 ..\msm/Sl.DebugU.x64.Error-2.idtx:4
-msgid ""
-"Pri odpiranju namestitvenega paketa je prišlo do napake. Obrnite se na svojo "
-"tehnično službo."
-msgstr ""
-"Error opening installation package. Please, contact your support personnel."
-
-#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:6 ..\msm/Sl.DebugU.x64.Error-2.idtx:6
-msgid ""
-"Pri pisanju v datoteko seznama razporejenih opravil »[2]« je prišlo do "
-"napake [3]. Obrnite se na svojo tehnično službo."
-msgstr ""
-"Error [3] writing to \"[2]\" scheduled task list file. Please, contact your "
-"support personnel."
-
-#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:5 ..\msm/Sl.DebugU.x64.Error-2.idtx:5
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:4
 msgid ""
 "Pri pripravi seznama razvrščenih opravil je prišlo do napake [2]. Obrnite se "
 "na svojo tehnično službo."
@@ -109,11 +77,37 @@ msgstr ""
 "personnel."
 
 #: ..\msm/Sl.DebugU.Win32.ActionText-2.idtx:4
-#: ..\msm/Sl.DebugU.x64.ActionText-2.idtx:4
 msgid "Razporejeno opravilo: [1]"
 msgstr "Scheduled task: [1]"
 
 #: ..\msm/Sl.DebugU.Win32.ActionText-2.idtx:4
-#: ..\msm/Sl.DebugU.x64.ActionText-2.idtx:4
 msgid "Registracija razporejenih opravil"
 msgstr "Registering scheduled tasks"
+
+#~ msgid ""
+#~ "Pri branju iz datoteke seznama razporejenih opravil »[2]« je prišlo do "
+#~ "napake [3]. Obrnite se na svojo tehnično službo."
+#~ msgstr ""
+#~ "Error [3] reading from \"[2]\" scheduled task list file. Please, contact "
+#~ "your support personnel."
+
+#~ msgid ""
+#~ "Pri nastavljanju parametra »[2]« je prišlo do napake [3]. Obrnite se na "
+#~ "svojo tehnično službo."
+#~ msgstr ""
+#~ "Error [3] setting \"[2]\" parameter. Please, contact your support "
+#~ "personnel."
+
+#~ msgid ""
+#~ "Pri odpiranju namestitvenega paketa je prišlo do napake. Obrnite se na "
+#~ "svojo tehnično službo."
+#~ msgstr ""
+#~ "Error opening installation package. Please, contact your support "
+#~ "personnel."
+
+#~ msgid ""
+#~ "Pri pisanju v datoteko seznama razporejenih opravil »[2]« je prišlo do "
+#~ "napake [3]. Obrnite se na svojo tehnično službo."
+#~ msgstr ""
+#~ "Error [3] writing to \"[2]\" scheduled task list file. Please, contact "
+#~ "your support personnel."
