@@ -34,7 +34,6 @@
 
 #include "AMSICA.h"
 
-#include <assert.h>
 #include <corerror.h>
 #include <stdlib.h>
 #include <time.h>
