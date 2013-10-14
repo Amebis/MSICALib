@@ -27,6 +27,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfAtl>Static</UseOfAtl>
     <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -37,6 +38,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfAtl>Static</UseOfAtl>
     <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -47,11 +49,29 @@
   <ImportGroup Label="ExtensionSettings">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\rcxgettext.props" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets">
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCInstallDir)VCProjectDefaults\Amebis.props" />
-    <Import Project="$(VCInstallDir)VCProjectDefaults\Amebis $(Configuration).props" Condition="exists('$(VCInstallDir)VCProjectDefaults\Amebis $(Configuration).props')" />
-    <Import Project="$(VCInstallDir)VCProjectDefaults\Amebis $(Platform).props" Condition="exists('$(VCInstallDir)VCProjectDefaults\Amebis $(Platform).props')" />
+    <Import Project="$(VCInstallDir)VCProjectDefaults\AmebisDebug.props" />
+    <Import Project="$(VCInstallDir)VCProjectDefaults\AmebisWin32.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCInstallDir)VCProjectDefaults\Amebis.props" />
+    <Import Project="$(VCInstallDir)VCProjectDefaults\AmebisDebug.props" />
+    <Import Project="$(VCInstallDir)VCProjectDefaults\Amebisx64.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCInstallDir)VCProjectDefaults\Amebis.props" />
+    <Import Project="$(VCInstallDir)VCProjectDefaults\AmebisRelease.props" />
+    <Import Project="$(VCInstallDir)VCProjectDefaults\AmebisWin32.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCInstallDir)VCProjectDefaults\Amebis.props" />
+    <Import Project="$(VCInstallDir)VCProjectDefaults\AmebisRelease.props" />
+    <Import Project="$(VCInstallDir)VCProjectDefaults\Amebisx64.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -148,13 +168,8 @@
     <None Include="res\en_GB.po" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AMSICA\AMSICALib\AMSICALib.vcxproj">
+    <ProjectReference Include="..\AMSICA\build\AMSICALib.vcxproj">
       <Project>{8552ee55-177e-4f51-b51b-baf7d6462cde}</Project>
-      <Private>true</Private>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
