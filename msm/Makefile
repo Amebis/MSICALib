@@ -1,13 +1,6 @@
 !INCLUDE "..\..\include\MSINast.mak"
 
 MSM_IMA_LOKALIZACIJO=1
-!IF "$(CFG)" == "ReleaseU"
-CFG_VC=Unicode Release
-!ELSEIF "$(CFG)" == "DebugU"
-CFG_VC=Unicode Debug
-!ELSE
-CFG_VC=$(CFG)
-!ENDIF
 
 
 ######################################################################
@@ -99,7 +92,7 @@ Binary	Name
 binMSITSCA.dll	MSITSCA.dll
 <<NOKEEP
 
-"$(JEZIK).$(CFG).$(PLAT).Binary-1\MSITSCA.dll" : "..\..\Test\$(CFG_VC).$(PLAT)\MSITSCA.dll"
+"$(JEZIK).$(CFG).$(PLAT).Binary-1\MSITSCA.dll" : "..\..\Test\$(CFG).$(PLAT)\MSITSCA.dll"
 	copy /y $** $@ > NUL
 
 
