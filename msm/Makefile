@@ -153,8 +153,8 @@ Action	Condition	Sequence
 s$(MSI_TIP_ID)	S255	I2
 InstallExecuteSequence	Action
 EvaluateScheduledTasks		6580
-InstallScheduledTasks		6581
-RollbackScheduledTasks		6582
+RollbackScheduledTasks		6581
+InstallScheduledTasks		6582
 CommitScheduledTasks		6583
 <<NOKEEP
 

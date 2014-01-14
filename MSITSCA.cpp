@@ -233,12 +233,12 @@ UINT MSITSCA_API InstallScheduledTasks(MSIHANDLE hInstall)
     uiResult = ::MsiGetProperty(hInstall, _T("CustomActionData"), sSequenceFilename);
     if (uiResult == ERROR_SUCCESS) {
         AMSICA::COpList lstOperations;
+        BOOL bIsCleanup = ::MsiGetMode(hInstall, MSIRUNMODE_COMMIT) || ::MsiGetMode(hInstall, MSIRUNMODE_ROLLBACK);
 
         // Load operation sequence.
         hr = lstOperations.LoadFromFile(sSequenceFilename);
         if (SUCCEEDED(hr)) {
             AMSICA::CSession session;
-            BOOL bIsCleanup = ::MsiGetMode(hInstall, MSIRUNMODE_COMMIT) || ::MsiGetMode(hInstall, MSIRUNMODE_ROLLBACK);
 
             session.m_hInstall = hInstall;
 
@@ -247,62 +247,81 @@ UINT MSITSCA_API InstallScheduledTasks(MSIHANDLE hInstall)
 
             // Execute the operations.
             hr = lstOperations.Execute(&session);
-            if (SUCCEEDED(hr)) {
-                if (!bIsCleanup && session.m_bRollbackEnabled) {
-                    // Save cleanup scripts.
-                    LPCTSTR pszExtension = ::PathFindExtension(sSequenceFilename);
-                    ATL::CAtlString sSequenceFilenameCM, sSequenceFilenameRB;
+            if (!bIsCleanup) {
+                // Save cleanup scripts of delayed action regardless of action's execution status.
+                // Rollback action MUST be scheduled in InstallExecuteSequence before this action! Otherwise cleanup won't be performed in case this action execution failed.
+                LPCTSTR pszExtension = ::PathFindExtension(sSequenceFilename);
+                ATL::CAtlString sSequenceFilenameCM, sSequenceFilenameRB;
+                HRESULT hr;
 
-                    sSequenceFilenameRB.Format(_T("%.*ls-rb%ls"), pszExtension - (LPCTSTR)sSequenceFilename, (LPCTSTR)sSequenceFilename, pszExtension);
-                    sSequenceFilenameCM.Format(_T("%.*ls-cm%ls"), pszExtension - (LPCTSTR)sSequenceFilename, (LPCTSTR)sSequenceFilename, pszExtension);
+                sSequenceFilenameRB.Format(_T("%.*ls-rb%ls"), pszExtension - (LPCTSTR)sSequenceFilename, (LPCTSTR)sSequenceFilename, pszExtension);
+                sSequenceFilenameCM.Format(_T("%.*ls-cm%ls"), pszExtension - (LPCTSTR)sSequenceFilename, (LPCTSTR)sSequenceFilename, pszExtension);
 
-                    // After end of commit, delete rollback file too. After end of rollback, delete commit file too.
-                    session.m_olCommit.AddTail(new AMSICA::COpFileDelete(
+                // After commit, delete rollback file. After rollback, delete commit file.
+                session.m_olCommit.AddTail(new AMSICA::COpFileDelete(
 #ifdef _UNICODE
-                        sSequenceFilenameRB
+                    sSequenceFilenameRB
 #else
-                        ATL::CAtlStringW(sSequenceFilenameRB)
+                    ATL::CAtlStringW(sSequenceFilenameRB)
 #endif
-                        ));
-                    session.m_olRollback.AddTail(new AMSICA::COpFileDelete(
+                    ));
+                session.m_olRollback.AddTail(new AMSICA::COpFileDelete(
 #ifdef _UNICODE
-                        sSequenceFilenameCM
+                    sSequenceFilenameCM
 #else
-                        ATL::CAtlStringW(sSequenceFilenameCM)
+                    ATL::CAtlStringW(sSequenceFilenameCM)
 #endif
-                        ));
+                    ));
 
-                    // Save commit file first.
-                    hr = session.m_olCommit.SaveToFile(sSequenceFilenameCM);
+                // Save commit file first.
+                hr = session.m_olCommit.SaveToFile(sSequenceFilenameCM);
+                if (SUCCEEDED(hr)) {
+                    // Save rollback file next.
+                    hr = session.m_olRollback.SaveToFile(sSequenceFilenameRB);
                     if (SUCCEEDED(hr)) {
-                        // Save rollback file next.
-                        hr = session.m_olRollback.SaveToFile(sSequenceFilenameRB);
-                        if (SUCCEEDED(hr)) {
-                            uiResult = ERROR_SUCCESS;
-                        } else {
-                            // Saving rollback file failed.
-                            uiResult = HRESULT_CODE(hr);
-                        }
+                        uiResult = ERROR_SUCCESS;
                     } else {
-                        // Saving commit file failed.
-                        uiResult = HRESULT_CODE(hr);
+                        // Saving rollback file failed.
+                        PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
+                        uiResult = ERROR_INSTALL_SCRIPT_WRITE;
+                        ::MsiRecordSetInteger(hRecordProg, 1, uiResult           );
+                        ::MsiRecordSetString (hRecordProg, 2, sSequenceFilenameRB);
+                        ::MsiRecordSetInteger(hRecordProg, 3, hr                 );
+                        ::MsiProcessMessage(hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
                     }
                 } else {
-                    // No cleanup support required.
-                    uiResult = ERROR_SUCCESS;
+                    // Saving commit file failed.
+                    PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
+                    uiResult = ERROR_INSTALL_SCRIPT_WRITE;
+                    ::MsiRecordSetInteger(hRecordProg, 1, uiResult           );
+                    ::MsiRecordSetString (hRecordProg, 2, sSequenceFilenameCM);
+                    ::MsiRecordSetInteger(hRecordProg, 3, hr                 );
+                    ::MsiProcessMessage(hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
+                }
+
+                if (uiResult != ERROR_SUCCESS) {
+                    // The commit and/or rollback scripts were not written to file successfully. Perform the cleanup immediately.
+                    session.m_bContinueOnError = TRUE;
+                    session.m_bRollbackEnabled = FALSE;
+                    session.m_olRollback.Execute(&session);
+                    ::DeleteFile(sSequenceFilenameRB);
                 }
             } else {
-                // Execution failed.
+                // No cleanup after cleanup support.
+                uiResult = ERROR_SUCCESS;
+            }
+
+            if (FAILED(hr)) {
+                // Execution of the action failed.
                 uiResult = HRESULT_CODE(hr);
             }
 
-            if (uiResult != ERROR_SUCCESS) {
-                // Perform the cleanup now. The rollback script might not have been written to file yet.
-                // And even if it was, the rollback action might not get invoked at all (if scheduled in InstallExecuteSequence later than this action).
-                session.m_bContinueOnError = TRUE;
-                session.m_bRollbackEnabled = FALSE;
-                session.m_olRollback.Execute(&session);
-            }
+            ::DeleteFile(sSequenceFilename);
+        } else if (hr == ERROR_FILE_NOT_FOUND && bIsCleanup) {
+            // Sequence file not found and this is rollback/commit action. Either of the following scenarios are possible:
+            // - The delayed action failed to save the rollback/commit file. The delayed action performed cleanup itself. No further action is required.
+            // - Somebody removed the rollback/commit file between delayed action and rollback/commit action. No further action is possible.
+            uiResult = ERROR_SUCCESS;
         } else {
             // Sequence loading failed. Probably, LOCAL SYSTEM doesn't have read access to user's temp directory.
             PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
@@ -314,9 +333,8 @@ UINT MSITSCA_API InstallScheduledTasks(MSIHANDLE hInstall)
         }
 
         lstOperations.Free();
-        ::DeleteFile(sSequenceFilename);
     } else {
-        // Couldn't get CustomActionData property.
+        // Couldn't get CustomActionData property. uiResult has the error code.
     }
 
     if (bIsCoInitialized) ::CoUninitialize();
