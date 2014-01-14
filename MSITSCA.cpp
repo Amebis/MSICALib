@@ -235,6 +235,8 @@ UINT MSITSCA_API InstallScheduledTasks(MSIHANDLE hInstall)
         AMSICA::COpList lstOperations;
         BOOL bIsCleanup = ::MsiGetMode(hInstall, MSIRUNMODE_COMMIT) || ::MsiGetMode(hInstall, MSIRUNMODE_ROLLBACK);
 
+        //assert(0); // Attach debugger here, or press "Ignore"!
+
         // Load operation sequence.
         hr = lstOperations.LoadFromFile(sSequenceFilename);
         if (SUCCEEDED(hr)) {
@@ -317,7 +319,7 @@ UINT MSITSCA_API InstallScheduledTasks(MSIHANDLE hInstall)
             }
 
             ::DeleteFile(sSequenceFilename);
-        } else if (hr == ERROR_FILE_NOT_FOUND && bIsCleanup) {
+        } else if (hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND) && bIsCleanup) {
             // Sequence file not found and this is rollback/commit action. Either of the following scenarios are possible:
             // - The delayed action failed to save the rollback/commit file. The delayed action performed cleanup itself. No further action is required.
             // - Somebody removed the rollback/commit file between delayed action and rollback/commit action. No further action is possible.
