@@ -1,0 +1,67 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: MSITSCA\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-11-29 10:54+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Simon Rozman <simon.rozman@amebis.si>\n"
+"Language-Team: Amebis, d. o. o., Kamnik <simon.rozman@amebis.si>\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __\n"
+"X-Poedit-Basepath: .\n"
+"X-Generator: Poedit 1.5.4\n"
+"X-Poedit-SearchPath-0: .\n"
+
+# Koda jezika in privzeta kodna stran ANSI za ta jezik (šesnajstiško)
+# Če ne prevajamo ločeno vsake lokalne različice jezika, uporabimo kodo privzetega podjezika.
+# Na primer: LANGUAGE_ENGLISH + SUBLANGUAGE_DEFAULT = 0x409, čeprav 0x409 predstavlja (tudi) ameriško angleščino (SUBLANGUAGE_ENGLISH_US = SUBLANGUAGE_DEFAULT), sami pa uporabljamo britansko.
+#: MSITSCA.rcx:46
+msgid "042404e2"
+msgstr "040904e4"
+
+# Koda jezika (šesnajstiško)
+# Če ne prevajamo ločeno vsake lokalne različice jezika, uporabimo kodo privzetega podjezika.
+# Na primer: LANGUAGE_ENGLISH + SUBLANGUAGE_DEFAULT = 0x409, čeprav 0x409 predstavlja (tudi) ameriško angleščino (SUBLANGUAGE_ENGLISH_US = SUBLANGUAGE_DEFAULT), sami pa uporabljamo britansko.
+#: MSITSCA.rcx:64
+msgid "0x424"
+msgstr "0x409"
+
+# Privzeta kodna stran ANSI za ta jezik (desetiško)
+#: MSITSCA.rcx:64
+msgid "1250"
+msgstr "1252"
+
+# Ime konstante, s katero vklopimo vire v tem jeziku.
+#: MSITSCA.rcx:45 MSITSCA.rcx:63 MSITSCA.rcx:79
+msgid "AFX_TARG_SLV"
+msgstr "AFX_TARG_ENU"
+
+#: MSITSCA.rcx:48
+msgid "Amebis, d. o. o., Kamnik"
+msgstr "Amebis, d. o. o., Kamnik"
+
+# Konstanta s kodo jezika
+#: MSITSCA.rcx:81
+msgid "LANG_SLOVENIAN"
+msgstr "LANG_ENGLISH"
+
+#: MSITSCA.rcx:51 MSITSCA.rcx:53
+msgid "MSITSCA"
+msgstr "MSITSCA"
+
+#: MSITSCA.rcx:49
+msgid "Podporna knjižnica za nameščanje načrtovanih opravil"
+msgstr "Scheduled Task Installation Support Library"
+
+# Konstanta s kodo lokalne različice jezika
+#: MSITSCA.rcx:81
+msgid "SUBLANG_DEFAULT"
+msgstr "SUBLANG_DEFAULT"
+
+#: MSITSCA.rcx:52
+msgid "Vse pravice pridržane © Amebis, d. o. o., Kamnik, 2012"
+msgstr "Copyright © Amebis, d. o. o., Kamnik, 2012"
