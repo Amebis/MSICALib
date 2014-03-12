@@ -165,12 +165,12 @@
     <ResourceLocalizator Include="res\MSITSCA.rcx" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\en_GB.po" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\AMSICA\build\AMSICALib.vcxproj">
       <Project>{8552ee55-177e-4f51-b51b-baf7d6462cde}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="L10N\sl_SI.po" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

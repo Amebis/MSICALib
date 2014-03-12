@@ -1,0 +1,85 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: MSICA\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-06-07 20:27+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Simon Rozman <simon.rozman@amebis.si>\n"
+"Language-Team: Amebis, d. o. o., Kamnik <simon.rozman@amebis.si>\n"
+"Language: sl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __\n"
+"X-Poedit-Basepath: ..\n"
+"X-Generator: Poedit 1.5.7\n"
+"X-Poedit-SearchPath-0: res\n"
+"X-Poedit-SearchPath-1: msm\n"
+
+# Language Code and Windows Charset (hexadecimal)
+# If we do not intend to provide different localization of same base language (like merging Portugal Portugeese and Brasil Portugese into the same Portugeese), use the code of Microsoft defined default sublanguage.
+# For example: Use LANG_PORTUGUESE + SUBLANG_DEFAULT = 0x416, although 0x416 represents Brasil Portugese (too).
+#: MSITSCA.rcx:43
+msgid "040904e4"
+msgstr "042404e2"
+
+# Language Code (hexadecimal)
+# If we do not intend to provide different localization of same base language (like merging Portugal Portugeese and Brasil Portugese into the same Portugeese), use the code of Microsoft defined default sublanguage.
+# For example: Use LANG_PORTUGUESE + SUBLANG_DEFAULT = 0x416, although 0x416 represents Brasil Portugese (too).
+#: MSITSCA.rcx:61
+msgid "0x409"
+msgstr "0x424"
+
+# Windows charset for this language (decimal)
+#: MSITSCA.rcx:61 ..\msm/Sl.DebugU.Win32.ActionText-2.idtx:3
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:3
+msgid "1252"
+msgstr "1250"
+
+# The name of the constant in RC to include the resources in this language.
+#: MSITSCA.rcx:42 MSITSCA.rcx:60 MSITSCA.rcx:76
+msgid "AFX_TARG_ENU"
+msgstr "AFX_TARG_SLV"
+
+#: MSITSCA.rcx:45
+msgid "Amebis, d. o. o., Kamnik"
+msgstr "Amebis, d. o. o., Kamnik"
+
+# Language Identifier (see http://msdn.microsoft.com/en-us/library/windows/desktop/dd318693(v=vs.85).aspx)
+#: MSITSCA.rcx:78
+msgid "LANG_ENGLISH"
+msgstr "LANG_SLOVENIAN"
+
+#: MSITSCA.rcx:48 MSITSCA.rcx:50
+msgid "MSITSCA"
+msgstr "MSITSCA"
+
+#: MSITSCA.rcx:46
+msgid "Scheduled Task Installation Support Library"
+msgstr "Podporna knjižnica za nameščanje načrtovanih opravil"
+
+# Sublanguage Identifier (see http://msdn.microsoft.com/en-us/library/windows/desktop/dd318693(v=vs.85).aspx)
+#: MSITSCA.rcx:78
+msgid "SUBLANG_DEFAULT"
+msgstr "SUBLANG_DEFAULT"
+
+#: MSITSCA.rcx:49
+msgid "Copyright © Amebis, d. o. o., Kamnik, 2012"
+msgstr "Vse pravice pridržane © Amebis, d. o. o., Kamnik, 2012"
+
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:4
+msgid ""
+"Error [2] creating scheduled task list. Please, contact your support "
+"personnel."
+msgstr ""
+"Pri pripravi seznama razvrščenih opravil je prišlo do napake [2]. Obrnite se "
+"na svojo tehnično službo."
+
+#: ..\msm/Sl.DebugU.Win32.ActionText-2.idtx:4
+msgid "Scheduled task: [1]"
+msgstr "Razporejeno opravilo: [1]"
+
+#: ..\msm/Sl.DebugU.Win32.ActionText-2.idtx:4
+msgid "Registering scheduled tasks"
+msgstr "Registracija razporejenih opravil"

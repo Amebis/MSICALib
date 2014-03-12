@@ -1,14 +1,14 @@
-!INCLUDE "..\..\include\MSINast.mak"
+!INCLUDE "..\..\include\MSIBuildCfg.mak"
 
-MSM_IMA_LOKALIZACIJO=1
+MSIBUILD_IS_LOCALIZEABLE=1
 
 
 ######################################################################
 # _Validation
 
-Vse :: "$(JEZIK).$(CFG).$(PLAT)._Validation-1.idt"
+Vse :: "$(LANG).$(PLAT).$(CFG)._Validation-1.idt"
 
-"$(JEZIK).$(CFG).$(PLAT)._Validation-1.idt" : "Makefile" "..\..\include\MSINast.mak"
+"$(LANG).$(PLAT).$(CFG)._Validation-1.idt" : "Makefile" ""..\..\include\MSIBuildCfg.mak""
 	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
 Table	Column	Nullable	MinValue	MaxValue	KeyTable	KeyColumn	Category	Set	Description
@@ -52,60 +52,60 @@ TaskTrigger	Task_	N			ScheduledTask	1	Identifier		Key of the Trigger's task.
 ######################################################################
 # ActionText
 
-Vse :: "$(JEZIK).$(CFG).$(PLAT).ActionText-2.idt"
+Vse :: "$(LANG).$(PLAT).$(CFG).ActionText-2.idt"
 
-"Sl.$(CFG).$(PLAT).ActionText-2.idtx" : "Makefile" "..\..\include\MSINast.mak"
+"En.$(PLAT).$(CFG).ActionText-2.idtx" : "Makefile" ""..\..\include\MSIBuildCfg.mak""
 	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
 Action	Description	Template
-s$(MSI_TIP_ID)	L0	L0
+s$(MSIBUILD_LENGTH_ID)	L0	L0
 1250	ActionText	Action
-InstallScheduledTasks	Registracija razporejenih opravil	Razporejeno opravilo: [1]
+InstallScheduledTasks	Registering scheduled tasks	Scheduled task: [1]
 <<NOKEEP
 
-"De.$(CFG).$(PLAT).ActionText-2.idt" : "Sl.$(CFG).$(PLAT).ActionText-2.idtx" "..\res\de_DE.po"
+"De.$(CFG).$(PLAT).ActionText-2.idt" : "En.$(PLAT).$(CFG).ActionText-2.idtx" "..\L10N\de_DE.po"
 	rcxgettext.exe idtp $@ $**
 
-"En.$(CFG).$(PLAT).ActionText-2.idt" : "Sl.$(CFG).$(PLAT).ActionText-2.idtx" "..\res\en_GB.po"
-	rcxgettext.exe idtp $@ $**
-
-"It.$(CFG).$(PLAT).ActionText-2.idt" : "Sl.$(CFG).$(PLAT).ActionText-2.idtx" "..\res\it_IT.po"
-	rcxgettext.exe idtp $@ $**
-
-"Sl.$(CFG).$(PLAT).ActionText-2.idt" : "Sl.$(CFG).$(PLAT).ActionText-2.idtx"
+"En.$(PLAT).$(CFG).ActionText-2.idt" : "En.$(PLAT).$(CFG).ActionText-2.idtx"
 	copy /y $** $@ > NUL
+
+"It.$(CFG).$(PLAT).ActionText-2.idt" : "En.$(PLAT).$(CFG).ActionText-2.idtx" "..\L10N\it_IT.po"
+	rcxgettext.exe idtp $@ $**
+
+"Sl.$(CFG).$(PLAT).ActionText-2.idt" : "En.$(PLAT).$(CFG).ActionText-2.idtx" "..\L10N\sl_SI.po"
+	rcxgettext.exe idtp $@ $**
 
 
 ######################################################################
 # Binary
 
 Vse :: \
-	"$(JEZIK).$(CFG).$(PLAT).Binary-1.idt" \
-	"$(JEZIK).$(CFG).$(PLAT).Binary-1\MSITSCA.dll"
+	"$(LANG).$(PLAT).$(CFG).Binary-1.idt" \
+	"$(LANG).$(PLAT).$(CFG).Binary-1\MSITSCA.dll"
 
-"$(JEZIK).$(CFG).$(PLAT).Binary-1.idt" : "Makefile" "..\..\include\MSINast.mak" "$(JEZIK).$(CFG).$(PLAT).Binary-1"
+"$(LANG).$(PLAT).$(CFG).Binary-1.idt" : "Makefile" ""..\..\include\MSIBuildCfg.mak"" "$(LANG).$(PLAT).$(CFG).Binary-1"
 	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
 Name	Data
-s$(MSI_TIP_ID)	v0
+s$(MSIBUILD_LENGTH_ID)	v0
 Binary	Name
 binMSITSCA.dll	MSITSCA.dll
 <<NOKEEP
 
-"$(JEZIK).$(CFG).$(PLAT).Binary-1\MSITSCA.dll" : "..\..\Test\$(CFG).$(PLAT)\MSITSCA.dll"
+"$(LANG).$(PLAT).$(CFG).Binary-1\MSITSCA.dll" : "..\..\Test\$(CFG).$(PLAT)\MSITSCA.dll"
 	copy /y $** $@ > NUL
 
 
 ######################################################################
 # CustomAction
 
-Vse :: "$(JEZIK).$(CFG).$(PLAT).CustomAction-1.idt"
+Vse :: "$(LANG).$(PLAT).$(CFG).CustomAction-1.idt"
 
-"$(JEZIK).$(CFG).$(PLAT).CustomAction-1.idt" : "Makefile" "..\..\include\MSINast.mak"
+"$(LANG).$(PLAT).$(CFG).CustomAction-1.idt" : "Makefile" ""..\..\include\MSIBuildCfg.mak""
 	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
 Action	Type	Source	Target
-s$(MSI_TIP_ID)	i2	S$(MSI_TIP_ID)	S255
+s$(MSIBUILD_LENGTH_ID)	i2	S$(MSIBUILD_LENGTH_ID)	S255
 CustomAction	Action
 EvaluateScheduledTasks	1	binMSITSCA.dll	EvaluateScheduledTasks
 InstallScheduledTasks	3073	binMSITSCA.dll	InstallScheduledTasks
@@ -117,40 +117,40 @@ CommitScheduledTasks	3585	binMSITSCA.dll	InstallScheduledTasks
 ######################################################################
 # Error
 
-Vse :: "$(JEZIK).$(CFG).$(PLAT).Error-2.idt"
+Vse :: "$(LANG).$(PLAT).$(CFG).Error-2.idt"
 
-"Sl.$(CFG).$(PLAT).Error-2.idtx" : "Makefile" "..\..\include\MSINast.mak"
+"En.$(PLAT).$(CFG).Error-2.idtx" : "Makefile" ""..\..\include\MSIBuildCfg.mak""
 	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
 Error	Message
 i2	L0
 1250	Error	Error
-2551	Pri pripravi seznama razvršèenih opravil je prišlo do napake [2]. Obrnite se na svojo tehnièno službo.
+2551	Error [2] creating scheduled task list. Please, contact your support personnel.
 <<NOKEEP
 
-"De.$(CFG).$(PLAT).Error-2.idt" : "Sl.$(CFG).$(PLAT).Error-2.idtx" "..\res\de_DE.po"
+"De.$(CFG).$(PLAT).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\L10N\de_DE.po"
 	rcxgettext.exe idtp $@ $**
 
-"En.$(CFG).$(PLAT).Error-2.idt" : "Sl.$(CFG).$(PLAT).Error-2.idtx" "..\res\en_GB.po"
-	rcxgettext.exe idtp $@ $**
-
-"It.$(CFG).$(PLAT).Error-2.idt" : "Sl.$(CFG).$(PLAT).Error-2.idtx" "..\res\it_IT.po"
-	rcxgettext.exe idtp $@ $**
-
-"Sl.$(CFG).$(PLAT).Error-2.idt" : "Sl.$(CFG).$(PLAT).Error-2.idtx"
+"En.$(PLAT).$(CFG).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx"
 	copy /y $** $@ > NUL
+
+"It.$(CFG).$(PLAT).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\L10N\it_IT.po"
+	rcxgettext.exe idtp $@ $**
+
+"Sl.$(CFG).$(PLAT).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\L10N\sl_SI.po"
+	rcxgettext.exe idtp $@ $**
 
 
 ######################################################################
 # InstallExecuteSequence
 
-Vse :: "$(JEZIK).$(CFG).$(PLAT).InstallExecuteSequence-1.idt"
+Vse :: "$(LANG).$(PLAT).$(CFG).InstallExecuteSequence-1.idt"
 
-"$(JEZIK).$(CFG).$(PLAT).InstallExecuteSequence-1.idt" : "Makefile" "..\..\include\MSINast.mak"
+"$(LANG).$(PLAT).$(CFG).InstallExecuteSequence-1.idt" : "Makefile" ""..\..\include\MSIBuildCfg.mak""
 	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
 Action	Condition	Sequence
-s$(MSI_TIP_ID)	S255	I2
+s$(MSIBUILD_LENGTH_ID)	S255	I2
 InstallExecuteSequence	Action
 EvaluateScheduledTasks		6580
 RollbackScheduledTasks		6581
@@ -162,13 +162,13 @@ CommitScheduledTasks		6583
 ######################################################################
 # ScheduledTask
 
-Vse :: "$(JEZIK).$(CFG).$(PLAT).ScheduledTask-1.idt"
+Vse :: "$(LANG).$(PLAT).$(CFG).ScheduledTask-1.idt"
 
-"$(JEZIK).$(CFG).$(PLAT).ScheduledTask-1.idt" : "Makefile" "..\..\include\MSINast.mak"
+"$(LANG).$(PLAT).$(CFG).ScheduledTask-1.idt" : "Makefile" ""..\..\include\MSIBuildCfg.mak""
 	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
 Task	DisplayName	Application	Parameters	Directory_	Flags	Priority	User	Password	Author	Description	IdleMin	IdleDeadline	MaxRuntime	Condition	Component_
-s$(MSI_TIP_ID)	l255	s255	S255	s$(MSI_TIP_ID)	i4	i4	S255	S255	L255	L0	I2	I2	i4	S255	s$(MSI_TIP_ID)
+s$(MSIBUILD_LENGTH_ID)	l255	s255	S255	s$(MSIBUILD_LENGTH_ID)	i4	i4	S255	S255	L255	L0	I2	I2	i4	S255	s$(MSIBUILD_LENGTH_ID)
 ScheduledTask	Task
 <<NOKEEP
 
@@ -176,13 +176,13 @@ ScheduledTask	Task
 ######################################################################
 # TaskTrigger
 
-Vse :: "$(JEZIK).$(CFG).$(PLAT).TaskTrigger-1.idt"
+Vse :: "$(LANG).$(PLAT).$(CFG).TaskTrigger-1.idt"
 
-"$(JEZIK).$(CFG).$(PLAT).TaskTrigger-1.idt" : "Makefile" "..\..\include\MSINast.mak"
+"$(LANG).$(PLAT).$(CFG).TaskTrigger-1.idt" : "Makefile" ""..\..\include\MSIBuildCfg.mak""
 	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
 Trigger	BeginDate	EndDate	StartTime	StartTimeRand	MinutesDuration	MinutesInterval	Flags	Type	DaysInterval	WeeksInterval	DaysOfTheWeek	DaysOfMonth	WeekOfMonth	MonthsOfYear	Task_
-s$(MSI_TIP_ID)	i2	I2	i2	I2	I4	I4	i4	i2	I2	I2	I2	I4	I2	I2	s$(MSI_TIP_ID)
+s$(MSIBUILD_LENGTH_ID)	i2	I2	i2	I2	I4	I4	i4	i2	I2	I2	I2	I4	I2	I2	s$(MSIBUILD_LENGTH_ID)
 TaskTrigger	Trigger
 <<NOKEEP
 
@@ -191,4 +191,4 @@ TaskTrigger	Trigger
 # Izdelava modula MSM
 ######################################################################
 
-!INCLUDE "..\..\AOsn\msm\MSM.mak"
+!INCLUDE "..\..\MSIBuild\MSM.mak"
