@@ -1,0 +1,100 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: MSITSCA\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-06-07 21:16+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Simon Rozman <simon.rozman@amebis.si>\n"
+"Language-Team: Amebis, d. o. o., Kamnik <simon.rozman@amebis.si>\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __\n"
+"X-Poedit-Basepath: .\n"
+"X-Generator: Poedit 1.5.5\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPath-1: ..\\msm\n"
+
+# Privzeta kodna stran ANSI za ta jezik (desetiško)
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:3 ..\msm/Sl.DebugU.x64.Error-2.idtx:3
+msgid "1250"
+msgstr "1252"
+
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:6 ..\msm/Sl.DebugU.x64.Error-2.idtx:6
+msgid ""
+"Pri branju iz datoteke seznama opravil »[2]« je prišlo do napake [3]. "
+"Obrnite se na svojo tehnično službo."
+msgstr ""
+"Error [3] reading from \"[2]\" task list file. Please, contact your support "
+"personnel."
+
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:8 ..\msm/Sl.DebugU.x64.Error-2.idtx:8
+msgid ""
+"Pri brisanju datoteke »[2]« je prišlo do napake [3]. Obrnite se na svojo "
+"tehnično službo."
+msgstr ""
+"Error [3] deleting \"[2]\" file. Please, contact your support personnel."
+
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:11 ..\msm/Sl.DebugU.x64.Error-2.idtx:11
+msgid ""
+"Pri brisanju razporejenega opravila »[2]« je prišlo do napake [3]. Obrnite "
+"se na svojo tehnično službo."
+msgstr ""
+"Error [3] deleting \"[2]\" scheduled task. Please, contact your support "
+"personnel."
+
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:13 ..\msm/Sl.DebugU.x64.Error-2.idtx:13
+msgid ""
+"Pri kopiranju razporejenega opravila »[2]« v »[3]« je prišlo do napake [4]. "
+"Obrnite se na svojo tehnično službo."
+msgstr ""
+"Error [4] copying \"[2]\" scheduled task to \"[3]\". Please, contact your "
+"support personnel."
+
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:7 ..\msm/Sl.DebugU.x64.Error-2.idtx:7
+msgid ""
+"Pri nastavljanju parametra »[2]« je prišlo do napake [3]. Obrnite se na "
+"svojo tehnično službo."
+msgstr ""
+"Error [3] setting \"[2]\" parameter. Please, contact your support personnel."
+
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:12 ..\msm/Sl.DebugU.x64.Error-2.idtx:12
+msgid ""
+"Pri o(ne)mogočanju razporejenega opravila »[2]« je prišlo do napake [3]. "
+"Obrnite se na svojo tehnično službo."
+msgstr ""
+"Error [3] enabling/disabling \"[2]\" scheduled task. Please, contact your "
+"support personnel."
+
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:4 ..\msm/Sl.DebugU.x64.Error-2.idtx:4
+msgid ""
+"Pri odpiranju namestitvenega paketa je prišlo do napake. Obrnite se na svojo "
+"tehnično službo."
+msgstr ""
+"Error opening installation package. Please, contact your support personnel."
+
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:5 ..\msm/Sl.DebugU.x64.Error-2.idtx:5
+msgid ""
+"Pri pisanju v datoteko seznama opravil »[2]« je prišlo do napake [3]. "
+"Obrnite se na svojo tehnično službo."
+msgstr ""
+"Error [3] writing to \"[2]\" task list file. Please, contact your support "
+"personnel."
+
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:9 ..\msm/Sl.DebugU.x64.Error-2.idtx:9
+msgid ""
+"Pri premikanju datoteke »[2]« v »[3]« je prišlo do napake [4]. Obrnite se na "
+"svojo tehnično službo."
+msgstr ""
+"Error [4] moving \"[2]\" file to \"[3]\". Please, contact your support "
+"personnel."
+
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:10 ..\msm/Sl.DebugU.x64.Error-2.idtx:10
+msgid ""
+"Pri ustvarjanju razporejenega opravila »[2]« je prišlo do napake [3]. "
+"Obrnite se na svojo tehnično službo."
+msgstr ""
+"Error [3] creating \"[2]\" scheduled task. Please, contact your support "
+"personnel."
