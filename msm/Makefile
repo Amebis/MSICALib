@@ -1,16 +1,16 @@
-!INCLUDE "..\..\include\MSINast.mak"
+!INCLUDE "..\..\include\MSIBuildCfg.mak"
 
-MSM_IMA_LOKALIZACIJO=1
+MSIBUILD_IS_LOCALIZEABLE=1
 
 
 ######################################################################
 # Error
 
-Vse :: \
-	"$(JEZIK).$(CFG).$(PLAT).Error-1.idt" \
-	"$(JEZIK).$(CFG).$(PLAT).Error-2.idt"
+All :: \
+	"$(LANG).$(PLAT).$(CFG).Error-1.idt" \
+	"$(LANG).$(PLAT).$(CFG).Error-2.idt"
 
-"$(JEZIK).$(CFG).$(PLAT).Error-1.idt" : "Makefile" "..\..\include\MSINast.mak"
+"$(LANG).$(PLAT).$(CFG).Error-1.idt" : "Makefile" "..\..\include\MSINast.mak"
 	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
 Error	Message
@@ -18,39 +18,39 @@ i2	L0
 Error	Error
 <<NOKEEP
 
-"Sl.$(CFG).$(PLAT).Error-2.idtx" : "Makefile" "..\..\include\MSINast.mak"
+"En.$(PLAT).$(CFG).Error-2.idtx" : "Makefile" "..\..\include\MSINast.mak"
 	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
 Error	Message
 i2	L0
-1250	Error	Error
-2550	Pri odpiranju namestitvenega paketa je prišlo do napake. Obrnite se na svojo tehnièno službo.
-2552	Pri pisanju v datoteko seznama opravil »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
-2560	Pri branju iz datoteke seznama opravil »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
-2553	Pri nastavljanju parametra »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
-2554	Pri brisanju datoteke »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
-2555	Pri premikanju datoteke »[2]« v »[3]« je prišlo do napake [4]. Obrnite se na svojo tehnièno službo.
-2556	Pri ustvarjanju razporejenega opravila »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
-2557	Pri brisanju razporejenega opravila »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
-2558	Pri o(ne)mogoèanju razporejenega opravila »[2]« je prišlo do napake [3]. Obrnite se na svojo tehnièno službo.
-2559	Pri kopiranju razporejenega opravila »[2]« v »[3]« je prišlo do napake [4]. Obrnite se na svojo tehnièno službo.
+1252	Error	Error
+2550	Error opening installation package. Please, contact your support personnel.
+2552	Error [3] writing to "[2]" task list file. Please, contact your support personnel.
+2560	Error [3] reading from "[2]" task list file. Please, contact your support personnel.
+2553	Error [3] setting "[2]" parameter. Please, contact your support personnel.
+2554	Error [3] deleting "[2]" file. Please, contact your support personnel.
+2555	Error [4] moving "[2]" file to "[3]". Please, contact your support personnel.
+2556	Error [3] creating "[2]" scheduled task. Please, contact your support personnel.
+2557	Error [3] deleting "[2]" scheduled task. Please, contact your support personnel.
+2558	Error [3] enabling/disabling "[2]" scheduled task. Please, contact your support personnel.
+2559	Error [4] copying "[2]" scheduled task to "[3]". Please, contact your support personnel.
 <<NOKEEP
 
-"De.$(CFG).$(PLAT).Error-2.idt" : "Sl.$(CFG).$(PLAT).Error-2.idtx" "..\res\de_DE.po"
+"De.$(CFG).$(PLAT).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\L10N\de_DE.po"
 	rcxgettext.exe idtp $@ $**
 
-"En.$(CFG).$(PLAT).Error-2.idt" : "Sl.$(CFG).$(PLAT).Error-2.idtx" "..\res\en_GB.po"
-	rcxgettext.exe idtp $@ $**
-
-"It.$(CFG).$(PLAT).Error-2.idt" : "Sl.$(CFG).$(PLAT).Error-2.idtx" "..\res\it_IT.po"
-	rcxgettext.exe idtp $@ $**
-
-"Sl.$(CFG).$(PLAT).Error-2.idt" : "Sl.$(CFG).$(PLAT).Error-2.idtx"
+"En.$(PLAT).$(CFG).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx"
 	copy /y $** $@ > NUL
 
+"It.$(CFG).$(PLAT).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\L10N\it_IT.po"
+	rcxgettext.exe idtp $@ $**
+
+"Sl.$(CFG).$(PLAT).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\L10N\sl_SI.po"
+	rcxgettext.exe idtp $@ $**
+
 
 ######################################################################
-# Izdelava modula MSM
+# Build MSM module!
 ######################################################################
 
-!INCLUDE "..\..\AOsn\msm\MSM.mak"
+!INCLUDE "..\..\MSIBuild\MSM.mak"
