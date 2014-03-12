@@ -1,21 +1,6 @@
 #ifndef __MSICALib_H__
 #define __MSICALib_H__
 
-////////////////////////////////////////////////////////////////////////////
-// Version
-////////////////////////////////////////////////////////////////////////////
-
-#define MSICALib_VERSION       0x02000000
-
-#define MSICALib_VERSION_MAJ   2
-#define MSICALib_VERSION_MIN   0
-#define MSICALib_VERSION_REV   0
-
-#define MSICALib_VERSION_STR   "2.0"
-
-
-#if !defined(RC_INVOKED) && !defined(MIDL_PASS)
-
 #include <atlbase.h>
 #include <atlcoll.h>
 #include <atlfile.h>
@@ -1424,6 +1409,4 @@ template <class T> inline HRESULT COpList::LoadAndAddTail(ATL::CAtlFile &f)
 
 } // namespace MSICA
 
-
-#endif // RC_INVOKED
 #endif // __MSICALib_H__
