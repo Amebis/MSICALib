@@ -19,10 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="OpCert.cpp" />
     <ClCompile Include="MSICALib.cpp" />
-    <ClCompile Include="FileOp.cpp" />
-    <ClCompile Include="TSOp.cpp" />
-    <ClCompile Include="RegOp.cpp" />
+    <ClCompile Include="OpFile.cpp" />
+    <ClCompile Include="OpTS.cpp" />
+    <ClCompile Include="OpReg.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

@@ -18,16 +18,19 @@
     <ClCompile Include="MSICALib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FileOp.cpp">
+    <ClCompile Include="OpFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TSOp.cpp">
+    <ClCompile Include="OpTS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RegOp.cpp">
+    <ClCompile Include="OpReg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OpCert.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

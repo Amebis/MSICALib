@@ -7,6 +7,7 @@
 #include <atlstr.h>
 #include <msi.h>
 #include <mstask.h>
+#include <wincrypt.h>
 #include <windows.h>
 
 
@@ -396,6 +397,53 @@ public:
 
 
 ////////////////////////////////////////////////////////////////////////////
+// COpCertStore
+////////////////////////////////////////////////////////////////////////////
+
+class COpCertStore : public COpTypeSingleString
+{
+public:
+    COpCertStore(LPCWSTR pszStore = L"", DWORD dwEncodingType = 0, DWORD dwFlags = 0, int iTicks = 0);
+
+    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpCertStore &op);
+    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpCertStore &op);
+
+protected:
+    DWORD m_dwEncodingType;
+    DWORD m_dwFlags;
+};
+
+
+////////////////////////////////////////////////////////////////////////////
+// COpCert
+////////////////////////////////////////////////////////////////////////////
+
+class COpCert : public COpCertStore
+{
+public:
+    COpCert(LPCVOID lpCert = NULL, SIZE_T nSize = 0, LPCWSTR pszStore = L"", DWORD dwEncodingType = 0, DWORD dwFlags = 0, int iTicks = 0);
+
+    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpCert &op);
+    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpCert &op);
+
+protected:
+    ATL::CAtlArray<BYTE> m_binCert;
+};
+
+
+////////////////////////////////////////////////////////////////////////////
+// COpCertInstall
+////////////////////////////////////////////////////////////////////////////
+
+class COpCertInstall : public COpCert
+{
+public:
+    COpCertInstall(LPCVOID lpCert = NULL, SIZE_T nSize = 0, LPCWSTR pszStore = L"", DWORD dwEncodingType = 0, DWORD dwFlags = 0, int iTicks = 0);
+    virtual HRESULT Execute(CSession *pSession);
+};
+
+
+////////////////////////////////////////////////////////////////////////////
 // COpList
 ////////////////////////////////////////////////////////////////////////////
 
@@ -410,8 +458,8 @@ public:
 
     virtual HRESULT Execute(CSession *pSession);
 
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpList &op);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpList &op);
+    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpList &list);
+    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpList &list);
 
 protected:
     enum OPERATION {
@@ -1166,12 +1214,12 @@ inline HRESULT operator >>(ATL::CAtlFile &f, COpTaskCreate &op)
     hr = f >> op.m_sWorkingDirectory;               if (FAILED(hr)) return hr;
     hr = f >> op.m_sAuthor;                         if (FAILED(hr)) return hr;
     hr = f >> op.m_sComment;                        if (FAILED(hr)) return hr;
-    hr = f >> (int&)op.m_dwFlags;                   if (FAILED(hr)) return hr;
-    hr = f >> (int&)op.m_dwPriority;                if (FAILED(hr)) return hr;
+    hr = f >> (int&)(op.m_dwFlags);                 if (FAILED(hr)) return hr;
+    hr = f >> (int&)(op.m_dwPriority);              if (FAILED(hr)) return hr;
     hr = f >> op.m_sAccountName;                    if (FAILED(hr)) return hr;
     hr = f >> op.m_sPassword;                       if (FAILED(hr)) return hr;
     hr = f >> (int&)dwValue;                        if (FAILED(hr)) return hr; op.m_wIdleMinutes = HIWORD(dwValue); op.m_wDeadlineMinutes = LOWORD(dwValue);
-    hr = f >> (int&)op.m_dwMaxRuntimeMS;            if (FAILED(hr)) return hr;
+    hr = f >> (int&)(op.m_dwMaxRuntimeMS);          if (FAILED(hr)) return hr;
     hr = f >> (int&)dwValue;                        if (FAILED(hr)) return hr;
     while (dwValue--) {
         TASK_TRIGGER ttData;
@@ -1202,6 +1250,52 @@ inline HRESULT operator >>(ATL::CAtlFile &f, COpTaskEnable &op)
 
     hr = f >> (COpTypeSingleString&)op; if (FAILED(hr)) return hr;
     hr = f >> iTemp;                    if (FAILED(hr)) return hr; op.m_bEnable = iTemp ? TRUE : FALSE;
+
+    return S_OK;
+}
+
+
+inline HRESULT operator <<(ATL::CAtlFile &f, const COpCertStore &op)
+{
+    HRESULT hr;
+
+    hr = f << (const COpTypeSingleString&)op; if (FAILED(hr)) return hr;
+    hr = f << (int)(op.m_dwEncodingType);     if (FAILED(hr)) return hr;
+    hr = f << (int)(op.m_dwFlags);            if (FAILED(hr)) return hr;
+
+    return S_OK;
+}
+
+
+inline HRESULT operator >>(ATL::CAtlFile &f, COpCertStore &op)
+{
+    HRESULT hr;
+
+    hr = f >> (COpTypeSingleString&)op;    if (FAILED(hr)) return hr;
+    hr = f >> (int&)(op.m_dwEncodingType); if (FAILED(hr)) return hr;
+    hr = f >> (int&)(op.m_dwFlags);        if (FAILED(hr)) return hr;
+
+    return S_OK;
+}
+
+
+inline HRESULT operator <<(ATL::CAtlFile &f, const COpCert &op)
+{
+    HRESULT hr;
+
+    hr = f << (const COpCertStore&)op; if (FAILED(hr)) return hr;
+    hr = f << op.m_binCert;            if (FAILED(hr)) return hr;
+
+    return S_OK;
+}
+
+
+inline HRESULT operator >>(ATL::CAtlFile &f, COpCert &op)
+{
+    HRESULT hr;
+
+    hr = f >> (COpCertStore&)op; if (FAILED(hr)) return hr;
+    hr = f >> op.m_binCert;      if (FAILED(hr)) return hr;
 
     return S_OK;
 }
