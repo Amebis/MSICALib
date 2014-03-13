@@ -89,3 +89,11 @@ msgid ""
 msgstr ""
 "Pri premikanju datoteke »[2]« v »[3]« je prišlo do napake [4]. Obrnite se na "
 "svojo tehnično službo."
+
+#: ..\msm/Sl.DebugU.Win32.Error-2.idtx:4
+msgid ""
+"Error [2] creating scheduled task list. Please, contact your support "
+"personnel."
+msgstr ""
+"Pri pripravi seznama razvrščenih opravil je prišlo do napake [2]. Obrnite se "
+"na svojo tehnično službo."

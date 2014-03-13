@@ -36,7 +36,7 @@
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\en_GB.po" />
+    <None Include="L10N\sl_SI.po" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8552EE55-177E-4F51-B51B-BAF7D6462CDE}</ProjectGuid>

@@ -12,10 +12,11 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// Error codes (next unused 2569L)
+// Error codes (next unused 2571L)
 ////////////////////////////////////////////////////////////////////
 
 #define ERROR_INSTALL_DATABASE_OPEN                    2550L
+#define ERROR_INSTALL_OPLIST_CREATE                    2551L
 #define ERROR_INSTALL_PROPERTY_SET                     2553L
 #define ERROR_INSTALL_SCRIPT_WRITE                     2552L
 #define ERROR_INSTALL_SCRIPT_READ                      2560L
@@ -33,9 +34,8 @@
 #define ERROR_INSTALL_TASK_DELETE_FAILED               2557L
 #define ERROR_INSTALL_TASK_ENABLE_FAILED               2558L
 #define ERROR_INSTALL_TASK_COPY_FAILED                 2559L
-
-// Errors reported by MSITSCA
-#define ERROR_INSTALL_SCHEDULED_TASKS_OPLIST_CREATE    2551L
+#define ERROR_INSTALL_CERT_INSTALL_FAILED              2569L
+#define ERROR_INSTALL_CERT_REMOVE_FAILED               2570L
 
 
 namespace MSICA {
@@ -444,6 +444,18 @@ public:
 
 
 ////////////////////////////////////////////////////////////////////////////
+// COpCertRemove
+////////////////////////////////////////////////////////////////////////////
+
+class COpCertRemove : public COpCert
+{
+public:
+    COpCertRemove(LPCVOID lpCert = NULL, SIZE_T nSize = 0, LPCWSTR pszStore = L"", DWORD dwEncodingType = 0, DWORD dwFlags = 0, int iTicks = 0);
+    virtual HRESULT Execute(CSession *pSession);
+};
+
+
+////////////////////////////////////////////////////////////////////////////
 // COpList
 ////////////////////////////////////////////////////////////////////////////
 
@@ -476,6 +488,8 @@ protected:
         OP_TASK_DELETE,
         OP_TASK_ENABLE,
         OP_TASK_COPY,
+        OP_CERT_INSTALL,
+        OP_CERT_REMOVE,
         OP_SUBLIST
     };
 
@@ -772,6 +786,34 @@ inline UINT MsiGetTargetPathW(MSIHANDLE hInstall, LPCWSTR szFolder, ATL::CAtlStr
         // Return error code.
         return uiResult;
     }
+}
+
+
+inline DWORD CertGetNameStringA(PCCERT_CONTEXT pCertContext, DWORD dwType, DWORD dwFlags, void *pvTypePara, ATL::CAtlStringA &sNameString)
+{
+    // Query the final string length first.
+    DWORD dwSize = ::CertGetNameStringA(pCertContext, dwType, dwFlags, pvTypePara, NULL, 0);
+
+    // Prepare the buffer to format the string data into and read it.
+    LPSTR szBuffer = sNameString.GetBuffer(dwSize);
+    if (!szBuffer) return ERROR_OUTOFMEMORY;
+    dwSize = ::CertGetNameStringA(pCertContext, dwType, dwFlags, pvTypePara, szBuffer, dwSize);
+    sNameString.ReleaseBuffer(dwSize);
+    return dwSize;
+}
+
+
+inline DWORD CertGetNameStringW(PCCERT_CONTEXT pCertContext, DWORD dwType, DWORD dwFlags, void *pvTypePara, ATL::CAtlStringW &sNameString)
+{
+    // Query the final string length first.
+    DWORD dwSize = ::CertGetNameStringW(pCertContext, dwType, dwFlags, pvTypePara, NULL, 0);
+
+    // Prepare the buffer to format the string data into and read it.
+    LPWSTR szBuffer = sNameString.GetBuffer(dwSize);
+    if (!szBuffer) return ERROR_OUTOFMEMORY;
+    dwSize = ::CertGetNameStringW(pCertContext, dwType, dwFlags, pvTypePara, szBuffer, dwSize);
+    sNameString.ReleaseBuffer(dwSize);
+    return dwSize;
 }
 
 
@@ -1340,6 +1382,10 @@ inline HRESULT operator <<(ATL::CAtlFile &f, const COpList &list)
             hr = list.Save<COpTaskEnable, COpList::OP_TASK_ENABLE>(f, pOp);
         else if (dynamic_cast<const COpTaskCopy*>(pOp))
             hr = list.Save<COpTaskCopy, COpList::OP_TASK_COPY>(f, pOp);
+        else if (dynamic_cast<const COpCertInstall*>(pOp))
+            hr = list.Save<COpCertInstall, COpList::OP_CERT_INSTALL>(f, pOp);
+        else if (dynamic_cast<const COpCertRemove*>(pOp))
+            hr = list.Save<COpCertRemove, COpList::OP_CERT_REMOVE>(f, pOp);
         else if (dynamic_cast<const COpList*>(pOp))
             hr = list.Save<COpList, COpList::OP_SUBLIST>(f, pOp);
         else {
@@ -1410,6 +1456,12 @@ inline HRESULT operator >>(ATL::CAtlFile &f, COpList &list)
             break;
         case COpList::OP_TASK_COPY:
             hr = list.LoadAndAddTail<COpTaskCopy>(f);
+            break;
+        case COpList::OP_CERT_INSTALL:
+            hr = list.LoadAndAddTail<COpCertInstall>(f);
+            break;
+        case COpList::OP_CERT_REMOVE:
+            hr = list.LoadAndAddTail<COpCertRemove>(f);
             break;
         case COpList::OP_SUBLIST:
             hr = list.LoadAndAddTail<COpList>(f);
