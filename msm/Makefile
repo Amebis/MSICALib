@@ -1,4 +1,4 @@
-!INCLUDE "..\..\include\MSIBuildCfg.mak"
+!INCLUDE "..\..\..\include\MSIBuildCfg.mak"
 
 MSIBUILD_IS_LOCALIZEABLE=1
 
@@ -10,7 +10,7 @@ All :: \
 	"$(LANG).$(PLAT).$(CFG).Error-1.idt" \
 	"$(LANG).$(PLAT).$(CFG).Error-2.idt"
 
-"$(LANG).$(PLAT).$(CFG).Error-1.idt" : "Makefile" "..\..\include\MSINast.mak"
+"$(LANG).$(PLAT).$(CFG).Error-1.idt" : "Makefile" "..\..\..\include\MSIBuildCfg.mak"
 	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
 Error	Message
@@ -18,7 +18,7 @@ i2	L0
 Error	Error
 <<NOKEEP
 
-"En.$(PLAT).$(CFG).Error-2.idtx" : "Makefile" "..\..\include\MSINast.mak"
+"En.$(PLAT).$(CFG).Error-2.idtx" : "Makefile" "..\..\..\include\MSIBuildCfg.mak"
 	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
 Error	Message
@@ -39,16 +39,16 @@ i2	L0
 2570	Error [3] removing certificate from certificate store "[2]". Please, contact your support personnel.
 <<NOKEEP
 
-"De.$(CFG).$(PLAT).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\L10N\de_DE.po"
+"De.$(PLAT).$(CFG).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\L10N\de_DE.po"
 	rcxgettext.exe idtp $@ $**
 
 "En.$(PLAT).$(CFG).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx"
 	copy /y $** $@ > NUL
 
-"It.$(CFG).$(PLAT).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\L10N\it_IT.po"
+"It.$(PLAT).$(CFG).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\L10N\it_IT.po"
 	rcxgettext.exe idtp $@ $**
 
-"Sl.$(CFG).$(PLAT).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\L10N\sl_SI.po"
+"Sl.$(PLAT).$(CFG).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\L10N\sl_SI.po"
 	rcxgettext.exe idtp $@ $**
 
 
@@ -56,4 +56,4 @@ i2	L0
 # Build MSM module!
 ######################################################################
 
-!INCLUDE "..\..\MSIBuild\MSM.mak"
+!INCLUDE "..\..\..\MSIBuild\MSM.mak"
