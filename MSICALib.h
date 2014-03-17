@@ -521,6 +521,7 @@ public:
 // Helper functions
 ////////////////////////////////////////////////////////////////////////////
 
+UINT SaveSequence(MSIHANDLE hInstall, LPCTSTR szActionExecute, LPCTSTR szActionCommit, LPCTSTR szActionRollback, const COpList &olExecute);
 UINT ExecuteSequence(MSIHANDLE hInstall);
 
 } // namespace MSICA
@@ -537,7 +538,7 @@ UINT ExecuteSequence(MSIHANDLE hInstall);
 
 
 ////////////////////////////////////////////////////////////////////
-// Inline Functions
+// Inline helper functions
 ////////////////////////////////////////////////////////////////////
 
 inline UINT MsiGetPropertyA(MSIHANDLE hInstall, LPCSTR szName, ATL::CAtlStringA &sValue)
@@ -633,6 +634,23 @@ inline UINT MsiRecordGetStringW(MSIHANDLE hRecord, unsigned int iField, ATL::CAt
         // The string in database is empty.
         sValue.Empty();
         return ERROR_SUCCESS;
+    } else {
+        // Return error code.
+        return uiResult;
+    }
+}
+
+
+inline UINT MsiRecordGetStream(MSIHANDLE hRecord, unsigned int iField, ATL::CAtlArray<BYTE> &binData)
+{
+    DWORD dwSize = 0;
+    UINT uiResult;
+
+    // Query the actual data length first.
+    uiResult = ::MsiRecordReadStream(hRecord, iField, NULL, &dwSize);
+    if (uiResult == ERROR_SUCCESS) {
+        if (!binData.SetCount(dwSize)) return ERROR_OUTOFMEMORY;
+        return ::MsiRecordReadStream(hRecord, iField, (char*)binData.GetData(), &dwSize);
     } else {
         // Return error code.
         return uiResult;
