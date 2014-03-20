@@ -12,7 +12,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// Error codes (next unused 2571L)
+// Error codes (next unused 2574L)
 ////////////////////////////////////////////////////////////////////
 
 #define ERROR_INSTALL_DATABASE_OPEN                    2550L
@@ -36,6 +36,9 @@
 #define ERROR_INSTALL_TASK_COPY_FAILED                 2559L
 #define ERROR_INSTALL_CERT_INSTALL_FAILED              2569L
 #define ERROR_INSTALL_CERT_REMOVE_FAILED               2570L
+#define ERROR_INSTALL_SVC_SET_START_FAILED             2571L
+#define ERROR_INSTALL_SVC_START_FAILED                 2572L
+#define ERROR_INSTALL_SVC_STOP_FAILED                  2573L
 
 
 namespace MSICA {
@@ -456,6 +459,48 @@ public:
 
 
 ////////////////////////////////////////////////////////////////////////////
+// COpSvcSetStart
+////////////////////////////////////////////////////////////////////////////
+
+class COpSvcSetStart : public COpTypeSingleString
+{
+public:
+    COpSvcSetStart(LPCWSTR pszService = L"", DWORD dwStartType = SERVICE_DEMAND_START, int iTicks = 0);
+    virtual HRESULT Execute(CSession *pSession);
+
+    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpSvcSetStart &op);
+    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpSvcSetStart &op);
+
+protected:
+    DWORD m_dwStartType;
+};
+
+
+////////////////////////////////////////////////////////////////////////////
+// COpSvcStart
+////////////////////////////////////////////////////////////////////////////
+
+class COpSvcStart : public COpTypeSingleString
+{
+public:
+    COpSvcStart(LPCWSTR pszService = L"", int iTicks = 0);
+    virtual HRESULT Execute(CSession *pSession);
+};
+
+
+////////////////////////////////////////////////////////////////////////////
+// COpSvcStop
+////////////////////////////////////////////////////////////////////////////
+
+class COpSvcStop : public COpTypeSingleString
+{
+public:
+    COpSvcStop(LPCWSTR pszService = L"", int iTicks = 0);
+    virtual HRESULT Execute(CSession *pSession);
+};
+
+
+////////////////////////////////////////////////////////////////////////////
 // COpList
 ////////////////////////////////////////////////////////////////////////////
 
@@ -490,6 +535,9 @@ protected:
         OP_TASK_COPY,
         OP_CERT_INSTALL,
         OP_CERT_REMOVE,
+        OP_SVC_SET_START,
+        OP_SVC_START,
+        OP_SVC_STOP,
         OP_SUBLIST
     };
 
@@ -553,12 +601,12 @@ inline UINT MsiGetPropertyA(MSIHANDLE hInstall, LPCSTR szName, ATL::CAtlStringA 
         LPSTR szBuffer = sValue.GetBuffer(dwSize++);
         if (!szBuffer) return ERROR_OUTOFMEMORY;
         uiResult = ::MsiGetPropertyA(hInstall, szName, szBuffer, &dwSize);
-        sValue.ReleaseBuffer(uiResult == ERROR_SUCCESS ? dwSize : 0);
+        sValue.ReleaseBuffer(uiResult == NO_ERROR ? dwSize : 0);
         return uiResult;
-    } else if (uiResult == ERROR_SUCCESS) {
+    } else if (uiResult == NO_ERROR) {
         // The string in database is empty.
         sValue.Empty();
-        return ERROR_SUCCESS;
+        return NO_ERROR;
     } else {
         // Return error code.
         return uiResult;
@@ -578,12 +626,12 @@ inline UINT MsiGetPropertyW(MSIHANDLE hInstall, LPCWSTR szName, ATL::CAtlStringW
         LPWSTR szBuffer = sValue.GetBuffer(dwSize++);
         if (!szBuffer) return ERROR_OUTOFMEMORY;
         uiResult = ::MsiGetPropertyW(hInstall, szName, szBuffer, &dwSize);
-        sValue.ReleaseBuffer(uiResult == ERROR_SUCCESS ? dwSize : 0);
+        sValue.ReleaseBuffer(uiResult == NO_ERROR ? dwSize : 0);
         return uiResult;
-    } else if (uiResult == ERROR_SUCCESS) {
+    } else if (uiResult == NO_ERROR) {
         // The string in database is empty.
         sValue.Empty();
-        return ERROR_SUCCESS;
+        return NO_ERROR;
     } else {
         // Return error code.
         return uiResult;
@@ -603,12 +651,12 @@ inline UINT MsiRecordGetStringA(MSIHANDLE hRecord, unsigned int iField, ATL::CAt
         LPSTR szBuffer = sValue.GetBuffer(dwSize++);
         if (!szBuffer) return ERROR_OUTOFMEMORY;
         uiResult = ::MsiRecordGetStringA(hRecord, iField, szBuffer, &dwSize);
-        sValue.ReleaseBuffer(uiResult == ERROR_SUCCESS ? dwSize : 0);
+        sValue.ReleaseBuffer(uiResult == NO_ERROR ? dwSize : 0);
         return uiResult;
-    } else if (uiResult == ERROR_SUCCESS) {
+    } else if (uiResult == NO_ERROR) {
         // The string in database is empty.
         sValue.Empty();
-        return ERROR_SUCCESS;
+        return NO_ERROR;
     } else {
         // Return error code.
         return uiResult;
@@ -628,12 +676,12 @@ inline UINT MsiRecordGetStringW(MSIHANDLE hRecord, unsigned int iField, ATL::CAt
         LPWSTR szBuffer = sValue.GetBuffer(dwSize++);
         if (!szBuffer) return ERROR_OUTOFMEMORY;
         uiResult = ::MsiRecordGetStringW(hRecord, iField, szBuffer, &dwSize);
-        sValue.ReleaseBuffer(uiResult == ERROR_SUCCESS ? dwSize : 0);
+        sValue.ReleaseBuffer(uiResult == NO_ERROR ? dwSize : 0);
         return uiResult;
-    } else if (uiResult == ERROR_SUCCESS) {
+    } else if (uiResult == NO_ERROR) {
         // The string in database is empty.
         sValue.Empty();
-        return ERROR_SUCCESS;
+        return NO_ERROR;
     } else {
         // Return error code.
         return uiResult;
@@ -648,7 +696,7 @@ inline UINT MsiRecordGetStream(MSIHANDLE hRecord, unsigned int iField, ATL::CAtl
 
     // Query the actual data length first.
     uiResult = ::MsiRecordReadStream(hRecord, iField, NULL, &dwSize);
-    if (uiResult == ERROR_SUCCESS) {
+    if (uiResult == NO_ERROR) {
         if (!binData.SetCount(dwSize)) return ERROR_OUTOFMEMORY;
         return ::MsiRecordReadStream(hRecord, iField, (char*)binData.GetData(), &dwSize);
     } else {
@@ -670,12 +718,12 @@ inline UINT MsiFormatRecordA(MSIHANDLE hInstall, MSIHANDLE hRecord, ATL::CAtlStr
         LPSTR szBuffer = sValue.GetBuffer(dwSize++);
         if (!szBuffer) return ERROR_OUTOFMEMORY;
         uiResult = ::MsiFormatRecordA(hInstall, hRecord, szBuffer, &dwSize);
-        sValue.ReleaseBuffer(uiResult == ERROR_SUCCESS ? dwSize : 0);
+        sValue.ReleaseBuffer(uiResult == NO_ERROR ? dwSize : 0);
         return uiResult;
-    } else if (uiResult == ERROR_SUCCESS) {
+    } else if (uiResult == NO_ERROR) {
         // The result is empty.
         sValue.Empty();
-        return ERROR_SUCCESS;
+        return NO_ERROR;
     } else {
         // Return error code.
         return uiResult;
@@ -695,12 +743,12 @@ inline UINT MsiFormatRecordW(MSIHANDLE hInstall, MSIHANDLE hRecord, ATL::CAtlStr
         LPWSTR szBuffer = sValue.GetBuffer(dwSize++);
         if (!szBuffer) return ERROR_OUTOFMEMORY;
         uiResult = ::MsiFormatRecordW(hInstall, hRecord, szBuffer, &dwSize);
-        sValue.ReleaseBuffer(uiResult == ERROR_SUCCESS ? dwSize : 0);
+        sValue.ReleaseBuffer(uiResult == NO_ERROR ? dwSize : 0);
         return uiResult;
-    } else if (uiResult == ERROR_SUCCESS) {
+    } else if (uiResult == NO_ERROR) {
         // The result is empty.
         sValue.Empty();
-        return ERROR_SUCCESS;
+        return NO_ERROR;
     } else {
         // Return error code.
         return uiResult;
@@ -715,10 +763,10 @@ inline UINT MsiRecordFormatStringA(MSIHANDLE hInstall, MSIHANDLE hRecord, unsign
 
     // Read string to format.
     uiResult = ::MsiRecordGetStringA(hRecord, iField, sValue);
-    if (uiResult != ERROR_SUCCESS) return uiResult;
+    if (uiResult != NO_ERROR) return uiResult;
 
     // If the string is empty, there's nothing left to do.
-    if (sValue.IsEmpty()) return ERROR_SUCCESS;
+    if (sValue.IsEmpty()) return NO_ERROR;
 
     // Create a record.
     hRecordEx = ::MsiCreateRecord(1);
@@ -726,7 +774,7 @@ inline UINT MsiRecordFormatStringA(MSIHANDLE hInstall, MSIHANDLE hRecord, unsign
 
     // Populate record with data.
     uiResult = ::MsiRecordSetStringA(hRecordEx, 0, sValue);
-    if (uiResult != ERROR_SUCCESS) return uiResult;
+    if (uiResult != NO_ERROR) return uiResult;
 
     // Do the formatting.
     return ::MsiFormatRecordA(hInstall, hRecordEx, sValue);
@@ -740,10 +788,10 @@ inline UINT MsiRecordFormatStringW(MSIHANDLE hInstall, MSIHANDLE hRecord, unsign
 
     // Read string to format.
     uiResult = ::MsiRecordGetStringW(hRecord, iField, sValue);
-    if (uiResult != ERROR_SUCCESS) return uiResult;
+    if (uiResult != NO_ERROR) return uiResult;
 
     // If the string is empty, there's nothing left to do.
-    if (sValue.IsEmpty()) return ERROR_SUCCESS;
+    if (sValue.IsEmpty()) return NO_ERROR;
 
     // Create a record.
     hRecordEx = ::MsiCreateRecord(1);
@@ -751,7 +799,7 @@ inline UINT MsiRecordFormatStringW(MSIHANDLE hInstall, MSIHANDLE hRecord, unsign
 
     // Populate record with data.
     uiResult = ::MsiRecordSetStringW(hRecordEx, 0, sValue);
-    if (uiResult != ERROR_SUCCESS) return uiResult;
+    if (uiResult != NO_ERROR) return uiResult;
 
     // Do the formatting.
     return ::MsiFormatRecordW(hInstall, hRecordEx, sValue);
@@ -776,12 +824,12 @@ inline UINT MsiGetTargetPathA(MSIHANDLE hInstall, LPCSTR szFolder, ATL::CAtlStri
         LPSTR szBuffer = sValue.GetBuffer(dwSize++);
         if (!szBuffer) return ERROR_OUTOFMEMORY;
         uiResult = ::MsiGetTargetPathA(hInstall, szFolder, szBuffer, &dwSize);
-        sValue.ReleaseBuffer(uiResult == ERROR_SUCCESS ? dwSize : 0);
+        sValue.ReleaseBuffer(uiResult == NO_ERROR ? dwSize : 0);
         return uiResult;
-    } else if (uiResult == ERROR_SUCCESS) {
+    } else if (uiResult == NO_ERROR) {
         // The result is empty.
         sValue.Empty();
-        return ERROR_SUCCESS;
+        return NO_ERROR;
     } else {
         // Return error code.
         return uiResult;
@@ -801,12 +849,12 @@ inline UINT MsiGetTargetPathW(MSIHANDLE hInstall, LPCWSTR szFolder, ATL::CAtlStr
         LPWSTR szBuffer = sValue.GetBuffer(dwSize++);
         if (!szBuffer) return ERROR_OUTOFMEMORY;
         uiResult = ::MsiGetTargetPathW(hInstall, szFolder, szBuffer, &dwSize);
-        sValue.ReleaseBuffer(uiResult == ERROR_SUCCESS ? dwSize : 0);
+        sValue.ReleaseBuffer(uiResult == NO_ERROR ? dwSize : 0);
         return uiResult;
-    } else if (uiResult == ERROR_SUCCESS) {
+    } else if (uiResult == NO_ERROR) {
         // The result is empty.
         sValue.Empty();
-        return ERROR_SUCCESS;
+        return NO_ERROR;
     } else {
         // Return error code.
         return uiResult;
@@ -1368,6 +1416,28 @@ inline HRESULT operator >>(ATL::CAtlFile &f, COpCert &op)
 }
 
 
+inline HRESULT operator <<(ATL::CAtlFile &f, const COpSvcSetStart &op)
+{
+    HRESULT hr;
+
+    hr = f << (const COpTypeSingleString&)op; if (FAILED(hr)) return hr;
+    hr = f << (int)(op.m_dwStartType);        if (FAILED(hr)) return hr;
+
+    return S_OK;
+}
+
+
+inline HRESULT operator >>(ATL::CAtlFile &f, COpSvcSetStart &op)
+{
+    HRESULT hr;
+
+    hr = f >> (COpTypeSingleString&)op; if (FAILED(hr)) return hr;
+    hr = f >> (int&)(op.m_dwStartType); if (FAILED(hr)) return hr;
+
+    return S_OK;
+}
+
+
 inline HRESULT operator <<(ATL::CAtlFile &f, const COpList &list)
 {
     POSITION pos;
@@ -1411,6 +1481,12 @@ inline HRESULT operator <<(ATL::CAtlFile &f, const COpList &list)
             hr = list.Save<COpCertInstall, COpList::OP_CERT_INSTALL>(f, pOp);
         else if (dynamic_cast<const COpCertRemove*>(pOp))
             hr = list.Save<COpCertRemove, COpList::OP_CERT_REMOVE>(f, pOp);
+        else if (dynamic_cast<const COpSvcSetStart*>(pOp))
+            hr = list.Save<COpSvcSetStart, COpList::OP_SVC_SET_START>(f, pOp);
+        else if (dynamic_cast<const COpSvcStart*>(pOp))
+            hr = list.Save<COpSvcStart, COpList::OP_SVC_START>(f, pOp);
+        else if (dynamic_cast<const COpSvcStop*>(pOp))
+            hr = list.Save<COpSvcStop, COpList::OP_SVC_STOP>(f, pOp);
         else if (dynamic_cast<const COpList*>(pOp))
             hr = list.Save<COpList, COpList::OP_SUBLIST>(f, pOp);
         else {
@@ -1443,54 +1519,25 @@ inline HRESULT operator >>(ATL::CAtlFile &f, COpList &list)
         if (FAILED(hr)) return hr;
 
         switch ((COpList::OPERATION)iTemp) {
-        case COpList::OP_ROLLBACK_ENABLE:
-            hr = list.LoadAndAddTail<COpRollbackEnable>(f);
-            break;
-        case COpList::OP_FILE_DELETE:
-            hr = list.LoadAndAddTail<COpFileDelete>(f);
-            break;
-        case COpList::OP_FILE_MOVE:
-            hr = list.LoadAndAddTail<COpFileMove>(f);
-            break;
-        case COpList::OP_REG_KEY_CREATE:
-            hr = list.LoadAndAddTail<COpRegKeyCreate>(f);
-            break;
-        case COpList::OP_REG_KEY_COPY:
-            hr = list.LoadAndAddTail<COpRegKeyCopy>(f);
-            break;
-        case COpList::OP_REG_KEY_DELETE:
-            hr = list.LoadAndAddTail<COpRegKeyDelete>(f);
-            break;
-        case COpList::OP_REG_VALUE_CREATE:
-            hr = list.LoadAndAddTail<COpRegValueCreate>(f);
-            break;
-        case COpList::OP_REG_VALUE_COPY:
-            hr = list.LoadAndAddTail<COpRegValueCopy>(f);
-            break;
-        case COpList::OP_REG_VALUE_DELETE:
-            hr = list.LoadAndAddTail<COpRegValueDelete>(f);
-            break;
-        case COpList::OP_TASK_CREATE:
-            hr = list.LoadAndAddTail<COpTaskCreate>(f);
-            break;
-        case COpList::OP_TASK_DELETE:
-            hr = list.LoadAndAddTail<COpTaskDelete>(f);
-            break;
-        case COpList::OP_TASK_ENABLE:
-            hr = list.LoadAndAddTail<COpTaskEnable>(f);
-            break;
-        case COpList::OP_TASK_COPY:
-            hr = list.LoadAndAddTail<COpTaskCopy>(f);
-            break;
-        case COpList::OP_CERT_INSTALL:
-            hr = list.LoadAndAddTail<COpCertInstall>(f);
-            break;
-        case COpList::OP_CERT_REMOVE:
-            hr = list.LoadAndAddTail<COpCertRemove>(f);
-            break;
-        case COpList::OP_SUBLIST:
-            hr = list.LoadAndAddTail<COpList>(f);
-            break;
+        case COpList::OP_ROLLBACK_ENABLE:  hr = list.LoadAndAddTail<COpRollbackEnable>(f); break;
+        case COpList::OP_FILE_DELETE:      hr = list.LoadAndAddTail<COpFileDelete    >(f); break;
+        case COpList::OP_FILE_MOVE:        hr = list.LoadAndAddTail<COpFileMove      >(f); break;
+        case COpList::OP_REG_KEY_CREATE:   hr = list.LoadAndAddTail<COpRegKeyCreate  >(f); break;
+        case COpList::OP_REG_KEY_COPY:     hr = list.LoadAndAddTail<COpRegKeyCopy    >(f); break;
+        case COpList::OP_REG_KEY_DELETE:   hr = list.LoadAndAddTail<COpRegKeyDelete  >(f); break;
+        case COpList::OP_REG_VALUE_CREATE: hr = list.LoadAndAddTail<COpRegValueCreate>(f); break;
+        case COpList::OP_REG_VALUE_COPY:   hr = list.LoadAndAddTail<COpRegValueCopy  >(f); break;
+        case COpList::OP_REG_VALUE_DELETE: hr = list.LoadAndAddTail<COpRegValueDelete>(f); break;
+        case COpList::OP_TASK_CREATE:      hr = list.LoadAndAddTail<COpTaskCreate    >(f); break;
+        case COpList::OP_TASK_DELETE:      hr = list.LoadAndAddTail<COpTaskDelete    >(f); break;
+        case COpList::OP_TASK_ENABLE:      hr = list.LoadAndAddTail<COpTaskEnable    >(f); break;
+        case COpList::OP_TASK_COPY:        hr = list.LoadAndAddTail<COpTaskCopy      >(f); break;
+        case COpList::OP_CERT_INSTALL:     hr = list.LoadAndAddTail<COpCertInstall   >(f); break;
+        case COpList::OP_CERT_REMOVE:      hr = list.LoadAndAddTail<COpCertRemove    >(f); break;
+        case COpList::OP_SVC_SET_START:    hr = list.LoadAndAddTail<COpSvcSetStart   >(f); break;
+        case COpList::OP_SVC_START:        hr = list.LoadAndAddTail<COpSvcStart      >(f); break;
+        case COpList::OP_SVC_STOP:         hr = list.LoadAndAddTail<COpSvcStop       >(f); break;
+        case COpList::OP_SUBLIST:          hr = list.LoadAndAddTail<COpList          >(f); break;
         default:
             // Unsupported type of operation.
             hr = E_UNEXPECTED;

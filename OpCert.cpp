@@ -64,12 +64,12 @@ HRESULT COpCertInstall::Execute(CSession *pSession)
                     // Order rollback action to delete the certificate.
                     pSession->m_olRollback.AddHead(new COpCertRemove(m_binCert.GetData(), m_binCert.GetCount(), m_sValue, m_dwEncodingType, m_dwFlags));
                 }
-                dwError = ERROR_SUCCESS;
+                dwError = NO_ERROR;
             } else {
                 dwError = ::GetLastError();
                 if (dwError == CRYPT_E_EXISTS) {
                     // Certificate store already contains given certificate. Nothing to install then.
-                    dwError = ERROR_SUCCESS;
+                    dwError = NO_ERROR;
                 }
             }
             ::CertFreeCertificateContext(pCertContext);
@@ -79,7 +79,7 @@ HRESULT COpCertInstall::Execute(CSession *pSession)
     } else
         dwError = ::GetLastError();
 
-    if (dwError == ERROR_SUCCESS)
+    if (dwError == NO_ERROR)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
@@ -130,14 +130,14 @@ HRESULT COpCertRemove::Execute(CSession *pSession)
                         // Order rollback action to reinstall the certificate.
                         pSession->m_olRollback.AddHead(new COpCertInstall(m_binCert.GetData(), m_binCert.GetCount(), m_sValue, m_dwEncodingType, m_dwFlags));
                     }
-                    dwError = ERROR_SUCCESS;
+                    dwError = NO_ERROR;
                 } else {
                     dwError = ::GetLastError();
                     ::CertFreeCertificateContext(pCertContextExisting);
                 }
             } else {
                 // We haven't found the certificate. Nothing to delete then.
-                dwError = ERROR_SUCCESS;
+                dwError = NO_ERROR;
             }
             ::CertFreeCertificateContext(pCertContext);
         } else
@@ -146,7 +146,7 @@ HRESULT COpCertRemove::Execute(CSession *pSession)
     } else
         dwError = ::GetLastError();
 
-    if (dwError == ERROR_SUCCESS)
+    if (dwError == NO_ERROR)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);

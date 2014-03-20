@@ -70,9 +70,9 @@ HRESULT COpRegKeyCreate::Execute(CSession *pSession)
 
             // Create the key.
             lResult = ::RegCreateKeyExW(m_hKeyRoot, sPartialName, NULL, NULL, REG_OPTION_NON_VOLATILE, KEY_ENUMERATE_SUB_KEYS | samAdditional, NULL, &hKey, NULL);
-            if (lResult != ERROR_SUCCESS) break;
+            if (lResult != NO_ERROR) break;
             ::RegCloseKey(hKey);
-        } else if (lResult == ERROR_SUCCESS) {
+        } else if (lResult == NO_ERROR) {
             // This key already exists. Release its handle and continue.
             ::RegCloseKey(hKey);
         } else
@@ -82,7 +82,7 @@ HRESULT COpRegKeyCreate::Execute(CSession *pSession)
         iStart = iStartNext + 1;
     }
 
-    if (lResult == ERROR_SUCCESS)
+    if (lResult == NO_ERROR)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(4);
@@ -133,7 +133,7 @@ HRESULT COpRegKeyCopy::Execute(CSession *pSession)
 
     // Copy the registry key.
     lResult = CopyKeyRecursively(m_hKeyRoot, m_sValue1, m_sValue2, samAdditional);
-    if (lResult == ERROR_SUCCESS)
+    if (lResult == NO_ERROR)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(5);
@@ -155,7 +155,7 @@ LONG COpRegKeyCopy::CopyKeyRecursively(HKEY hKeyRoot, LPCWSTR pszKeyNameSrc, LPC
 
     // Open source key.
     lResult = ::RegOpenKeyExW(hKeyRoot, pszKeyNameSrc, 0, READ_CONTROL | KEY_READ | samAdditional, &hKeySrc);
-    if (lResult != ERROR_SUCCESS) return lResult;
+    if (lResult != NO_ERROR) return lResult;
 
     {
         DWORD dwSecurityDescriptorSize, dwClassLen = MAX_PATH;
@@ -164,7 +164,7 @@ LONG COpRegKeyCopy::CopyKeyRecursively(HKEY hKeyRoot, LPCWSTR pszKeyNameSrc, LPC
 
         // Get source key class length and security descriptor size.
         lResult = ::RegQueryInfoKeyW(hKeySrc, pszClass, &dwClassLen, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &dwSecurityDescriptorSize, NULL);
-        if (lResult != ERROR_SUCCESS) {
+        if (lResult != NO_ERROR) {
             delete [] pszClass;
             return lResult;
         }
@@ -173,7 +173,7 @@ LONG COpRegKeyCopy::CopyKeyRecursively(HKEY hKeyRoot, LPCWSTR pszKeyNameSrc, LPC
         // Get source key security descriptor.
         sa.lpSecurityDescriptor = (PSECURITY_DESCRIPTOR)(new BYTE[dwSecurityDescriptorSize]);
         lResult = ::RegGetKeySecurity(hKeySrc, DACL_SECURITY_INFORMATION, sa.lpSecurityDescriptor, &dwSecurityDescriptorSize);
-        if (lResult != ERROR_SUCCESS) {
+        if (lResult != NO_ERROR) {
             delete [] (LPBYTE)(sa.lpSecurityDescriptor);
             delete [] pszClass;
             return lResult;
@@ -183,7 +183,7 @@ LONG COpRegKeyCopy::CopyKeyRecursively(HKEY hKeyRoot, LPCWSTR pszKeyNameSrc, LPC
         lResult = ::RegCreateKeyExW(hKeyRoot, pszKeyNameDst, 0, pszClass, REG_OPTION_NON_VOLATILE, KEY_WRITE | samAdditional, &sa, &hKeyDst, NULL);
         delete [] (LPBYTE)(sa.lpSecurityDescriptor);
         delete [] pszClass;
-        if (lResult != ERROR_SUCCESS) return lResult;
+        if (lResult != NO_ERROR) return lResult;
     }
 
     // Copy subkey recursively.
@@ -200,7 +200,7 @@ LONG COpRegKeyCopy::CopyKeyRecursively(HKEY hKeySrc, HKEY hKeyDst, REGSAM samAdd
 
     // Query the source key.
     lResult = ::RegQueryInfoKeyW(hKeySrc, NULL, NULL, NULL, NULL, &dwMaxSubKeyLen, &dwMaxClassLen, NULL, &dwMaxValueNameLen, &dwMaxDataSize, NULL, NULL);
-    if (lResult != ERROR_SUCCESS) return lResult;
+    if (lResult != NO_ERROR) return lResult;
 
     // Copy values first.
     dwMaxValueNameLen++;
@@ -212,19 +212,19 @@ LONG COpRegKeyCopy::CopyKeyRecursively(HKEY hKeySrc, HKEY hKeyDst, REGSAM samAdd
         // Read value.
         lResult = ::RegEnumValueW(hKeySrc, dwIndex, pszName, &dwNameLen, NULL, &dwType, lpData, &dwValueSize);
         if (lResult == ERROR_NO_MORE_ITEMS) {
-            lResult = ERROR_SUCCESS;
+            lResult = NO_ERROR;
             break;
-        } else if (lResult != ERROR_SUCCESS)
+        } else if (lResult != NO_ERROR)
             break;
 
         // Save value.
         lResult = ::RegSetValueExW(hKeyDst, pszName, 0, dwType, lpData, dwValueSize);
-        if (lResult != ERROR_SUCCESS)
+        if (lResult != NO_ERROR)
             break;
     }
     delete [] lpData;
     delete [] pszName;
-    if (lResult != ERROR_SUCCESS) return lResult;
+    if (lResult != NO_ERROR) return lResult;
 
     // Iterate over all subkeys and copy them.
     dwMaxSubKeyLen++;
@@ -238,14 +238,14 @@ LONG COpRegKeyCopy::CopyKeyRecursively(HKEY hKeySrc, HKEY hKeyDst, REGSAM samAdd
         // Read subkey.
         lResult = ::RegEnumKeyExW(hKeySrc, dwIndex, pszName, &dwNameLen, NULL, pszClass, &dwClassLen, NULL);
         if (lResult == ERROR_NO_MORE_ITEMS) {
-            lResult = ERROR_SUCCESS;
+            lResult = NO_ERROR;
             break;
-        } else if (lResult != ERROR_SUCCESS)
+        } else if (lResult != NO_ERROR)
             break;
 
         // Open source subkey.
         lResult = ::RegOpenKeyExW(hKeySrc, pszName, 0, READ_CONTROL | KEY_READ | samAdditional, &hKeySrcSub);
-        if (lResult != ERROR_SUCCESS) break;
+        if (lResult != NO_ERROR) break;
 
         {
             DWORD dwSecurityDescriptorSize;
@@ -253,12 +253,12 @@ LONG COpRegKeyCopy::CopyKeyRecursively(HKEY hKeySrc, HKEY hKeyDst, REGSAM samAdd
 
             // Get source subkey security descriptor size.
             lResult = ::RegQueryInfoKeyW(hKeySrcSub, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &dwSecurityDescriptorSize, NULL);
-            if (lResult != ERROR_SUCCESS) break;
+            if (lResult != NO_ERROR) break;
 
             // Get source subkey security descriptor.
             sa.lpSecurityDescriptor = (PSECURITY_DESCRIPTOR)(new BYTE[dwSecurityDescriptorSize]);
             lResult = ::RegGetKeySecurity(hKeySrc, DACL_SECURITY_INFORMATION, sa.lpSecurityDescriptor, &dwSecurityDescriptorSize);
-            if (lResult != ERROR_SUCCESS) {
+            if (lResult != NO_ERROR) {
                 delete [] (LPBYTE)(sa.lpSecurityDescriptor);
                 break;
             }
@@ -266,12 +266,12 @@ LONG COpRegKeyCopy::CopyKeyRecursively(HKEY hKeySrc, HKEY hKeyDst, REGSAM samAdd
             // Create new destination subkey of the same class and security.
             lResult = ::RegCreateKeyExW(hKeyDst, pszName, 0, pszClass, REG_OPTION_NON_VOLATILE, KEY_WRITE | samAdditional, &sa, &hKeyDstSub, NULL);
             delete [] (LPBYTE)(sa.lpSecurityDescriptor);
-            if (lResult != ERROR_SUCCESS) break;
+            if (lResult != NO_ERROR) break;
         }
 
         // Copy subkey recursively.
         lResult = CopyKeyRecursively(hKeySrcSub, hKeyDstSub, samAdditional);
-        if (lResult != ERROR_SUCCESS) break;
+        if (lResult != NO_ERROR) break;
     }
     delete [] pszClass;
     delete [] pszName;
@@ -304,7 +304,7 @@ HRESULT COpRegKeyDelete::Execute(CSession *pSession)
 
     // Probe to see if the key exists.
     lResult = ::RegOpenKeyExW(m_hKeyRoot, m_sValue, 0, DELETE | samAdditional, &hKey);
-    if (lResult == ERROR_SUCCESS) {
+    if (lResult == NO_ERROR) {
         ::RegCloseKey(hKey);
 
         if (pSession->m_bRollbackEnabled) {
@@ -320,7 +320,7 @@ HRESULT COpRegKeyDelete::Execute(CSession *pSession)
                 HKEY hKey;
                 sBackupName.Format(L"%.*ls (orig %u)", iLength, (LPCWSTR)m_sValue, ++uiCount);
                 lResult = ::RegOpenKeyExW(m_hKeyRoot, sBackupName, 0, KEY_ENUMERATE_SUB_KEYS | samAdditional, &hKey);
-                if (lResult != ERROR_SUCCESS) break;
+                if (lResult != NO_ERROR) break;
                 ::RegCloseKey(hKey);
             }
             if (lResult == ERROR_FILE_NOT_FOUND) {
@@ -349,7 +349,7 @@ HRESULT COpRegKeyDelete::Execute(CSession *pSession)
         lResult = DeleteKeyRecursively(m_hKeyRoot, m_sValue, samAdditional);
     }
 
-    if (lResult == ERROR_SUCCESS || lResult == ERROR_FILE_NOT_FOUND)
+    if (lResult == NO_ERROR || lResult == ERROR_FILE_NOT_FOUND)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(4);
@@ -370,12 +370,12 @@ LONG COpRegKeyDelete::DeleteKeyRecursively(HKEY hKeyRoot, LPCWSTR pszKeyName, RE
 
     // Open the key.
     lResult = ::RegOpenKeyExW(hKeyRoot, pszKeyName, 0, DELETE | KEY_READ | samAdditional, &hKey);
-    if (lResult == ERROR_SUCCESS) {
+    if (lResult == NO_ERROR) {
         DWORD dwMaxSubKeyLen;
 
         // Determine the largest subkey name.
         lResult = ::RegQueryInfoKeyW(hKey, NULL, NULL, NULL, NULL, &dwMaxSubKeyLen, NULL, NULL, NULL, NULL, NULL, NULL);
-        if (lResult == ERROR_SUCCESS) {
+        if (lResult == NO_ERROR) {
             LPWSTR pszSubKeyName;
 
             // Prepare buffer to hold the subkey names (including zero terminator).
@@ -388,12 +388,12 @@ LONG COpRegKeyDelete::DeleteKeyRecursively(HKEY hKeyRoot, LPCWSTR pszKeyName, RE
                 for (dwIndex = 0; ;) {
                     DWORD dwNameLen = dwMaxSubKeyLen;
                     lResult = ::RegEnumKeyExW(hKey, dwIndex, pszSubKeyName, &dwNameLen, NULL, NULL, NULL, NULL);
-                    if (lResult == ERROR_SUCCESS) {
+                    if (lResult == NO_ERROR) {
                         lResult = DeleteKeyRecursively(hKey, pszSubKeyName, samAdditional);
-                        if (lResult != ERROR_SUCCESS)
+                        if (lResult != NO_ERROR)
                             dwIndex++;
                     } else if (lResult == ERROR_NO_MORE_ITEMS) {
-                        lResult = ERROR_SUCCESS;
+                        lResult = NO_ERROR;
                         break;
                     } else
                         dwIndex++;
@@ -410,7 +410,7 @@ LONG COpRegKeyDelete::DeleteKeyRecursively(HKEY hKeyRoot, LPCWSTR pszKeyName, RE
         lResult = ::RegDeleteKeyW(hKeyRoot, pszKeyName);
     } else if (lResult == ERROR_FILE_NOT_FOUND) {
         // The key doesn't exist. Not really an error in this case.
-        lResult = ERROR_SUCCESS;
+        lResult = NO_ERROR;
     }
 
     return lResult;
@@ -508,7 +508,7 @@ HRESULT COpRegValueCreate::Execute(CSession *pSession)
 
     // Open the key.
     lResult = ::RegOpenKeyExW(m_hKeyRoot, m_sValue, 0, sam, &hKey);
-    if (lResult == ERROR_SUCCESS) {
+    if (lResult == NO_ERROR) {
         if (pSession->m_bRollbackEnabled) {
             // Order rollback action to delete the value.
             pSession->m_olRollback.AddHead(new COpRegValueDelete(m_hKeyRoot, m_sValue, m_sValueName));
@@ -545,7 +545,7 @@ HRESULT COpRegValueCreate::Execute(CSession *pSession)
         ::RegCloseKey(hKey);
     }
 
-    if (lResult == ERROR_SUCCESS)
+    if (lResult == NO_ERROR)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(5);
@@ -593,16 +593,16 @@ HRESULT COpRegValueCopy::Execute(CSession *pSession)
 
     // Open the key.
     lResult = ::RegOpenKeyExW(m_hKeyRoot, m_sValue, 0, sam, &hKey);
-    if (lResult == ERROR_SUCCESS) {
+    if (lResult == NO_ERROR) {
         DWORD dwType, dwSize;
 
         // Query the source registry value size.
         lResult = ::RegQueryValueExW(hKey, m_sValueName1, 0, NULL, NULL, &dwSize);
-        if (lResult == ERROR_SUCCESS) {
+        if (lResult == NO_ERROR) {
             LPBYTE lpData = new BYTE[dwSize];
             // Read the source registry value.
             lResult = ::RegQueryValueExW(hKey, m_sValueName1, 0, &dwType, lpData, &dwSize);
-            if (lResult == ERROR_SUCCESS) {
+            if (lResult == NO_ERROR) {
                 if (pSession->m_bRollbackEnabled) {
                     // Order rollback action to delete the destination copy.
                     pSession->m_olRollback.AddHead(new COpRegValueDelete(m_hKeyRoot, m_sValue, m_sValueName2));
@@ -617,7 +617,7 @@ HRESULT COpRegValueCopy::Execute(CSession *pSession)
         ::RegCloseKey(hKey);
     }
 
-    if (lResult == ERROR_SUCCESS)
+    if (lResult == NO_ERROR)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(6);
@@ -657,12 +657,12 @@ HRESULT COpRegValueDelete::Execute(CSession *pSession)
 
     // Open the key.
     lResult = ::RegOpenKeyExW(m_hKeyRoot, m_sValue, 0, sam, &hKey);
-    if (lResult == ERROR_SUCCESS) {
+    if (lResult == NO_ERROR) {
         DWORD dwType;
 
         // See if the value exists at all.
         lResult = ::RegQueryValueExW(hKey, m_sValueName, 0, &dwType, NULL, NULL);
-        if (lResult == ERROR_SUCCESS) {
+        if (lResult == NO_ERROR) {
             if (pSession->m_bRollbackEnabled) {
                 // Make a backup of the value first.
                 ATL::CAtlStringW sBackupName;
@@ -671,7 +671,7 @@ HRESULT COpRegValueDelete::Execute(CSession *pSession)
                 for (;;) {
                     sBackupName.Format(L"%ls (orig %u)", (LPCWSTR)m_sValueName, ++uiCount);
                     lResult = ::RegQueryValueExW(hKey, sBackupName, 0, &dwType, NULL, NULL);
-                    if (lResult != ERROR_SUCCESS) break;
+                    if (lResult != NO_ERROR) break;
                 }
                 if (lResult == ERROR_FILE_NOT_FOUND) {
                     // Since copying registry value is a complicated job (when rollback/commit support is required), and we do have an operation just for that, we use it.
@@ -707,7 +707,7 @@ HRESULT COpRegValueDelete::Execute(CSession *pSession)
         ::RegCloseKey(hKey);
     }
 
-    if (lResult == ERROR_SUCCESS || lResult == ERROR_FILE_NOT_FOUND)
+    if (lResult == NO_ERROR || lResult == ERROR_FILE_NOT_FOUND)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(5);

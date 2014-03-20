@@ -447,25 +447,25 @@ UINT COpTaskCreate::SetFromRecord(MSIHANDLE hInstall, MSIHANDLE hRecord)
     ATL::CAtlStringW sFolder;
 
     uiResult = ::MsiRecordFormatStringW(hInstall, hRecord,  3, m_sApplicationName);
-    if (uiResult != ERROR_SUCCESS) return uiResult;
+    if (uiResult != NO_ERROR) return uiResult;
 
     uiResult = ::MsiRecordFormatStringW(hInstall, hRecord,  4, m_sParameters);
-    if (uiResult != ERROR_SUCCESS) return uiResult;
+    if (uiResult != NO_ERROR) return uiResult;
 
     uiResult = ::MsiRecordGetStringW(hRecord, 5, sFolder);
-    if (uiResult != ERROR_SUCCESS) return uiResult;
+    if (uiResult != NO_ERROR) return uiResult;
     uiResult = ::MsiGetTargetPathW(hInstall, sFolder, m_sWorkingDirectory);
-    if (uiResult != ERROR_SUCCESS) return uiResult;
+    if (uiResult != NO_ERROR) return uiResult;
     if (!m_sWorkingDirectory.IsEmpty() && m_sWorkingDirectory.GetAt(m_sWorkingDirectory.GetLength() - 1) == L'\\') {
         // Trim trailing backslash.
         m_sWorkingDirectory.Truncate(m_sWorkingDirectory.GetLength() - 1);
     }
 
     uiResult = ::MsiRecordFormatStringW(hInstall, hRecord, 10, m_sAuthor);
-    if (uiResult != ERROR_SUCCESS) return uiResult;
+    if (uiResult != NO_ERROR) return uiResult;
 
     uiResult = ::MsiRecordFormatStringW(hInstall, hRecord, 11, m_sComment);
-    if (uiResult != ERROR_SUCCESS) return uiResult;
+    if (uiResult != NO_ERROR) return uiResult;
 
     m_dwFlags = ::MsiRecordGetInteger(hRecord,  6);
     if (m_dwFlags == MSI_NULL_INTEGER) return ERROR_INVALID_FIELD;
@@ -474,10 +474,10 @@ UINT COpTaskCreate::SetFromRecord(MSIHANDLE hInstall, MSIHANDLE hRecord)
     if (m_dwPriority == MSI_NULL_INTEGER) return ERROR_INVALID_FIELD;
 
     uiResult = ::MsiRecordFormatStringW(hInstall, hRecord,  8, m_sAccountName);
-    if (uiResult != ERROR_SUCCESS) return uiResult;
+    if (uiResult != NO_ERROR) return uiResult;
 
     uiResult = ::MsiRecordFormatStringW(hInstall, hRecord,  9, m_sPassword);
-    if (uiResult != ERROR_SUCCESS) return uiResult;
+    if (uiResult != NO_ERROR) return uiResult;
 
     iValue = ::MsiRecordGetInteger(hRecord, 12);
     m_wIdleMinutes = iValue != MSI_NULL_INTEGER ? (WORD)iValue : 0;
@@ -488,7 +488,7 @@ UINT COpTaskCreate::SetFromRecord(MSIHANDLE hInstall, MSIHANDLE hRecord)
     m_dwMaxRuntimeMS = ::MsiRecordGetInteger(hRecord, 14);
     if (m_dwMaxRuntimeMS == MSI_NULL_INTEGER) return ERROR_INVALID_FIELD;
 
-    return ERROR_SUCCESS;
+    return NO_ERROR;
 }
 
 
@@ -505,8 +505,8 @@ UINT COpTaskCreate::SetTriggersFromView(MSIHANDLE hView)
 
         // Fetch one record from the view.
         uiResult = ::MsiViewFetch(hView, &hRecord);
-        if (uiResult == ERROR_NO_MORE_ITEMS) return ERROR_SUCCESS;
-        else if (uiResult != ERROR_SUCCESS)  return uiResult;
+        if (uiResult == ERROR_NO_MORE_ITEMS) return NO_ERROR;
+        else if (uiResult != NO_ERROR)  return uiResult;
 
         ZeroMemory(&ttData, sizeof(TASK_TRIGGER));
         ttData.cbTriggerSize = sizeof(TASK_TRIGGER);
@@ -618,7 +618,7 @@ UINT COpTaskCreate::SetTriggersFromView(MSIHANDLE hView)
         m_lTriggers.AddTail(ttData);
     }
 
-    return ERROR_SUCCESS;
+    return NO_ERROR;
 }
 
 

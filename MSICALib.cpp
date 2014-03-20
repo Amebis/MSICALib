@@ -208,16 +208,16 @@ UINT SaveSequence(MSIHANDLE hInstall, LPCTSTR szActionExecute, LPCTSTR szActionC
     if (SUCCEEDED(hr)) {
         // Store sequence script file names to properties for deferred custiom actions.
         uiResult = ::MsiSetProperty(hInstall, szActionExecute, sSequenceFilename);
-        if (uiResult == ERROR_SUCCESS) {
+        if (uiResult == NO_ERROR) {
             LPCTSTR pszExtension = ::PathFindExtension(sSequenceFilename);
             ATL::CAtlString sSequenceFilename2;
 
             sSequenceFilename2.Format(_T("%.*ls-rb%ls"), pszExtension - (LPCTSTR)sSequenceFilename, (LPCTSTR)sSequenceFilename, pszExtension);
             uiResult = ::MsiSetProperty(hInstall, szActionRollback, sSequenceFilename2);
-            if (uiResult == ERROR_SUCCESS) {
+            if (uiResult == NO_ERROR) {
                 sSequenceFilename2.Format(_T("%.*ls-cm%ls"), pszExtension - (LPCTSTR)sSequenceFilename, (LPCTSTR)sSequenceFilename, pszExtension);
                 uiResult = ::MsiSetProperty(hInstall, szActionCommit, sSequenceFilename2);
-                if (uiResult != ERROR_SUCCESS) {
+                if (uiResult != NO_ERROR) {
                     ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_PROPERTY_SET);
                     ::MsiRecordSetString (hRecordProg, 2, szActionCommit            );
                     ::MsiRecordSetInteger(hRecordProg, 3, uiResult                  );
@@ -235,7 +235,7 @@ UINT SaveSequence(MSIHANDLE hInstall, LPCTSTR szActionExecute, LPCTSTR szActionC
             ::MsiRecordSetInteger(hRecordProg, 3, uiResult                  );
             ::MsiProcessMessage(hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         }
-        if (uiResult != ERROR_SUCCESS) ::DeleteFile(sSequenceFilename);
+        if (uiResult != NO_ERROR) ::DeleteFile(sSequenceFilename);
     } else {
         uiResult = ERROR_INSTALL_SCRIPT_WRITE;
         ::MsiRecordSetInteger(hRecordProg, 1, uiResult         );
@@ -256,7 +256,7 @@ UINT ExecuteSequence(MSIHANDLE hInstall)
     ATL::CAtlString sSequenceFilename;
 
     uiResult = ::MsiGetProperty(hInstall, _T("CustomActionData"), sSequenceFilename);
-    if (uiResult == ERROR_SUCCESS) {
+    if (uiResult == NO_ERROR) {
         MSICA::COpList lstOperations;
         BOOL bIsCleanup = ::MsiGetMode(hInstall, MSIRUNMODE_COMMIT) || ::MsiGetMode(hInstall, MSIRUNMODE_ROLLBACK);
 
@@ -304,7 +304,7 @@ UINT ExecuteSequence(MSIHANDLE hInstall)
                     // Save rollback file next.
                     hr = session.m_olRollback.SaveToFile(sSequenceFilenameRB);
                     if (SUCCEEDED(hr)) {
-                        uiResult = ERROR_SUCCESS;
+                        uiResult = NO_ERROR;
                     } else {
                         // Saving rollback file failed.
                         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
@@ -324,7 +324,7 @@ UINT ExecuteSequence(MSIHANDLE hInstall)
                     ::MsiProcessMessage(hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
                 }
 
-                if (uiResult != ERROR_SUCCESS) {
+                if (uiResult != NO_ERROR) {
                     // The commit and/or rollback scripts were not written to file successfully. Perform the cleanup immediately.
                     session.m_bContinueOnError = TRUE;
                     session.m_bRollbackEnabled = FALSE;
@@ -333,7 +333,7 @@ UINT ExecuteSequence(MSIHANDLE hInstall)
                 }
             } else {
                 // No cleanup after cleanup support.
-                uiResult = ERROR_SUCCESS;
+                uiResult = NO_ERROR;
             }
 
             if (FAILED(hr)) {
@@ -346,7 +346,7 @@ UINT ExecuteSequence(MSIHANDLE hInstall)
             // Sequence file not found and this is rollback/commit action. Either of the following scenarios are possible:
             // - The delayed action failed to save the rollback/commit file. The delayed action performed cleanup itself. No further action is required.
             // - Somebody removed the rollback/commit file between delayed action and rollback/commit action. No further action is possible.
-            uiResult = ERROR_SUCCESS;
+            uiResult = NO_ERROR;
         } else {
             // Sequence loading failed. Probably, LOCAL SYSTEM doesn't have read access to user's temp directory.
             PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);

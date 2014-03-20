@@ -24,9 +24,9 @@ HRESULT COpFileDelete::Execute(CSession *pSession)
         do {
             // Rename the file to make a backup.
             sBackupName.Format(L"%ls (orig %u)", (LPCWSTR)m_sValue, ++uiCount);
-            dwError = ::MoveFileW(m_sValue, sBackupName) ? ERROR_SUCCESS : ::GetLastError();
+            dwError = ::MoveFileW(m_sValue, sBackupName) ? NO_ERROR : ::GetLastError();
         } while (dwError == ERROR_ALREADY_EXISTS);
-        if (dwError == ERROR_SUCCESS) {
+        if (dwError == NO_ERROR) {
             // Order rollback action to restore from backup copy.
             pSession->m_olRollback.AddHead(new COpFileMove(sBackupName, m_sValue));
 
@@ -35,10 +35,10 @@ HRESULT COpFileDelete::Execute(CSession *pSession)
         }
     } else {
         // Delete the file.
-        dwError = ::DeleteFileW(m_sValue) ? ERROR_SUCCESS : ::GetLastError();
+        dwError = ::DeleteFileW(m_sValue) ? NO_ERROR : ::GetLastError();
     }
 
-    if (dwError == ERROR_SUCCESS || dwError == ERROR_FILE_NOT_FOUND)
+    if (dwError == NO_ERROR || dwError == ERROR_FILE_NOT_FOUND)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
@@ -66,8 +66,8 @@ HRESULT COpFileMove::Execute(CSession *pSession)
     DWORD dwError;
 
     // Move the file.
-    dwError = ::MoveFileW(m_sValue1, m_sValue2) ? ERROR_SUCCESS : ::GetLastError();
-    if (dwError == ERROR_SUCCESS) {
+    dwError = ::MoveFileW(m_sValue1, m_sValue2) ? NO_ERROR : ::GetLastError();
+    if (dwError == NO_ERROR) {
         if (pSession->m_bRollbackEnabled) {
             // Order rollback action to move it back.
             pSession->m_olRollback.AddHead(new COpFileMove(m_sValue2, m_sValue1));

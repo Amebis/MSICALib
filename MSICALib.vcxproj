@@ -22,6 +22,7 @@
     <ClCompile Include="OpCert.cpp" />
     <ClCompile Include="MSICALib.cpp" />
     <ClCompile Include="OpFile.cpp" />
+    <ClCompile Include="OpSvc.cpp" />
     <ClCompile Include="OpTS.cpp" />
     <ClCompile Include="OpReg.cpp" />
     <ClCompile Include="stdafx.cpp">

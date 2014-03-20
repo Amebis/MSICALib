@@ -37,6 +37,9 @@ i2	L0
 2559	Error [4] copying "[2]" scheduled task to "[3]". Please, contact your support personnel.
 2569	Error [3] installing certificate to certificate store "[2]". Please, contact your support personnel.
 2570	Error [3] removing certificate from certificate store "[2]". Please, contact your support personnel.
+2571	Error [3] changing service "[2]" start type. Please, contact your support personnel.
+2572	Error [3] starting service "[2]". Please, contact your support personnel.
+2573	Error [3] stopping service "[2]". Please, contact your support personnel.
 <<NOKEEP
 
 "De.$(PLAT).$(CFG).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\L10N\de_DE.po"

@@ -33,6 +33,9 @@
     <ClCompile Include="OpCert.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="OpSvc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MSICALib.h">
