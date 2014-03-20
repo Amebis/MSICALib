@@ -29,27 +29,35 @@ HRESULT COpSvcSetStart::Execute(CSession *pSession)
         // Open the specified service.
         hService = ::OpenServiceW(hSCM, m_sValue, SERVICE_QUERY_CONFIG | SERVICE_CHANGE_CONFIG);
         if (hService) {
-            QUERY_SERVICE_CONFIG sc;
+            QUERY_SERVICE_CONFIG *sc;
             DWORD dwSize;
+            HANDLE hHeap = ::GetProcessHeap();
 
-            // Query current service config.
-            if (::QueryServiceConfig(hService, &sc, sizeof(sc), &dwSize)) {
-                if (sc.dwStartType != m_dwStartType) {
-                    // Set requested service start.
-                    if (::ChangeServiceConfig(hService, SERVICE_NO_CHANGE, m_dwStartType, SERVICE_NO_CHANGE, NULL, NULL, NULL, NULL, NULL, NULL, NULL)) {
-                        if (pSession->m_bRollbackEnabled) {
-                            // Order rollback action to revert the service start change.
-                            pSession->m_olRollback.AddHead(new COpSvcSetStart(m_sValue, sc.dwStartType));
-                        }
+            ::QueryServiceConfig(hService, NULL, 0, &dwSize);
+            sc = (QUERY_SERVICE_CONFIG*)::HeapAlloc(hHeap, 0, dwSize);
+            if (sc) {
+                // Query current service config.
+                if (::QueryServiceConfig(hService, sc, dwSize, &dwSize)) {
+                    if (sc->dwStartType != m_dwStartType) {
+                        // Set requested service start.
+                        if (::ChangeServiceConfig(hService, SERVICE_NO_CHANGE, m_dwStartType, SERVICE_NO_CHANGE, NULL, NULL, NULL, NULL, NULL, NULL, NULL)) {
+                            if (pSession->m_bRollbackEnabled) {
+                                // Order rollback action to revert the service start change.
+                                pSession->m_olRollback.AddHead(new COpSvcSetStart(m_sValue, sc->dwStartType));
+                            }
+                            dwError = NO_ERROR;
+                        } else
+                            dwError = ::GetLastError();
+                    } else {
+                        // Service is already configured to start the requested way.
                         dwError = NO_ERROR;
-                    } else
-                        dwError = ::GetLastError();
-                } else {
-                    // Service is already configured to start the requested way.
-                    dwError = NO_ERROR;
-                }
+                    }
+                } else
+                    dwError = ::GetLastError();
+
+                ::HeapFree(hHeap, 0, sc);
             } else
-                dwError = ::GetLastError();
+                dwError = ERROR_OUTOFMEMORY;
         } else
             dwError = ::GetLastError();
     } else
