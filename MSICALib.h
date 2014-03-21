@@ -477,13 +477,32 @@ protected:
 
 
 ////////////////////////////////////////////////////////////////////////////
+// COpSvcControl
+////////////////////////////////////////////////////////////////////////////
+
+class COpSvcControl : public COpTypeSingleString
+{
+public:
+    COpSvcControl(LPCWSTR pszService = L"", BOOL bWait = FALSE, int iTicks = 0);
+
+    static DWORD WaitForState(CSession *pSession, SC_HANDLE hService, DWORD dwPendingState, DWORD dwFinalState);
+
+    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpSvcControl &op);
+    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpSvcControl &op);
+
+protected:
+    BOOL m_bWait;
+};
+
+
+////////////////////////////////////////////////////////////////////////////
 // COpSvcStart
 ////////////////////////////////////////////////////////////////////////////
 
-class COpSvcStart : public COpTypeSingleString
+class COpSvcStart : public COpSvcControl
 {
 public:
-    COpSvcStart(LPCWSTR pszService = L"", int iTicks = 0);
+    COpSvcStart(LPCWSTR pszService = L"", BOOL bWait = FALSE, int iTicks = 0);
     virtual HRESULT Execute(CSession *pSession);
 };
 
@@ -492,10 +511,10 @@ public:
 // COpSvcStop
 ////////////////////////////////////////////////////////////////////////////
 
-class COpSvcStop : public COpTypeSingleString
+class COpSvcStop : public COpSvcControl
 {
 public:
-    COpSvcStop(LPCWSTR pszService = L"", int iTicks = 0);
+    COpSvcStop(LPCWSTR pszService = L"", BOOL bWait = FALSE, int iTicks = 0);
     virtual HRESULT Execute(CSession *pSession);
 };
 
@@ -1433,6 +1452,29 @@ inline HRESULT operator >>(ATL::CAtlFile &f, COpSvcSetStart &op)
 
     hr = f >> (COpTypeSingleString&)op; if (FAILED(hr)) return hr;
     hr = f >> (int&)(op.m_dwStartType); if (FAILED(hr)) return hr;
+
+    return S_OK;
+}
+
+
+inline HRESULT operator <<(ATL::CAtlFile &f, const COpSvcControl &op)
+{
+    HRESULT hr;
+
+    hr = f << (const COpTypeSingleString&)op; if (FAILED(hr)) return hr;
+    hr = f << (int)(op.m_bWait);              if (FAILED(hr)) return hr;
+
+    return S_OK;
+}
+
+
+inline HRESULT operator >>(ATL::CAtlFile &f, COpSvcControl &op)
+{
+    HRESULT hr;
+    int iValue;
+
+    hr = f >> (COpTypeSingleString&)op; if (FAILED(hr)) return hr;
+    hr = f >> iValue;                   if (FAILED(hr)) return hr; op.m_bWait = iValue ? TRUE : FALSE;
 
     return S_OK;
 }
