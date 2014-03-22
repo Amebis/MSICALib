@@ -25,7 +25,7 @@ Error	Message
 i2	L0
 1252	Error	Error
 2550	Error opening installation package. Please, contact your support personnel.
-2551	Error [2] creating scheduled task list. Please, contact your support personnel.
+2551	Error [2] creating task list. Please, contact your support personnel.
 2552	Error [3] writing to "[2]" task list file. Please, contact your support personnel.
 2560	Error [3] reading from "[2]" task list file. Please, contact your support personnel.
 2553	Error [3] setting "[2]" parameter. Please, contact your support personnel.
@@ -40,6 +40,11 @@ i2	L0
 2571	Error [3] changing service "[2]" start type. Please, contact your support personnel.
 2572	Error [3] starting service "[2]". Please, contact your support personnel.
 2573	Error [3] stopping service "[2]". Please, contact your support personnel.
+2577	Error [2] opening WLAN handle. Please, contact your support personnel.
+2578	WLAN profile "[2]" XML data is not UTF-16 encoded. Please, contact your support personnel.
+2574	Error [4] deleting profile "[3]" on WLAN interface [2]. Please, contact your support personnel.
+2575	Error [5] renaming profile "[3]" to "[4]" on WLAN interface [2]. Please, contact your support personnel.
+2576	Error [5] setting profile "[3]" on WLAN interface [2] (WLAN reason is [4]). Please, contact your support personnel.
 <<NOKEEP
 
 "De.$(PLAT).$(CFG).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\L10N\de_DE.po"

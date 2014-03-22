@@ -83,9 +83,9 @@ HRESULT COpCertInstall::Execute(CSession *pSession)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
-        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_CERT_INSTALL_FAILED);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                         );
-        ::MsiRecordSetInteger(hRecordProg, 3, dwError                          );
+        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_CERT_INSTALL);
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                  );
+        ::MsiRecordSetInteger(hRecordProg, 3, dwError                   );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return AtlHresultFromWin32(dwError);
     }
@@ -150,9 +150,9 @@ HRESULT COpCertRemove::Execute(CSession *pSession)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
-        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_CERT_REMOVE_FAILED);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                        );
-        ::MsiRecordSetInteger(hRecordProg, 3, dwError                         );
+        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_CERT_REMOVE);
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                 );
+        ::MsiRecordSetInteger(hRecordProg, 3, dwError                  );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return AtlHresultFromWin32(dwError);
     }

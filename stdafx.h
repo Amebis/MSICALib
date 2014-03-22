@@ -31,5 +31,6 @@
 #include <msiquery.h>
 #include <mstask.h>
 #include <taskschd.h>
+#include <wlanapi.h>
 
 #include "MSICALib.h"

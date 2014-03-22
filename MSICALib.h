@@ -12,33 +12,38 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// Error codes (next unused 2574L)
+// Error codes (next unused 2579L)
 ////////////////////////////////////////////////////////////////////
 
-#define ERROR_INSTALL_DATABASE_OPEN                    2550L
-#define ERROR_INSTALL_OPLIST_CREATE                    2551L
-#define ERROR_INSTALL_PROPERTY_SET                     2553L
-#define ERROR_INSTALL_SCRIPT_WRITE                     2552L
-#define ERROR_INSTALL_SCRIPT_READ                      2560L
-#define ERROR_INSTALL_FILE_DELETE_FAILED               2554L
-#define ERROR_INSTALL_FILE_MOVE_FAILED                 2555L
-#define ERROR_INSTALL_REGKEY_CREATE_FAILED             2561L
-#define ERROR_INSTALL_REGKEY_COPY_FAILED               2562L
-#define ERROR_INSTALL_REGKEY_PROBING_FAILED            2563L
-#define ERROR_INSTALL_REGKEY_DELETE_FAILED             2564L
-#define ERROR_INSTALL_REGKEY_SETVALUE_FAILED           2565L
-#define ERROR_INSTALL_REGKEY_DELETEVALUE_FAILED        2567L
-#define ERROR_INSTALL_REGKEY_COPYVALUE_FAILED          2568L
-#define ERROR_INSTALL_REGKEY_PROBINGVAL_FAILED         2566L
-#define ERROR_INSTALL_TASK_CREATE_FAILED               2556L
-#define ERROR_INSTALL_TASK_DELETE_FAILED               2557L
-#define ERROR_INSTALL_TASK_ENABLE_FAILED               2558L
-#define ERROR_INSTALL_TASK_COPY_FAILED                 2559L
-#define ERROR_INSTALL_CERT_INSTALL_FAILED              2569L
-#define ERROR_INSTALL_CERT_REMOVE_FAILED               2570L
-#define ERROR_INSTALL_SVC_SET_START_FAILED             2571L
-#define ERROR_INSTALL_SVC_START_FAILED                 2572L
-#define ERROR_INSTALL_SVC_STOP_FAILED                  2573L
+#define ERROR_INSTALL_DATABASE_OPEN          2550L
+#define ERROR_INSTALL_OPLIST_CREATE          2551L
+#define ERROR_INSTALL_PROPERTY_SET           2553L
+#define ERROR_INSTALL_SCRIPT_WRITE           2552L
+#define ERROR_INSTALL_SCRIPT_READ            2560L
+#define ERROR_INSTALL_FILE_DELETE            2554L
+#define ERROR_INSTALL_FILE_MOVE              2555L
+#define ERROR_INSTALL_REGKEY_CREATE          2561L
+#define ERROR_INSTALL_REGKEY_COPY            2562L
+#define ERROR_INSTALL_REGKEY_PROBING         2563L
+#define ERROR_INSTALL_REGKEY_DELETE          2564L
+#define ERROR_INSTALL_REGKEY_SETVALUE        2565L
+#define ERROR_INSTALL_REGKEY_DELETEVALUE     2567L
+#define ERROR_INSTALL_REGKEY_COPYVALUE       2568L
+#define ERROR_INSTALL_REGKEY_PROBINGVAL      2566L
+#define ERROR_INSTALL_TASK_CREATE            2556L
+#define ERROR_INSTALL_TASK_DELETE            2557L
+#define ERROR_INSTALL_TASK_ENABLE            2558L
+#define ERROR_INSTALL_TASK_COPY              2559L
+#define ERROR_INSTALL_CERT_INSTALL           2569L
+#define ERROR_INSTALL_CERT_REMOVE            2570L
+#define ERROR_INSTALL_SVC_SET_START          2571L
+#define ERROR_INSTALL_SVC_START              2572L
+#define ERROR_INSTALL_SVC_STOP               2573L
+#define ERROR_INSTALL_WLAN_HANDLE_OPEN       2577L
+#define ERROR_INSTALL_WLAN_PROFILE_NOT_UTF16 2578L
+#define ERROR_INSTALL_WLAN_PROFILE_DELETE    2574L
+#define ERROR_INSTALL_WLAN_PROFILE_RENAME    2575L
+#define ERROR_INSTALL_WLAN_PROFILE_SET       2576L
 
 
 namespace MSICA {
@@ -520,6 +525,71 @@ public:
 
 
 ////////////////////////////////////////////////////////////////////////////
+// COpWLANProfile
+////////////////////////////////////////////////////////////////////////////
+
+class COpWLANProfile : public COpTypeSingleString
+{
+public:
+    COpWLANProfile(const GUID &guidInterface = GUID_NULL, LPCWSTR pszProfileName = L"", int iTicks = 0);
+
+    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpWLANProfile &op);
+    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpWLANProfile &op);
+
+protected:
+    GUID m_guidInterface;
+};
+
+
+////////////////////////////////////////////////////////////////////////////
+// COpWLANProfileDelete
+////////////////////////////////////////////////////////////////////////////
+
+class COpWLANProfileDelete : public COpWLANProfile
+{
+public:
+    COpWLANProfileDelete(const GUID &guidInterface = GUID_NULL, LPCWSTR pszProfileName = L"", int iTicks = 0);
+    virtual HRESULT Execute(CSession *pSession);
+};
+
+
+////////////////////////////////////////////////////////////////////////////
+// COpWLANProfileRename
+////////////////////////////////////////////////////////////////////////////
+
+class COpWLANProfileRename : public COpWLANProfile
+{
+public:
+    COpWLANProfileRename(const GUID &guidInterface = GUID_NULL, LPCWSTR pszProfileNameSrc = L"", LPCWSTR pszProfileNameDst = L"", int iTicks = 0);
+    virtual HRESULT Execute(CSession *pSession);
+
+    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpWLANProfileRename &op);
+    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpWLANProfileRename &op);
+
+protected:
+    ATL::CAtlStringW m_sProfileNameDst;
+};
+
+
+////////////////////////////////////////////////////////////////////////////
+// COpWLANProfileSet
+////////////////////////////////////////////////////////////////////////////
+
+class COpWLANProfileSet : public COpWLANProfile
+{
+public:
+    COpWLANProfileSet(const GUID &guidInterface = GUID_NULL, LPCWSTR pszProfileName = L"", LPCWSTR pszProfileXML = L"", int iTicks = 0);
+    virtual HRESULT Execute(CSession *pSession);
+
+    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpWLANProfileSet &op);
+    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpWLANProfileSet &op);
+
+protected:
+    ATL::CAtlStringW m_sProfileXML;
+};
+
+
+////////////////////////////////////////////////////////////////////////////
 // COpList
 ////////////////////////////////////////////////////////////////////////////
 
@@ -557,6 +627,9 @@ protected:
         OP_SVC_SET_START,
         OP_SVC_START,
         OP_SVC_STOP,
+        OP_WLAN_PROFILE_DELETE,
+        OP_WLAN_PROFILE_RENAME,
+        OP_WLAN_PROFILE_SET,
         OP_SUBLIST
     };
 
@@ -607,6 +680,32 @@ UINT ExecuteSequence(MSIHANDLE hInstall);
 ////////////////////////////////////////////////////////////////////
 // Inline helper functions
 ////////////////////////////////////////////////////////////////////
+
+namespace MSICA {
+
+inline VOID GuidToString(const GUID &guid, ATL::CAtlStringA &str)
+{
+    str.Format("{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}",
+        guid.Data1,
+        guid.Data2,
+        guid.Data3,
+        guid.Data4[0], guid.Data4[1],
+        guid.Data4[2], guid.Data4[3], guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
+}
+
+
+inline VOID GuidToString(const GUID &guid, ATL::CAtlStringW &str)
+{
+    str.Format(L"{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}",
+        guid.Data1,
+        guid.Data2,
+        guid.Data3,
+        guid.Data4[0], guid.Data4[1],
+        guid.Data4[2], guid.Data4[3], guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
+}
+
+} // namespace MSICA
+
 
 inline UINT MsiGetPropertyA(MSIHANDLE hInstall, LPCSTR szName, ATL::CAtlStringA &sValue)
 {
@@ -952,6 +1051,26 @@ inline HRESULT operator >>(ATL::CAtlFile &f, DWORDLONG &i)
 
     hr = f.Read(&i, sizeof(DWORDLONG), dwRead);
     return SUCCEEDED(hr) ? dwRead == sizeof(DWORDLONG) ? hr : E_FAIL : hr;
+}
+
+
+inline HRESULT operator <<(ATL::CAtlFile &f, const GUID &guid)
+{
+    HRESULT hr;
+    DWORD dwWritten;
+
+    hr = f.Write(&guid, sizeof(GUID), &dwWritten);
+    return SUCCEEDED(hr) ? dwWritten == sizeof(GUID) ? hr : E_FAIL : hr;
+}
+
+
+inline HRESULT operator >>(ATL::CAtlFile &f, GUID &guid)
+{
+    HRESULT hr;
+    DWORD dwRead;
+
+    hr = f.Read(&guid, sizeof(GUID), dwRead);
+    return SUCCEEDED(hr) ? dwRead == sizeof(GUID) ? hr : E_FAIL : hr;
 }
 
 
@@ -1480,6 +1599,72 @@ inline HRESULT operator >>(ATL::CAtlFile &f, COpSvcControl &op)
 }
 
 
+inline HRESULT operator <<(ATL::CAtlFile &f, const COpWLANProfile &op)
+{
+    HRESULT hr;
+
+    hr = f << (const COpTypeSingleString&)op; if (FAILED(hr)) return hr;
+    hr = f << op.m_guidInterface;             if (FAILED(hr)) return hr;
+
+    return S_OK;
+}
+
+
+inline HRESULT operator >>(ATL::CAtlFile &f, COpWLANProfile &op)
+{
+    HRESULT hr;
+
+    hr = f >> (COpTypeSingleString&)op; if (FAILED(hr)) return hr;
+    hr = f >> op.m_guidInterface;       if (FAILED(hr)) return hr;
+
+    return S_OK;
+}
+
+
+inline HRESULT operator <<(ATL::CAtlFile &f, const COpWLANProfileRename &op)
+{
+    HRESULT hr;
+
+    hr = f << (const COpWLANProfile&)op; if (FAILED(hr)) return hr;
+    hr = f << op.m_sProfileNameDst;      if (FAILED(hr)) return hr;
+
+    return S_OK;
+}
+
+
+inline HRESULT operator >>(ATL::CAtlFile &f, COpWLANProfileRename &op)
+{
+    HRESULT hr;
+
+    hr = f >> (COpWLANProfile&)op;  if (FAILED(hr)) return hr;
+    hr = f >> op.m_sProfileNameDst; if (FAILED(hr)) return hr;
+
+    return S_OK;
+}
+
+
+inline HRESULT operator <<(ATL::CAtlFile &f, const COpWLANProfileSet &op)
+{
+    HRESULT hr;
+
+    hr = f << (const COpWLANProfile&)op; if (FAILED(hr)) return hr;
+    hr = f << op.m_sProfileXML;          if (FAILED(hr)) return hr;
+
+    return S_OK;
+}
+
+
+inline HRESULT operator >>(ATL::CAtlFile &f, COpWLANProfileSet &op)
+{
+    HRESULT hr;
+
+    hr = f >> (COpWLANProfile&)op; if (FAILED(hr)) return hr;
+    hr = f >> op.m_sProfileXML;    if (FAILED(hr)) return hr;
+
+    return S_OK;
+}
+
+
 inline HRESULT operator <<(ATL::CAtlFile &f, const COpList &list)
 {
     POSITION pos;
@@ -1493,44 +1678,28 @@ inline HRESULT operator <<(ATL::CAtlFile &f, const COpList &list)
 
     for (pos = list.GetHeadPosition(); pos;) {
         const COperation *pOp = list.GetNext(pos);
-        if (dynamic_cast<const COpRollbackEnable*>(pOp))
-            hr = list.Save<COpRollbackEnable, COpList::OP_ROLLBACK_ENABLE>(f, pOp);
-        else if (dynamic_cast<const COpFileDelete*>(pOp))
-            hr = list.Save<COpFileDelete, COpList::OP_FILE_DELETE>(f, pOp);
-        else if (dynamic_cast<const COpFileMove*>(pOp))
-            hr = list.Save<COpFileMove, COpList::OP_FILE_MOVE>(f, pOp);
-        else if (dynamic_cast<const COpRegKeyCreate*>(pOp))
-            hr = list.Save<COpRegKeyCreate, COpList::OP_REG_KEY_CREATE>(f, pOp);
-        else if (dynamic_cast<const COpRegKeyCopy*>(pOp))
-            hr = list.Save<COpRegKeyCopy, COpList::OP_REG_KEY_COPY>(f, pOp);
-        else if (dynamic_cast<const COpRegKeyDelete*>(pOp))
-            hr = list.Save<COpRegKeyDelete, COpList::OP_REG_KEY_DELETE>(f, pOp);
-        else if (dynamic_cast<const COpRegValueCreate*>(pOp))
-            hr = list.Save<COpRegValueCreate, COpList::OP_REG_VALUE_CREATE>(f, pOp);
-        else if (dynamic_cast<const COpRegValueCopy*>(pOp))
-            hr = list.Save<COpRegValueCopy, COpList::OP_REG_VALUE_COPY>(f, pOp);
-        else if (dynamic_cast<const COpRegValueDelete*>(pOp))
-            hr = list.Save<COpRegValueDelete, COpList::OP_REG_VALUE_DELETE>(f, pOp);
-        else if (dynamic_cast<const COpTaskCreate*>(pOp))
-            hr = list.Save<COpTaskCreate, COpList::OP_TASK_CREATE>(f, pOp);
-        else if (dynamic_cast<const COpTaskDelete*>(pOp))
-            hr = list.Save<COpTaskDelete, COpList::OP_TASK_DELETE>(f, pOp);
-        else if (dynamic_cast<const COpTaskEnable*>(pOp))
-            hr = list.Save<COpTaskEnable, COpList::OP_TASK_ENABLE>(f, pOp);
-        else if (dynamic_cast<const COpTaskCopy*>(pOp))
-            hr = list.Save<COpTaskCopy, COpList::OP_TASK_COPY>(f, pOp);
-        else if (dynamic_cast<const COpCertInstall*>(pOp))
-            hr = list.Save<COpCertInstall, COpList::OP_CERT_INSTALL>(f, pOp);
-        else if (dynamic_cast<const COpCertRemove*>(pOp))
-            hr = list.Save<COpCertRemove, COpList::OP_CERT_REMOVE>(f, pOp);
-        else if (dynamic_cast<const COpSvcSetStart*>(pOp))
-            hr = list.Save<COpSvcSetStart, COpList::OP_SVC_SET_START>(f, pOp);
-        else if (dynamic_cast<const COpSvcStart*>(pOp))
-            hr = list.Save<COpSvcStart, COpList::OP_SVC_START>(f, pOp);
-        else if (dynamic_cast<const COpSvcStop*>(pOp))
-            hr = list.Save<COpSvcStop, COpList::OP_SVC_STOP>(f, pOp);
-        else if (dynamic_cast<const COpList*>(pOp))
-            hr = list.Save<COpList, COpList::OP_SUBLIST>(f, pOp);
+             if (dynamic_cast<const COpRollbackEnable*   >(pOp)) hr = list.Save<COpRollbackEnable,    COpList::OP_ROLLBACK_ENABLE    >(f, pOp);
+        else if (dynamic_cast<const COpFileDelete*       >(pOp)) hr = list.Save<COpFileDelete,        COpList::OP_FILE_DELETE        >(f, pOp);
+        else if (dynamic_cast<const COpFileMove*         >(pOp)) hr = list.Save<COpFileMove,          COpList::OP_FILE_MOVE          >(f, pOp);
+        else if (dynamic_cast<const COpRegKeyCreate*     >(pOp)) hr = list.Save<COpRegKeyCreate,      COpList::OP_REG_KEY_CREATE     >(f, pOp);
+        else if (dynamic_cast<const COpRegKeyCopy*       >(pOp)) hr = list.Save<COpRegKeyCopy,        COpList::OP_REG_KEY_COPY       >(f, pOp);
+        else if (dynamic_cast<const COpRegKeyDelete*     >(pOp)) hr = list.Save<COpRegKeyDelete,      COpList::OP_REG_KEY_DELETE     >(f, pOp);
+        else if (dynamic_cast<const COpRegValueCreate*   >(pOp)) hr = list.Save<COpRegValueCreate,    COpList::OP_REG_VALUE_CREATE   >(f, pOp);
+        else if (dynamic_cast<const COpRegValueCopy*     >(pOp)) hr = list.Save<COpRegValueCopy,      COpList::OP_REG_VALUE_COPY     >(f, pOp);
+        else if (dynamic_cast<const COpRegValueDelete*   >(pOp)) hr = list.Save<COpRegValueDelete,    COpList::OP_REG_VALUE_DELETE   >(f, pOp);
+        else if (dynamic_cast<const COpTaskCreate*       >(pOp)) hr = list.Save<COpTaskCreate,        COpList::OP_TASK_CREATE        >(f, pOp);
+        else if (dynamic_cast<const COpTaskDelete*       >(pOp)) hr = list.Save<COpTaskDelete,        COpList::OP_TASK_DELETE        >(f, pOp);
+        else if (dynamic_cast<const COpTaskEnable*       >(pOp)) hr = list.Save<COpTaskEnable,        COpList::OP_TASK_ENABLE        >(f, pOp);
+        else if (dynamic_cast<const COpTaskCopy*         >(pOp)) hr = list.Save<COpTaskCopy,          COpList::OP_TASK_COPY          >(f, pOp);
+        else if (dynamic_cast<const COpCertInstall*      >(pOp)) hr = list.Save<COpCertInstall,       COpList::OP_CERT_INSTALL       >(f, pOp);
+        else if (dynamic_cast<const COpCertRemove*       >(pOp)) hr = list.Save<COpCertRemove,        COpList::OP_CERT_REMOVE        >(f, pOp);
+        else if (dynamic_cast<const COpSvcSetStart*      >(pOp)) hr = list.Save<COpSvcSetStart,       COpList::OP_SVC_SET_START      >(f, pOp);
+        else if (dynamic_cast<const COpSvcStart*         >(pOp)) hr = list.Save<COpSvcStart,          COpList::OP_SVC_START          >(f, pOp);
+        else if (dynamic_cast<const COpSvcStop*          >(pOp)) hr = list.Save<COpSvcStop,           COpList::OP_SVC_STOP           >(f, pOp);
+        else if (dynamic_cast<const COpWLANProfileDelete*>(pOp)) hr = list.Save<COpWLANProfileDelete, COpList::OP_WLAN_PROFILE_DELETE>(f, pOp);
+        else if (dynamic_cast<const COpWLANProfileRename*>(pOp)) hr = list.Save<COpWLANProfileRename, COpList::OP_WLAN_PROFILE_RENAME>(f, pOp);
+        else if (dynamic_cast<const COpWLANProfileSet*   >(pOp)) hr = list.Save<COpWLANProfileSet,    COpList::OP_WLAN_PROFILE_SET   >(f, pOp);
+        else if (dynamic_cast<const COpList*             >(pOp)) hr = list.Save<COpList,              COpList::OP_SUBLIST            >(f, pOp);
         else {
             // Unsupported type of operation.
             hr = E_UNEXPECTED;
@@ -1561,25 +1730,28 @@ inline HRESULT operator >>(ATL::CAtlFile &f, COpList &list)
         if (FAILED(hr)) return hr;
 
         switch ((COpList::OPERATION)iTemp) {
-        case COpList::OP_ROLLBACK_ENABLE:  hr = list.LoadAndAddTail<COpRollbackEnable>(f); break;
-        case COpList::OP_FILE_DELETE:      hr = list.LoadAndAddTail<COpFileDelete    >(f); break;
-        case COpList::OP_FILE_MOVE:        hr = list.LoadAndAddTail<COpFileMove      >(f); break;
-        case COpList::OP_REG_KEY_CREATE:   hr = list.LoadAndAddTail<COpRegKeyCreate  >(f); break;
-        case COpList::OP_REG_KEY_COPY:     hr = list.LoadAndAddTail<COpRegKeyCopy    >(f); break;
-        case COpList::OP_REG_KEY_DELETE:   hr = list.LoadAndAddTail<COpRegKeyDelete  >(f); break;
-        case COpList::OP_REG_VALUE_CREATE: hr = list.LoadAndAddTail<COpRegValueCreate>(f); break;
-        case COpList::OP_REG_VALUE_COPY:   hr = list.LoadAndAddTail<COpRegValueCopy  >(f); break;
-        case COpList::OP_REG_VALUE_DELETE: hr = list.LoadAndAddTail<COpRegValueDelete>(f); break;
-        case COpList::OP_TASK_CREATE:      hr = list.LoadAndAddTail<COpTaskCreate    >(f); break;
-        case COpList::OP_TASK_DELETE:      hr = list.LoadAndAddTail<COpTaskDelete    >(f); break;
-        case COpList::OP_TASK_ENABLE:      hr = list.LoadAndAddTail<COpTaskEnable    >(f); break;
-        case COpList::OP_TASK_COPY:        hr = list.LoadAndAddTail<COpTaskCopy      >(f); break;
-        case COpList::OP_CERT_INSTALL:     hr = list.LoadAndAddTail<COpCertInstall   >(f); break;
-        case COpList::OP_CERT_REMOVE:      hr = list.LoadAndAddTail<COpCertRemove    >(f); break;
-        case COpList::OP_SVC_SET_START:    hr = list.LoadAndAddTail<COpSvcSetStart   >(f); break;
-        case COpList::OP_SVC_START:        hr = list.LoadAndAddTail<COpSvcStart      >(f); break;
-        case COpList::OP_SVC_STOP:         hr = list.LoadAndAddTail<COpSvcStop       >(f); break;
-        case COpList::OP_SUBLIST:          hr = list.LoadAndAddTail<COpList          >(f); break;
+        case COpList::OP_ROLLBACK_ENABLE:     hr = list.LoadAndAddTail<COpRollbackEnable   >(f); break;
+        case COpList::OP_FILE_DELETE:         hr = list.LoadAndAddTail<COpFileDelete       >(f); break;
+        case COpList::OP_FILE_MOVE:           hr = list.LoadAndAddTail<COpFileMove         >(f); break;
+        case COpList::OP_REG_KEY_CREATE:      hr = list.LoadAndAddTail<COpRegKeyCreate     >(f); break;
+        case COpList::OP_REG_KEY_COPY:        hr = list.LoadAndAddTail<COpRegKeyCopy       >(f); break;
+        case COpList::OP_REG_KEY_DELETE:      hr = list.LoadAndAddTail<COpRegKeyDelete     >(f); break;
+        case COpList::OP_REG_VALUE_CREATE:    hr = list.LoadAndAddTail<COpRegValueCreate   >(f); break;
+        case COpList::OP_REG_VALUE_COPY:      hr = list.LoadAndAddTail<COpRegValueCopy     >(f); break;
+        case COpList::OP_REG_VALUE_DELETE:    hr = list.LoadAndAddTail<COpRegValueDelete   >(f); break;
+        case COpList::OP_TASK_CREATE:         hr = list.LoadAndAddTail<COpTaskCreate       >(f); break;
+        case COpList::OP_TASK_DELETE:         hr = list.LoadAndAddTail<COpTaskDelete       >(f); break;
+        case COpList::OP_TASK_ENABLE:         hr = list.LoadAndAddTail<COpTaskEnable       >(f); break;
+        case COpList::OP_TASK_COPY:           hr = list.LoadAndAddTail<COpTaskCopy         >(f); break;
+        case COpList::OP_CERT_INSTALL:        hr = list.LoadAndAddTail<COpCertInstall      >(f); break;
+        case COpList::OP_CERT_REMOVE:         hr = list.LoadAndAddTail<COpCertRemove       >(f); break;
+        case COpList::OP_SVC_SET_START:       hr = list.LoadAndAddTail<COpSvcSetStart      >(f); break;
+        case COpList::OP_SVC_START:           hr = list.LoadAndAddTail<COpSvcStart         >(f); break;
+        case COpList::OP_SVC_STOP:            hr = list.LoadAndAddTail<COpSvcStop          >(f); break;
+        case COpList::OP_WLAN_PROFILE_DELETE: hr = list.LoadAndAddTail<COpWLANProfileDelete>(f); break;
+        case COpList::OP_WLAN_PROFILE_RENAME: hr = list.LoadAndAddTail<COpWLANProfileRename>(f); break;
+        case COpList::OP_WLAN_PROFILE_SET:    hr = list.LoadAndAddTail<COpWLANProfileSet   >(f); break;
+        case COpList::OP_SUBLIST:             hr = list.LoadAndAddTail<COpList             >(f); break;
         default:
             // Unsupported type of operation.
             hr = E_UNEXPECTED;

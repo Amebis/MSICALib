@@ -67,9 +67,9 @@ HRESULT COpSvcSetStart::Execute(CSession *pSession)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
-        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_SVC_SET_START_FAILED);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                          );
-        ::MsiRecordSetInteger(hRecordProg, 3, dwError                           );
+        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_SVC_SET_START);
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                   );
+        ::MsiRecordSetInteger(hRecordProg, 3, dwError                    );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return AtlHresultFromWin32(dwError);
     }
@@ -170,9 +170,9 @@ HRESULT COpSvcStart::Execute(CSession *pSession)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
-        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_SVC_START_FAILED);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                      );
-        ::MsiRecordSetInteger(hRecordProg, 3, dwError                       );
+        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_SVC_START);
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue               );
+        ::MsiRecordSetInteger(hRecordProg, 3, dwError                );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return AtlHresultFromWin32(dwError);
     }
@@ -225,9 +225,9 @@ HRESULT COpSvcStop::Execute(CSession *pSession)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
-        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_SVC_STOP_FAILED);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                     );
-        ::MsiRecordSetInteger(hRecordProg, 3, dwError                      );
+        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_SVC_STOP);
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue              );
+        ::MsiRecordSetInteger(hRecordProg, 3, dwError               );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return AtlHresultFromWin32(dwError);
     }

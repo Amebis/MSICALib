@@ -25,6 +25,7 @@
     <ClCompile Include="OpSvc.cpp" />
     <ClCompile Include="OpTS.cpp" />
     <ClCompile Include="OpReg.cpp" />
+    <ClCompile Include="OpWLAN.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

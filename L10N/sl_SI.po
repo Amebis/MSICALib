@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MSICALib\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-21 18:37+0100\n"
+"POT-Creation-Date: 2014-03-22 13:35+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Simon Rozman <simon.rozman@amebis.si>\n"
 "Language-Team: Amebis, d. o. o., Kamnik <simon.rozman@amebis.si>\n"
@@ -26,12 +26,19 @@ msgstr "1250"
 #: MSIBuild/En.Win32.Debug.Error-2.idtx:5
 #: MSIBuild/En.Win32.Release.Error-2.idtx:5
 #: MSIBuild/En.x64.Debug.Error-2.idtx:5 MSIBuild/En.x64.Release.Error-2.idtx:5
-msgid ""
-"Error [2] creating scheduled task list. Please, contact your support "
-"personnel."
+msgid "Error [2] creating task list. Please, contact your support personnel."
 msgstr ""
-"Pri pripravi seznama razvrščenih opravil je prišlo do napake [2]. Obrnite se "
-"na svojo tehnično službo."
+"Pri pripravi seznama opravil je prišlo do napake [2]. Obrnite se na svojo "
+"tehnično službo."
+
+#: MSIBuild/En.Win32.Debug.Error-2.idtx:20
+#: MSIBuild/En.Win32.Release.Error-2.idtx:20
+#: MSIBuild/En.x64.Debug.Error-2.idtx:20
+#: MSIBuild/En.x64.Release.Error-2.idtx:20
+msgid "Error [2] opening WLAN handle. Please, contact your support personnel."
+msgstr ""
+"Pri odpiranju ročica WLAN je prišlo do napake [2]. Obrnite se na svojo "
+"tehnično službo."
 
 #: MSIBuild/En.Win32.Debug.Error-2.idtx:17
 #: MSIBuild/En.Win32.Release.Error-2.idtx:17
@@ -168,6 +175,17 @@ msgstr ""
 "Pri kopiranju razporejenega opravila »[2]« v »[3]« je prišlo do napake [4]. "
 "Obrnite se na svojo tehnično službo."
 
+#: MSIBuild/En.Win32.Debug.Error-2.idtx:22
+#: MSIBuild/En.Win32.Release.Error-2.idtx:22
+#: MSIBuild/En.x64.Debug.Error-2.idtx:22
+#: MSIBuild/En.x64.Release.Error-2.idtx:22
+msgid ""
+"Error [4] deleting profile \"[3]\" on WLAN interface [2]. Please, contact "
+"your support personnel."
+msgstr ""
+"Pri brisanju profila »[3]« na vmesniku WLAN [2] je prišlo do napake [4]. "
+"Obrnite se na svojo tehnično službo."
+
 #: MSIBuild/En.Win32.Debug.Error-2.idtx:10
 #: MSIBuild/En.Win32.Release.Error-2.idtx:10
 #: MSIBuild/En.x64.Debug.Error-2.idtx:10
@@ -179,6 +197,28 @@ msgstr ""
 "Pri premikanju datoteke »[2]« v »[3]« je prišlo do napake [4]. Obrnite se na "
 "svojo tehnično službo."
 
+#: MSIBuild/En.Win32.Debug.Error-2.idtx:23
+#: MSIBuild/En.Win32.Release.Error-2.idtx:23
+#: MSIBuild/En.x64.Debug.Error-2.idtx:23
+#: MSIBuild/En.x64.Release.Error-2.idtx:23
+msgid ""
+"Error [5] renaming profile \"[3]\" to \"[4]\" on WLAN interface [2]. Please, "
+"contact your support personnel."
+msgstr ""
+"Pri preimenovanju profila »[3]« v »[4]« na vmesniku WLAN [2] je prišlo do "
+"napake [5]. Obrnite se na svojo tehnično službo."
+
+#: MSIBuild/En.Win32.Debug.Error-2.idtx:24
+#: MSIBuild/En.Win32.Release.Error-2.idtx:24
+#: MSIBuild/En.x64.Debug.Error-2.idtx:24
+#: MSIBuild/En.x64.Release.Error-2.idtx:24
+msgid ""
+"Error [5] setting profile \"[3]\" on WLAN interface [2] (WLAN reason is "
+"[4]). Please, contact your support personnel."
+msgstr ""
+"Pri nastavljanju profila »[3]« na vmesniku WLAN [2] je prišlo do napake [5] "
+"(vzrok WLAN je [4]). Obrnite se na svojo tehnično službo."
+
 #: MSIBuild/En.Win32.Debug.Error-2.idtx:4
 #: MSIBuild/En.Win32.Release.Error-2.idtx:4
 #: MSIBuild/En.x64.Debug.Error-2.idtx:4 MSIBuild/En.x64.Release.Error-2.idtx:4
@@ -186,4 +226,15 @@ msgid ""
 "Error opening installation package. Please, contact your support personnel."
 msgstr ""
 "Pri odpiranju namestitvenega paketa je prišlo do napake. Obrnite se na svojo "
+"tehnično službo."
+
+#: MSIBuild/En.Win32.Debug.Error-2.idtx:21
+#: MSIBuild/En.Win32.Release.Error-2.idtx:21
+#: MSIBuild/En.x64.Debug.Error-2.idtx:21
+#: MSIBuild/En.x64.Release.Error-2.idtx:21
+msgid ""
+"WLAN profile \"[2]\" XML data is not UTF-16 encoded. Please, contact your "
+"support personnel."
+msgstr ""
+"Zapis XML profila WLAN »[2]« ni zapisan v UTF-16. Obrnite se na svojo "
 "tehnično službo."

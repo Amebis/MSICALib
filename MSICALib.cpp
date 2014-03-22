@@ -200,7 +200,7 @@ UINT SaveSequence(MSIHANDLE hInstall, LPCTSTR szActionExecute, LPCTSTR szActionC
     {
         LPTSTR szBuffer = sSequenceFilename.GetBuffer(MAX_PATH);
         ::GetTempPath(MAX_PATH, szBuffer);
-        ::GetTempFileName(szBuffer, _T("TS"), 0, szBuffer);
+        ::GetTempFileName(szBuffer, _T("MSICA"), 0, szBuffer);
         sSequenceFilename.ReleaseBuffer();
     }
     // Save execute sequence to file.

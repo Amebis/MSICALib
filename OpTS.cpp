@@ -431,9 +431,9 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
 finish:
     if (FAILED(hr)) {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
-        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_TASK_CREATE_FAILED);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                        );
-        ::MsiRecordSetInteger(hRecordProg, 3, hr                              );
+        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_TASK_CREATE);
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                 );
+        ::MsiRecordSetInteger(hRecordProg, 3, hr                       );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
     }
     return hr;
@@ -801,9 +801,9 @@ HRESULT COpTaskDelete::Execute(CSession *pSession)
 finish:
     if (FAILED(hr)) {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
-        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_TASK_DELETE_FAILED);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                        );
-        ::MsiRecordSetInteger(hRecordProg, 3, hr                              );
+        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_TASK_DELETE);
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                 );
+        ::MsiRecordSetInteger(hRecordProg, 3, hr                       );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
     }
     return hr;
@@ -921,9 +921,9 @@ HRESULT COpTaskEnable::Execute(CSession *pSession)
 finish:
     if (FAILED(hr)) {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
-        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_TASK_ENABLE_FAILED);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                        );
-        ::MsiRecordSetInteger(hRecordProg, 3, hr                              );
+        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_TASK_ENABLE);
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                 );
+        ::MsiRecordSetInteger(hRecordProg, 3, hr                       );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
     }
     return hr;
@@ -1026,10 +1026,10 @@ HRESULT COpTaskCopy::Execute(CSession *pSession)
 finish:
     if (FAILED(hr)) {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(4);
-        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_TASK_COPY_FAILED);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue1                     );
-        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue2                     );
-        ::MsiRecordSetInteger(hRecordProg, 4, hr                            );
+        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_TASK_COPY);
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue1              );
+        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue2              );
+        ::MsiRecordSetInteger(hRecordProg, 4, hr                     );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
     }
     return hr;

@@ -42,9 +42,9 @@ HRESULT COpFileDelete::Execute(CSession *pSession)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
-        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_FILE_DELETE_FAILED);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                        );
-        ::MsiRecordSetInteger(hRecordProg, 3, dwError                         );
+        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_FILE_DELETE);
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                 );
+        ::MsiRecordSetInteger(hRecordProg, 3, dwError                  );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return AtlHresultFromWin32(dwError);
     }
@@ -76,10 +76,10 @@ HRESULT COpFileMove::Execute(CSession *pSession)
         return S_OK;
     } else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(4);
-        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_FILE_MOVE_FAILED);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue1                     );
-        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue2                     );
-        ::MsiRecordSetInteger(hRecordProg, 4, dwError                       );
+        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_FILE_MOVE);
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue1              );
+        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue2              );
+        ::MsiRecordSetInteger(hRecordProg, 4, dwError                );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return AtlHresultFromWin32(dwError);
     }
