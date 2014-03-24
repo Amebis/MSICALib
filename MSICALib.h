@@ -554,37 +554,20 @@ public:
 
 
 ////////////////////////////////////////////////////////////////////////////
-// COpWLANProfileRename
-////////////////////////////////////////////////////////////////////////////
-
-class COpWLANProfileRename : public COpWLANProfile
-{
-public:
-    COpWLANProfileRename(const GUID &guidInterface = GUID_NULL, LPCWSTR pszProfileNameSrc = L"", LPCWSTR pszProfileNameDst = L"", int iTicks = 0);
-    virtual HRESULT Execute(CSession *pSession);
-
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpWLANProfileRename &op);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpWLANProfileRename &op);
-
-protected:
-    ATL::CAtlStringW m_sProfileNameDst;
-};
-
-
-////////////////////////////////////////////////////////////////////////////
 // COpWLANProfileSet
 ////////////////////////////////////////////////////////////////////////////
 
 class COpWLANProfileSet : public COpWLANProfile
 {
 public:
-    COpWLANProfileSet(const GUID &guidInterface = GUID_NULL, LPCWSTR pszProfileName = L"", LPCWSTR pszProfileXML = L"", int iTicks = 0);
+    COpWLANProfileSet(const GUID &guidInterface = GUID_NULL, DWORD dwFlags = 0, LPCWSTR pszProfileName = L"", LPCWSTR pszProfileXML = L"", int iTicks = 0);
     virtual HRESULT Execute(CSession *pSession);
 
     friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpWLANProfileSet &op);
     friend inline HRESULT operator >>(ATL::CAtlFile &f, COpWLANProfileSet &op);
 
 protected:
+    DWORD m_dwFlags;
     ATL::CAtlStringW m_sProfileXML;
 };
 
@@ -628,7 +611,6 @@ protected:
         OP_SVC_START,
         OP_SVC_STOP,
         OP_WLAN_PROFILE_DELETE,
-        OP_WLAN_PROFILE_RENAME,
         OP_WLAN_PROFILE_SET,
         OP_SUBLIST
     };
@@ -1621,33 +1603,12 @@ inline HRESULT operator >>(ATL::CAtlFile &f, COpWLANProfile &op)
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const COpWLANProfileRename &op)
-{
-    HRESULT hr;
-
-    hr = f << (const COpWLANProfile&)op; if (FAILED(hr)) return hr;
-    hr = f << op.m_sProfileNameDst;      if (FAILED(hr)) return hr;
-
-    return S_OK;
-}
-
-
-inline HRESULT operator >>(ATL::CAtlFile &f, COpWLANProfileRename &op)
-{
-    HRESULT hr;
-
-    hr = f >> (COpWLANProfile&)op;  if (FAILED(hr)) return hr;
-    hr = f >> op.m_sProfileNameDst; if (FAILED(hr)) return hr;
-
-    return S_OK;
-}
-
-
 inline HRESULT operator <<(ATL::CAtlFile &f, const COpWLANProfileSet &op)
 {
     HRESULT hr;
 
     hr = f << (const COpWLANProfile&)op; if (FAILED(hr)) return hr;
+    hr = f << (int)(op.m_dwFlags);       if (FAILED(hr)) return hr;
     hr = f << op.m_sProfileXML;          if (FAILED(hr)) return hr;
 
     return S_OK;
@@ -1658,8 +1619,9 @@ inline HRESULT operator >>(ATL::CAtlFile &f, COpWLANProfileSet &op)
 {
     HRESULT hr;
 
-    hr = f >> (COpWLANProfile&)op; if (FAILED(hr)) return hr;
-    hr = f >> op.m_sProfileXML;    if (FAILED(hr)) return hr;
+    hr = f >> (COpWLANProfile&)op;  if (FAILED(hr)) return hr;
+    hr = f >> (int&)(op.m_dwFlags); if (FAILED(hr)) return hr;
+    hr = f >> op.m_sProfileXML;     if (FAILED(hr)) return hr;
 
     return S_OK;
 }
@@ -1697,7 +1659,6 @@ inline HRESULT operator <<(ATL::CAtlFile &f, const COpList &list)
         else if (dynamic_cast<const COpSvcStart*         >(pOp)) hr = list.Save<COpSvcStart,          COpList::OP_SVC_START          >(f, pOp);
         else if (dynamic_cast<const COpSvcStop*          >(pOp)) hr = list.Save<COpSvcStop,           COpList::OP_SVC_STOP           >(f, pOp);
         else if (dynamic_cast<const COpWLANProfileDelete*>(pOp)) hr = list.Save<COpWLANProfileDelete, COpList::OP_WLAN_PROFILE_DELETE>(f, pOp);
-        else if (dynamic_cast<const COpWLANProfileRename*>(pOp)) hr = list.Save<COpWLANProfileRename, COpList::OP_WLAN_PROFILE_RENAME>(f, pOp);
         else if (dynamic_cast<const COpWLANProfileSet*   >(pOp)) hr = list.Save<COpWLANProfileSet,    COpList::OP_WLAN_PROFILE_SET   >(f, pOp);
         else if (dynamic_cast<const COpList*             >(pOp)) hr = list.Save<COpList,              COpList::OP_SUBLIST            >(f, pOp);
         else {
@@ -1749,7 +1710,6 @@ inline HRESULT operator >>(ATL::CAtlFile &f, COpList &list)
         case COpList::OP_SVC_START:           hr = list.LoadAndAddTail<COpSvcStart         >(f); break;
         case COpList::OP_SVC_STOP:            hr = list.LoadAndAddTail<COpSvcStop          >(f); break;
         case COpList::OP_WLAN_PROFILE_DELETE: hr = list.LoadAndAddTail<COpWLANProfileDelete>(f); break;
-        case COpList::OP_WLAN_PROFILE_RENAME: hr = list.LoadAndAddTail<COpWLANProfileRename>(f); break;
         case COpList::OP_WLAN_PROFILE_SET:    hr = list.LoadAndAddTail<COpWLANProfileSet   >(f); break;
         case COpList::OP_SUBLIST:             hr = list.LoadAndAddTail<COpList             >(f); break;
         default:
