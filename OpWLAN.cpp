@@ -113,17 +113,13 @@ HRESULT COpWLANProfileSet::Execute(CSession *pSession)
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(5);
         ATL::CAtlStringW sGUID, sReason;
-        DWORD dwSize = 1024;
+        DWORD dwSize = 1024, dwResult;
         LPWSTR szBuffer = sReason.GetBuffer(dwSize);
 
         GuidToString(m_guidInterface, sGUID);
-        if (::WlanReasonCodeToString(wlrc, dwSize, szBuffer, NULL) == NO_ERROR) {
-            sReason.ReleaseBuffer(dwSize);
-            ::MsiRecordSetStringW(hRecordProg, 4, sReason);
-        } else {
-            sReason.ReleaseBuffer(dwSize);
-            sReason.Format(L"0x%x", wlrc);
-        }
+        dwResult = ::WlanReasonCodeToString(wlrc, dwSize, szBuffer, NULL);
+        sReason.ReleaseBuffer(dwSize);
+        if (dwResult != NO_ERROR) sReason.Format(L"0x%x", wlrc);
 
         ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_WLAN_PROFILE_SET);
         ::MsiRecordSetStringW(hRecordProg, 2, sGUID                         );
