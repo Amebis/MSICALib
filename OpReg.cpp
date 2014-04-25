@@ -19,7 +19,7 @@ COpRegKeySingle::COpRegKeySingle(HKEY hKeyRoot, LPCWSTR pszKeyName, int iTicks) 
 // COpRegKeySrcDst
 ////////////////////////////////////////////////////////////////////////////
 
-COpRegKeySrcDst::COpRegKeySrcDst(HKEY hKeyRoot, LPCWSTR pszKeyNameSrc, LPCWSTR pszKeyNameDst, int iTicks) : 
+COpRegKeySrcDst::COpRegKeySrcDst(HKEY hKeyRoot, LPCWSTR pszKeyNameSrc, LPCWSTR pszKeyNameDst, int iTicks) :
     m_hKeyRoot(hKeyRoot),
     COpTypeSrcDstString(pszKeyNameSrc, pszKeyNameDst, iTicks)
 {
