@@ -406,8 +406,8 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
                 }
 
                 // Convert numerical date to DMY (ULONGLONG -> FILETIME -> SYSTEMTIME).
-                ftValue.dwHighDateTime = ullValue >> 32;
-                ftValue.dwLowDateTime  = ullValue & 0xffffffff;
+                ftValue.dwHighDateTime = (DWORD)((ullValue >> 32) & 0xffffffff);
+                ftValue.dwLowDateTime  = (DWORD)( ullValue        & 0xffffffff);
                 ::FileTimeToSystemTime(&ftValue, &stValue);
 
                 // Set new trigger date and time.
