@@ -392,7 +392,7 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
                 ULONGLONG ullValue;
 
                 // Convert MDY date to numerical date (SYSTEMTIME -> FILETIME -> ULONGLONG).
-                memset(&stValue, 0, sizeof(SYSTEMTIME));
+                ZeroMemory(&stValue, sizeof(stValue));
                 stValue.wYear  = ttData.wBeginYear;
                 stValue.wMonth = ttData.wBeginMonth;
                 stValue.wDay   = ttData.wBeginDay;
@@ -497,7 +497,7 @@ UINT COpTaskCreate::SetTriggersFromView(MSIHANDLE hView)
     for (;;) {
         UINT uiResult;
         PMSIHANDLE hRecord;
-        TASK_TRIGGER ttData;
+        TASK_TRIGGER ttData = { sizeof(TASK_TRIGGER) };
         ULONGLONG ullValue;
         FILETIME ftValue;
         SYSTEMTIME stValue;
@@ -507,9 +507,6 @@ UINT COpTaskCreate::SetTriggersFromView(MSIHANDLE hView)
         uiResult = ::MsiViewFetch(hView, &hRecord);
         if (uiResult == ERROR_NO_MORE_ITEMS) return NO_ERROR;
         else if (uiResult != NO_ERROR)  return uiResult;
-
-        ZeroMemory(&ttData, sizeof(TASK_TRIGGER));
-        ttData.cbTriggerSize = sizeof(TASK_TRIGGER);
 
         // Get StartDate.
         iValue = ::MsiRecordGetInteger(hRecord, 2);
