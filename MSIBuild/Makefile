@@ -1,5 +1,5 @@
 #
-#    Copyright ("1991-2015") Amebis
+#    Copyright 1991-2015 Amebis
 #
 #    This file is part of MSICA.
 #
