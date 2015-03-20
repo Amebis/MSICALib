@@ -19,6 +19,10 @@
 
 #pragma once
 
+#include "MSICALib.h"
+
+#include "../../../lib/atl/atlcrypt.h"
+
 #include <atlbase.h>
 #include <atlfile.h>
 #include <atlstr.h>
@@ -28,5 +32,3 @@
 #include <mstask.h>
 #include <taskschd.h>
 #include <wlanapi.h>
-
-#include "MSICALib.h"
