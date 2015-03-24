@@ -188,6 +188,7 @@ HRESULT COpList::Execute(CSession *pSession)
 ////////////////////////////////////////////////////////////////////////////
 
 CSession::CSession() :
+    m_hInstall(NULL),
     m_bContinueOnError(FALSE),
     m_bRollbackEnabled(FALSE)
 {
