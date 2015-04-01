@@ -31,7 +31,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// Error codes (next unused 2579L)
+// Error codes (next unused 2580L)
 ////////////////////////////////////////////////////////////////////
 
 #define ERROR_INSTALL_DATABASE_OPEN          2550L
@@ -58,6 +58,7 @@
 #define ERROR_INSTALL_SVC_SET_START          2571L
 #define ERROR_INSTALL_SVC_START              2572L
 #define ERROR_INSTALL_SVC_STOP               2573L
+#define ERROR_INSTALL_WLAN_SVC_NOT_STARTED   2579L
 #define ERROR_INSTALL_WLAN_HANDLE_OPEN       2577L
 #define ERROR_INSTALL_WLAN_PROFILE_NOT_UTF16 2578L
 #define ERROR_INSTALL_WLAN_PROFILE_DELETE    2574L

@@ -59,6 +59,7 @@ i2	L0
 2571	Error [3] changing service "[2]" start type. Please, contact your support personnel.
 2572	Error [3] starting service "[2]". Please, contact your support personnel.
 2573	Error [3] stopping service "[2]". Please, contact your support personnel.
+2579	Error opening WLAN handle, because WLAN AutoConfig service is not started. Please, enable and start WLAN AutoConfig service, or contact your support personnel.
 2577	Error [2] opening WLAN handle. Please, contact your support personnel.
 2578	WLAN profile "[2]" XML data is not UTF-16 encoded. Please, contact your support personnel.
 2574	Error [4] deleting profile "[3]" on WLAN interface [2]. Please, contact your support personnel.

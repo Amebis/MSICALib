@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MSICALib\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-24 09:28+0100\n"
+"POT-Creation-Date: 2015-04-01 08:17+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Simon Rozman <simon.rozman@amebis.si>\n"
 "Language-Team: Amebis, d. o. o., Kamnik <simon.rozman@amebis.si>\n"
@@ -13,7 +13,7 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-KeywordsList: __\n"
 "X-Poedit-Basepath: ..\n"
-"X-Generator: Poedit 1.7.4\n"
+"X-Generator: Poedit 1.7.5\n"
 "X-Poedit-SearchPath-0: MSIBuild\n"
 
 # Windows charset for this language (decimal)
@@ -31,13 +31,13 @@ msgstr ""
 "Pri pripravi seznama opravil je prišlo do napake [2]. Obrnite se na svojo "
 "tehnično službo."
 
-#: MSIBuild/En.Win32.Debug.Error-2.idtx:20
-#: MSIBuild/En.Win32.Release.Error-2.idtx:20
-#: MSIBuild/En.x64.Debug.Error-2.idtx:20
-#: MSIBuild/En.x64.Release.Error-2.idtx:20
+#: MSIBuild/En.Win32.Debug.Error-2.idtx:21
+#: MSIBuild/En.Win32.Release.Error-2.idtx:21
+#: MSIBuild/En.x64.Debug.Error-2.idtx:21
+#: MSIBuild/En.x64.Release.Error-2.idtx:21
 msgid "Error [2] opening WLAN handle. Please, contact your support personnel."
 msgstr ""
-"Pri odpiranju ročica WLAN je prišlo do napake [2]. Obrnite se na svojo "
+"Pri odpiranju ročice WLAN je prišlo do napake [2]. Obrnite se na svojo "
 "tehnično službo."
 
 #: MSIBuild/En.Win32.Debug.Error-2.idtx:17
@@ -175,10 +175,10 @@ msgstr ""
 "Pri kopiranju razporejenega opravila »[2]« v »[3]« je prišlo do napake [4]. "
 "Obrnite se na svojo tehnično službo."
 
-#: MSIBuild/En.Win32.Debug.Error-2.idtx:22
-#: MSIBuild/En.Win32.Release.Error-2.idtx:22
-#: MSIBuild/En.x64.Debug.Error-2.idtx:22
-#: MSIBuild/En.x64.Release.Error-2.idtx:22
+#: MSIBuild/En.Win32.Debug.Error-2.idtx:23
+#: MSIBuild/En.Win32.Release.Error-2.idtx:23
+#: MSIBuild/En.x64.Debug.Error-2.idtx:23
+#: MSIBuild/En.x64.Release.Error-2.idtx:23
 msgid ""
 "Error [4] deleting profile \"[3]\" on WLAN interface [2]. Please, contact "
 "your support personnel."
@@ -197,10 +197,10 @@ msgstr ""
 "Pri premikanju datoteke »[2]« v »[3]« je prišlo do napake [4]. Obrnite se na "
 "svojo tehnično službo."
 
-#: MSIBuild/En.Win32.Debug.Error-2.idtx:23
-#: MSIBuild/En.Win32.Release.Error-2.idtx:23
-#: MSIBuild/En.x64.Debug.Error-2.idtx:23
-#: MSIBuild/En.x64.Release.Error-2.idtx:23
+#: MSIBuild/En.Win32.Debug.Error-2.idtx:24
+#: MSIBuild/En.Win32.Release.Error-2.idtx:24
+#: MSIBuild/En.x64.Debug.Error-2.idtx:24
+#: MSIBuild/En.x64.Release.Error-2.idtx:24
 msgid ""
 "Error [5] renaming profile \"[3]\" to \"[4]\" on WLAN interface [2]. Please, "
 "contact your support personnel."
@@ -208,10 +208,10 @@ msgstr ""
 "Pri preimenovanju profila »[3]« v »[4]« na vmesniku WLAN [2] je prišlo do "
 "napake [5]. Obrnite se na svojo tehnično službo."
 
-#: MSIBuild/En.Win32.Debug.Error-2.idtx:24
-#: MSIBuild/En.Win32.Release.Error-2.idtx:24
-#: MSIBuild/En.x64.Debug.Error-2.idtx:24
-#: MSIBuild/En.x64.Release.Error-2.idtx:24
+#: MSIBuild/En.Win32.Debug.Error-2.idtx:25
+#: MSIBuild/En.Win32.Release.Error-2.idtx:25
+#: MSIBuild/En.x64.Debug.Error-2.idtx:25
+#: MSIBuild/En.x64.Release.Error-2.idtx:25
 msgid ""
 "Error [5] setting profile \"[3]\" on WLAN interface [2] (WLAN reason is "
 "[4]). Please, contact your support personnel."
@@ -228,10 +228,23 @@ msgstr ""
 "Pri odpiranju namestitvenega paketa je prišlo do napake. Obrnite se na svojo "
 "tehnično službo."
 
-#: MSIBuild/En.Win32.Debug.Error-2.idtx:21
-#: MSIBuild/En.Win32.Release.Error-2.idtx:21
-#: MSIBuild/En.x64.Debug.Error-2.idtx:21
-#: MSIBuild/En.x64.Release.Error-2.idtx:21
+#: MSIBuild/En.Win32.Debug.Error-2.idtx:20
+#: MSIBuild/En.Win32.Release.Error-2.idtx:20
+#: MSIBuild/En.x64.Debug.Error-2.idtx:20
+#: MSIBuild/En.x64.Release.Error-2.idtx:20
+msgid ""
+"Error opening WLAN handle, because WLAN AutoConfig service is not started. "
+"Please, enable and start WLAN AutoConfig service, or contact your support "
+"personnel."
+msgstr ""
+"Pri odpiranju ročice WLAN je prišlo do napake, ker storitev WLAN AutoConfig "
+"ni zagnana. Omogočite in zaženite storitev WLAN AutoConfig, ali se obrnite "
+"na svojo tehnično službo."
+
+#: MSIBuild/En.Win32.Debug.Error-2.idtx:22
+#: MSIBuild/En.Win32.Release.Error-2.idtx:22
+#: MSIBuild/En.x64.Debug.Error-2.idtx:22
+#: MSIBuild/En.x64.Release.Error-2.idtx:22
 msgid ""
 "WLAN profile \"[2]\" XML data is not UTF-16 encoded. Please, contact your "
 "support personnel."
