@@ -78,7 +78,7 @@ HRESULT COpWLANProfileDelete::Execute(CSession *pSession)
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(4);
         ATL::CAtlStringW sGUID;
-        GuidToString(m_guidInterface, sGUID);
+        GuidToString(&m_guidInterface, sGUID);
         ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_WLAN_PROFILE_DELETE);
         ::MsiRecordSetStringW(hRecordProg, 2, sGUID                            );
         ::MsiRecordSetStringW(hRecordProg, 3, m_sValue                         );
@@ -135,7 +135,7 @@ HRESULT COpWLANProfileSet::Execute(CSession *pSession)
         DWORD dwSize = 1024, dwResult;
         LPWSTR szBuffer = sReason.GetBuffer(dwSize);
 
-        GuidToString(m_guidInterface, sGUID);
+        GuidToString(&m_guidInterface, sGUID);
         dwResult = ::WlanReasonCodeToString(wlrc, dwSize, szBuffer, NULL);
         sReason.ReleaseBuffer(dwSize);
         if (dwResult != NO_ERROR) sReason.Format(L"0x%x", wlrc);

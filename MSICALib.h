@@ -684,32 +684,6 @@ UINT ExecuteSequence(MSIHANDLE hInstall);
 // Inline helper functions
 ////////////////////////////////////////////////////////////////////
 
-namespace MSICA {
-
-inline VOID GuidToString(const GUID &guid, ATL::CAtlStringA &str)
-{
-    str.Format("{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}",
-        guid.Data1,
-        guid.Data2,
-        guid.Data3,
-        guid.Data4[0], guid.Data4[1],
-        guid.Data4[2], guid.Data4[3], guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
-}
-
-
-inline VOID GuidToString(const GUID &guid, ATL::CAtlStringW &str)
-{
-    str.Format(L"{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}",
-        guid.Data1,
-        guid.Data2,
-        guid.Data3,
-        guid.Data4[0], guid.Data4[1],
-        guid.Data4[2], guid.Data4[3], guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
-}
-
-} // namespace MSICA
-
-
 inline UINT MsiRecordFormatStringA(MSIHANDLE hInstall, MSIHANDLE hRecord, unsigned int iField, ATL::CAtlStringA &sValue)
 {
     UINT uiResult;
