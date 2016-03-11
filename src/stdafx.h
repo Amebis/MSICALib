@@ -19,10 +19,10 @@
 
 #pragma once
 
-#include "MSICALib.h"
+#include <MSICALib.h>
 
-#include "../../../lib/atlex/include/atlex/atlcrypt.h"
-#include "../../../lib/atlex/include/atlex/atlwin.h"
+#include <atlex/atlcrypt.h>
+#include <atlex/atlwin.h>
 
 #include <atlbase.h>
 #include <atlfile.h>
