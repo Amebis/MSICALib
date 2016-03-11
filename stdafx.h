@@ -21,8 +21,8 @@
 
 #include "MSICALib.h"
 
-#include "../../../lib/atl/atlcrypt.h"
-#include "../../../lib/atl/atlwin.h"
+#include "../../../lib/libatl/include/atlcrypt.h"
+#include "../../../lib/libatl/include/atlwin.h"
 
 #include <atlbase.h>
 #include <atlfile.h>

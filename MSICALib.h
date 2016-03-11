@@ -673,7 +673,7 @@ UINT ExecuteSequence(MSIHANDLE hInstall);
 // Local includes
 ////////////////////////////////////////////////////////////////////
 
-#include "../../../lib/atl/atlmsi.h"
+#include "../../../lib/libatl/include/atlmsi.h"
 #include <atlfile.h>
 #include <atlstr.h>
 #include <msiquery.h>
