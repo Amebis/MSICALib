@@ -18,28 +18,6 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\src\OpCert.cpp" />
-    <ClCompile Include="..\src\MSICALib.cpp" />
-    <ClCompile Include="..\src\OpFile.cpp" />
-    <ClCompile Include="..\src\OpSvc.cpp" />
-    <ClCompile Include="..\src\OpTS.cpp" />
-    <ClCompile Include="..\src\OpReg.cpp" />
-    <ClCompile Include="..\src\OpWLAN.cpp" />
-    <ClCompile Include="..\src\stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\include\MSICALib.h" />
-    <ClInclude Include="..\src\stdafx.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\L10N\sl_SI.po" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8552EE55-177E-4F51-B51B-BAF7D6462CDE}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -69,7 +47,6 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\rcxgettext.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -100,6 +77,31 @@
     <Import Project="MSICALib.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\OpCert.cpp" />
+    <ClCompile Include="..\src\MSICALib.cpp" />
+    <ClCompile Include="..\src\OpFile.cpp" />
+    <ClCompile Include="..\src\OpSvc.cpp" />
+    <ClCompile Include="..\src\OpTS.cpp" />
+    <ClCompile Include="..\src\OpReg.cpp" />
+    <ClCompile Include="..\src\OpWLAN.cpp" />
+    <ClCompile Include="..\src\stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\MSICALib.h" />
+    <ClInclude Include="..\src\stdafx.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\L10N\sl_SI.po" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
