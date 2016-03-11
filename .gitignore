@@ -2,5 +2,15 @@
 /*.suo
 /*.opensdf
 /ipch
+/L10N/*.mo
+/MSIBuild/*-1.idt
+/MSIBuild/*-2.idt
+/MSIBuild/*-2.idtx
+/MSIBuild/*.Binary-1
+/MSIBuild/*.Binary-2
+/MSIBuild/*.Icon-1
+/MSIBuild/*.Icon-2
+/MSIBuild/*.lst
+/MSIBuild/*.msm
 temp
 *.user
