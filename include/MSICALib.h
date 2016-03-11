@@ -1,5 +1,5 @@
 /*
-    Copyright 1991-2015 Amebis
+    Copyright 1991-2016 Amebis
 
     This file is part of MSICA.
 
@@ -17,8 +17,7 @@
     along with MSICA. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __MSICALib_H__
-#define __MSICALib_H__
+#pragma once
 
 #include <atlbase.h>
 #include <atlcoll.h>
@@ -1546,5 +1545,3 @@ template <class T> inline HRESULT COpList::LoadAndAddTail(ATL::CAtlFile &f)
 }
 
 } // namespace MSICA
-
-#endif // __MSICALib_H__
