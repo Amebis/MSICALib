@@ -19,8 +19,6 @@
 
 #include "stdafx.h"
 
-#pragma comment(lib, "wlanapi.lib")
-
 
 namespace MSICA {
 
@@ -46,45 +44,52 @@ COpWLANProfileDelete::COpWLANProfileDelete(const GUID &guidInterface, LPCWSTR ps
 
 HRESULT COpWLANProfileDelete::Execute(CSession *pSession)
 {
-    DWORD dwError, dwNegotiatedVersion;
-    HANDLE hClientHandle;
+    if (::pfnWlanOpenHandle && ::pfnWlanCloseHandle && ::pfnWlanGetProfile && ::pfnWlanDeleteProfile && ::pfnWlanFreeMemory) {
+        DWORD dwError, dwNegotiatedVersion;
+        HANDLE hClientHandle;
 
-    dwError = ::WlanOpenHandle(2, NULL, &dwNegotiatedVersion, &hClientHandle);
-    if (dwError == NO_ERROR) {
-        if (pSession->m_bRollbackEnabled) {
-            LPWSTR pszProfileXML = NULL;
-            DWORD dwFlags = 0, dwGrantedAccess = 0;
+        dwError = ::pfnWlanOpenHandle(2, NULL, &dwNegotiatedVersion, &hClientHandle);
+        if (dwError == NO_ERROR) {
+            if (pSession->m_bRollbackEnabled) {
+                LPWSTR pszProfileXML = NULL;
+                DWORD dwFlags = 0, dwGrantedAccess = 0;
 
-            // Get profile settings as XML first.
-            dwError = ::WlanGetProfile(hClientHandle, &m_guidInterface, m_sValue, NULL, &pszProfileXML, &dwFlags, &dwGrantedAccess);
-            if (dwError == NO_ERROR) {
-                // Delete the profile.
-                dwError = ::WlanDeleteProfile(hClientHandle, &m_guidInterface, m_sValue, NULL);
+                // Get profile settings as XML first.
+                dwError = ::pfnWlanGetProfile(hClientHandle, &m_guidInterface, m_sValue, NULL, &pszProfileXML, &dwFlags, &dwGrantedAccess);
                 if (dwError == NO_ERROR) {
-                    // Order rollback action to recreate it.
-                    pSession->m_olRollback.AddHead(new COpWLANProfileSet(m_guidInterface, dwFlags, m_sValue, pszProfileXML));
+                    // Delete the profile.
+                    dwError = ::pfnWlanDeleteProfile(hClientHandle, &m_guidInterface, m_sValue, NULL);
+                    if (dwError == NO_ERROR) {
+                        // Order rollback action to recreate it.
+                        pSession->m_olRollback.AddHead(new COpWLANProfileSet(m_guidInterface, dwFlags, m_sValue, pszProfileXML));
+                    }
+                    ::pfnWlanFreeMemory(pszProfileXML);
                 }
-                ::WlanFreeMemory(pszProfileXML);
+            } else {
+                // Delete the profile.
+                dwError = ::pfnWlanDeleteProfile(hClientHandle, &m_guidInterface, m_sValue, NULL);
             }
-        } else {
-            // Delete the profile.
-            dwError = ::WlanDeleteProfile(hClientHandle, &m_guidInterface, m_sValue, NULL);
+            ::pfnWlanCloseHandle(hClientHandle, NULL);
         }
-        ::WlanCloseHandle(hClientHandle, NULL);
-    }
 
-    if (dwError == NO_ERROR || dwError == ERROR_NOT_FOUND)
-        return S_OK;
-    else {
-        PMSIHANDLE hRecordProg = ::MsiCreateRecord(4);
-        ATL::CAtlStringW sGUID;
-        GuidToString(&m_guidInterface, sGUID);
-        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_WLAN_PROFILE_DELETE);
-        ::MsiRecordSetStringW(hRecordProg, 2, sGUID                            );
-        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue                         );
-        ::MsiRecordSetInteger(hRecordProg, 4, dwError                          );
+        if (dwError == NO_ERROR || dwError == ERROR_NOT_FOUND)
+            return S_OK;
+        else {
+            PMSIHANDLE hRecordProg = ::MsiCreateRecord(4);
+            ATL::CAtlStringW sGUID;
+            GuidToString(&m_guidInterface, sGUID);
+            ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_WLAN_PROFILE_DELETE);
+            ::MsiRecordSetStringW(hRecordProg, 2, sGUID                            );
+            ::MsiRecordSetStringW(hRecordProg, 3, m_sValue                         );
+            ::MsiRecordSetInteger(hRecordProg, 4, dwError                          );
+            ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
+            return AtlHresultFromWin32(dwError);
+        }
+    } else {
+        PMSIHANDLE hRecordProg = ::MsiCreateRecord(1);
+        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_WLAN_NOT_INSTALLED);
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
-        return AtlHresultFromWin32(dwError);
+        return E_NOTIMPL;
     }
 }
 
@@ -103,50 +108,57 @@ COpWLANProfileSet::COpWLANProfileSet(const GUID &guidInterface, DWORD dwFlags, L
 
 HRESULT COpWLANProfileSet::Execute(CSession *pSession)
 {
-    DWORD dwError, dwNegotiatedVersion;
-    HANDLE hClientHandle;
-    WLAN_REASON_CODE wlrc = 0;
+    if (::pfnWlanOpenHandle && ::pfnWlanCloseHandle && ::pfnWlanSetProfile && ::pfnWlanReasonCodeToString) {
+        DWORD dwError, dwNegotiatedVersion;
+        HANDLE hClientHandle;
+        WLAN_REASON_CODE wlrc = 0;
 
-    {
-        // Delete existing profile first.
-        // Since deleting a profile is a complicated job (when rollback/commit support is required), and we do have an operation just for that, we use it.
-        // Don't worry, COpWLANProfileDelete::Execute() returns S_OK if profile doesn't exist.
-        COpWLANProfileDelete opDelete(m_guidInterface, m_sValue);
-        HRESULT hr = opDelete.Execute(pSession);
-        if (FAILED(hr)) return hr;
-    }
-
-    dwError = ::WlanOpenHandle(2, NULL, &dwNegotiatedVersion, &hClientHandle);
-    if (dwError == NO_ERROR) {
-        // Set the profile.
-        dwError = ::WlanSetProfile(hClientHandle, &m_guidInterface, m_dwFlags, m_sProfileXML, NULL, TRUE, NULL, &wlrc);
-        if (dwError == NO_ERROR && pSession->m_bRollbackEnabled) {
-            // Order rollback action to delete it.
-            pSession->m_olRollback.AddHead(new COpWLANProfileDelete(m_guidInterface, m_sValue));
+        {
+            // Delete existing profile first.
+            // Since deleting a profile is a complicated job (when rollback/commit support is required), and we do have an operation just for that, we use it.
+            // Don't worry, COpWLANProfileDelete::Execute() returns S_OK if profile doesn't exist.
+            COpWLANProfileDelete opDelete(m_guidInterface, m_sValue);
+            HRESULT hr = opDelete.Execute(pSession);
+            if (FAILED(hr)) return hr;
         }
-        ::WlanCloseHandle(hClientHandle, NULL);
-    }
 
-    if (dwError == NO_ERROR)
-        return S_OK;
-    else {
-        PMSIHANDLE hRecordProg = ::MsiCreateRecord(5);
-        ATL::CAtlStringW sGUID, sReason;
-        DWORD dwSize = 1024, dwResult;
-        LPWSTR szBuffer = sReason.GetBuffer(dwSize);
+        dwError = ::pfnWlanOpenHandle(2, NULL, &dwNegotiatedVersion, &hClientHandle);
+        if (dwError == NO_ERROR) {
+            // Set the profile.
+            dwError = ::pfnWlanSetProfile(hClientHandle, &m_guidInterface, m_dwFlags, m_sProfileXML, NULL, TRUE, NULL, &wlrc);
+            if (dwError == NO_ERROR && pSession->m_bRollbackEnabled) {
+                // Order rollback action to delete it.
+                pSession->m_olRollback.AddHead(new COpWLANProfileDelete(m_guidInterface, m_sValue));
+            }
+            ::pfnWlanCloseHandle(hClientHandle, NULL);
+        }
 
-        GuidToString(&m_guidInterface, sGUID);
-        dwResult = ::WlanReasonCodeToString(wlrc, dwSize, szBuffer, NULL);
-        sReason.ReleaseBuffer(dwSize);
-        if (dwResult != NO_ERROR) sReason.Format(L"0x%x", wlrc);
+        if (dwError == NO_ERROR)
+            return S_OK;
+        else {
+            PMSIHANDLE hRecordProg = ::MsiCreateRecord(5);
+            ATL::CAtlStringW sGUID, sReason;
+            DWORD dwSize = 1024, dwResult;
+            LPWSTR szBuffer = sReason.GetBuffer(dwSize);
 
-        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_WLAN_PROFILE_SET);
-        ::MsiRecordSetStringW(hRecordProg, 2, sGUID                         );
-        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue                      );
-        ::MsiRecordSetStringW(hRecordProg, 4, sReason                       );
-        ::MsiRecordSetInteger(hRecordProg, 5, dwError                       );
+            GuidToString(&m_guidInterface, sGUID);
+            dwResult = ::pfnWlanReasonCodeToString(wlrc, dwSize, szBuffer, NULL);
+            sReason.ReleaseBuffer(dwSize);
+            if (dwResult != NO_ERROR) sReason.Format(L"0x%x", wlrc);
+
+            ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_WLAN_PROFILE_SET);
+            ::MsiRecordSetStringW(hRecordProg, 2, sGUID                         );
+            ::MsiRecordSetStringW(hRecordProg, 3, m_sValue                      );
+            ::MsiRecordSetStringW(hRecordProg, 4, sReason                       );
+            ::MsiRecordSetInteger(hRecordProg, 5, dwError                       );
+            ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
+            return AtlHresultFromWin32(dwError);
+        }
+    } else {
+        PMSIHANDLE hRecordProg = ::MsiCreateRecord(1);
+        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_WLAN_NOT_INSTALLED);
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
-        return AtlHresultFromWin32(dwError);
+        return E_NOTIMPL;
     }
 }
 
