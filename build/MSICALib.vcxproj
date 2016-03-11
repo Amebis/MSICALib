@@ -19,14 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="OpCert.cpp" />
-    <ClCompile Include="MSICALib.cpp" />
-    <ClCompile Include="OpFile.cpp" />
-    <ClCompile Include="OpSvc.cpp" />
-    <ClCompile Include="OpTS.cpp" />
-    <ClCompile Include="OpReg.cpp" />
-    <ClCompile Include="OpWLAN.cpp" />
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="..\src\OpCert.cpp" />
+    <ClCompile Include="..\src\MSICALib.cpp" />
+    <ClCompile Include="..\src\OpFile.cpp" />
+    <ClCompile Include="..\src\OpSvc.cpp" />
+    <ClCompile Include="..\src\OpTS.cpp" />
+    <ClCompile Include="..\src\OpReg.cpp" />
+    <ClCompile Include="..\src\OpWLAN.cpp" />
+    <ClCompile Include="..\src\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -34,11 +34,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MSICALib.h" />
-    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="..\include\MSICALib.h" />
+    <ClInclude Include="..\src\stdafx.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="L10N\sl_SI.po" />
+    <None Include="..\L10N\sl_SI.po" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8552EE55-177E-4F51-B51B-BAF7D6462CDE}</ProjectGuid>
@@ -73,27 +73,31 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\include\common.props" />
-    <Import Project="..\include\Win32.props" />
-    <Import Project="..\include\Release.props" />
+    <Import Project="..\..\..\include\common.props" />
+    <Import Project="..\..\..\include\Win32.props" />
+    <Import Project="..\..\..\include\Release.props" />
+    <Import Project="MSICALib.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\include\common.props" />
-    <Import Project="..\include\Win32.props" />
-    <Import Project="..\include\Debug.props" />
+    <Import Project="..\..\..\include\common.props" />
+    <Import Project="..\..\..\include\Win32.props" />
+    <Import Project="..\..\..\include\Debug.props" />
+    <Import Project="MSICALib.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\include\common.props" />
-    <Import Project="..\include\x64.props" />
-    <Import Project="..\include\Release.props" />
+    <Import Project="..\..\..\include\common.props" />
+    <Import Project="..\..\..\include\x64.props" />
+    <Import Project="..\..\..\include\Release.props" />
+    <Import Project="MSICALib.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\include\common.props" />
-    <Import Project="..\include\x64.props" />
-    <Import Project="..\include\Debug.props" />
+    <Import Project="..\..\..\include\common.props" />
+    <Import Project="..\..\..\include\x64.props" />
+    <Import Project="..\..\..\include\Debug.props" />
+    <Import Project="MSICALib.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

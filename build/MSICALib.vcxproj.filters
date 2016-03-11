@@ -15,41 +15,41 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MSICALib.cpp">
+    <ClCompile Include="..\src\MSICALib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OpFile.cpp">
+    <ClCompile Include="..\src\OpFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OpTS.cpp">
+    <ClCompile Include="..\src\OpTS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="..\src\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OpReg.cpp">
+    <ClCompile Include="..\src\OpReg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OpCert.cpp">
+    <ClCompile Include="..\src\OpCert.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OpSvc.cpp">
+    <ClCompile Include="..\src\OpSvc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OpWLAN.cpp">
+    <ClCompile Include="..\src\OpWLAN.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MSICALib.h">
+    <ClInclude Include="..\include\MSICALib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="stdafx.h">
+    <ClInclude Include="..\src\stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="L10N\sl_SI.po">
+    <None Include="..\L10N\sl_SI.po">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
