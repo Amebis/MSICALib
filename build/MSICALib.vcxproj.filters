@@ -49,7 +49,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\L10N\sl_SI.po">
+    <None Include="..\locale\sl_SI.po">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
