@@ -407,14 +407,15 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
                 // Windows XP doesn't support random startup delay. However, we can add fixed "random" delay when creating the trigger.
                 WORD wStartTime = ttData.wStartHour * 60 + ttData.wStartMinute + (WORD)::MulDiv(rand(), ttData.wRandomMinutesInterval, RAND_MAX);
                 FILETIME ftValue;
-                SYSTEMTIME stValue;
+                SYSTEMTIME stValue = {
+                    ttData.wBeginYear,
+                    ttData.wBeginMonth,
+                    0,
+                    ttData.wBeginDay,
+                };
                 ULONGLONG ullValue;
 
                 // Convert MDY date to numerical date (SYSTEMTIME -> FILETIME -> ULONGLONG).
-                ZeroMemory(&stValue, sizeof(stValue));
-                stValue.wYear  = ttData.wBeginYear;
-                stValue.wMonth = ttData.wBeginMonth;
-                stValue.wDay   = ttData.wBeginDay;
                 ::SystemTimeToFileTime(&stValue, &ftValue);
                 ullValue = ((ULONGLONG)(ftValue.dwHighDateTime) << 32) | ftValue.dwLowDateTime;
 
