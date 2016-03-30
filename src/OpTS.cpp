@@ -531,8 +531,8 @@ UINT COpTaskCreate::SetTriggersFromView(MSIHANDLE hView)
         iValue = ::MsiRecordGetInteger(hRecord, 2);
         if (iValue == MSI_NULL_INTEGER) return ERROR_INVALID_FIELD;
         ullValue = ((ULONGLONG)iValue + 138426) * 864000000000;
-        ftValue.dwHighDateTime = ullValue >> 32;
-        ftValue.dwLowDateTime  = ullValue & 0xffffffff;
+        ftValue.dwHighDateTime = (DWORD)((ullValue >> 32) & 0xffffffff);
+        ftValue.dwLowDateTime  = (DWORD)( ullValue        & 0xffffffff);
         if (!::FileTimeToSystemTime(&ftValue, &stValue))
             return ::GetLastError();
         ttData.wBeginYear  = stValue.wYear;
@@ -543,8 +543,8 @@ UINT COpTaskCreate::SetTriggersFromView(MSIHANDLE hView)
         iValue = ::MsiRecordGetInteger(hRecord, 3);
         if (iValue != MSI_NULL_INTEGER) {
             ullValue = ((ULONGLONG)iValue + 138426) * 864000000000;
-            ftValue.dwHighDateTime = ullValue >> 32;
-            ftValue.dwLowDateTime  = ullValue & 0xffffffff;
+            ftValue.dwHighDateTime = (DWORD)((ullValue >> 32) & 0xffffffff);
+            ftValue.dwLowDateTime  = (DWORD)( ullValue        & 0xffffffff);
             if (!::FileTimeToSystemTime(&ftValue, &stValue))
                 return ::GetLastError();
             ttData.wEndYear  = stValue.wYear;
