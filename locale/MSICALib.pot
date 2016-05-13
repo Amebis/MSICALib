@@ -1,3 +1,4 @@
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: MSICALib\n"
@@ -12,19 +13,21 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-KeywordsList: __\n"
-"X-Poedit-Basepath: .\n"
+"X-Poedit-Basepath: ..\n"
 "X-Generator: Poedit 1.8.7\n"
 "Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
 "%100==4 ? 2 : 3);\n"
+"X-Poedit-SearchPath-0: MSIBuild\n"
 
-# Windows charset for this language (decimal)
 #: MSIBuild/En.Win32.Release.Error-2.idtx:3
 #: MSIBuild/En.x64.Release.Error-2.idtx:3
+#, fuzzy
 msgid "1252"
 msgstr "1250"
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:5
 #: MSIBuild/En.x64.Release.Error-2.idtx:5
+#, fuzzy
 msgid "Error [2] creating task list. Please, contact your support personnel."
 msgstr ""
 "Pri pripravi seznama opravil je prišlo do napake [2]. Obrnite se na svojo "
@@ -32,6 +35,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:22
 #: MSIBuild/En.x64.Release.Error-2.idtx:22
+#, fuzzy
 msgid "Error [2] opening WLAN handle. Please, contact your support personnel."
 msgstr ""
 "Pri odpiranju ročice WLAN je prišlo do napake [2]. Obrnite se na svojo "
@@ -39,6 +43,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:17
 #: MSIBuild/En.x64.Release.Error-2.idtx:17
+#, fuzzy
 msgid ""
 "Error [3] changing service \"[2]\" start type. Please, contact your support "
 "personnel."
@@ -48,6 +53,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:11
 #: MSIBuild/En.x64.Release.Error-2.idtx:11
+#, fuzzy
 msgid ""
 "Error [3] creating \"[2]\" scheduled task. Please, contact your support "
 "personnel."
@@ -57,6 +63,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:9
 #: MSIBuild/En.x64.Release.Error-2.idtx:9
+#, fuzzy
 msgid ""
 "Error [3] deleting \"[2]\" file. Please, contact your support personnel."
 msgstr ""
@@ -65,6 +72,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:12
 #: MSIBuild/En.x64.Release.Error-2.idtx:12
+#, fuzzy
 msgid ""
 "Error [3] deleting \"[2]\" scheduled task. Please, contact your support "
 "personnel."
@@ -74,6 +82,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:13
 #: MSIBuild/En.x64.Release.Error-2.idtx:13
+#, fuzzy
 msgid ""
 "Error [3] enabling/disabling \"[2]\" scheduled task. Please, contact your "
 "support personnel."
@@ -83,6 +92,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:15
 #: MSIBuild/En.x64.Release.Error-2.idtx:15
+#, fuzzy
 msgid ""
 "Error [3] installing certificate to certificate store \"[2]\". Please, "
 "contact your support personnel."
@@ -92,6 +102,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:7
 #: MSIBuild/En.x64.Release.Error-2.idtx:7
+#, fuzzy
 msgid ""
 "Error [3] reading from \"[2]\" task list file. Please, contact your support "
 "personnel."
@@ -101,6 +112,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:16
 #: MSIBuild/En.x64.Release.Error-2.idtx:16
+#, fuzzy
 msgid ""
 "Error [3] removing certificate from certificate store \"[2]\". Please, "
 "contact your support personnel."
@@ -110,6 +122,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:8
 #: MSIBuild/En.x64.Release.Error-2.idtx:8
+#, fuzzy
 msgid ""
 "Error [3] setting \"[2]\" parameter. Please, contact your support personnel."
 msgstr ""
@@ -118,6 +131,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:18
 #: MSIBuild/En.x64.Release.Error-2.idtx:18
+#, fuzzy
 msgid ""
 "Error [3] starting service \"[2]\". Please, contact your support personnel."
 msgstr ""
@@ -126,6 +140,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:19
 #: MSIBuild/En.x64.Release.Error-2.idtx:19
+#, fuzzy
 msgid ""
 "Error [3] stopping service \"[2]\". Please, contact your support personnel."
 msgstr ""
@@ -134,6 +149,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:6
 #: MSIBuild/En.x64.Release.Error-2.idtx:6
+#, fuzzy
 msgid ""
 "Error [3] writing to \"[2]\" task list file. Please, contact your support "
 "personnel."
@@ -143,6 +159,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:14
 #: MSIBuild/En.x64.Release.Error-2.idtx:14
+#, fuzzy
 msgid ""
 "Error [4] copying \"[2]\" scheduled task to \"[3]\". Please, contact your "
 "support personnel."
@@ -152,6 +169,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:24
 #: MSIBuild/En.x64.Release.Error-2.idtx:24
+#, fuzzy
 msgid ""
 "Error [4] deleting profile \"[3]\" on WLAN interface [2]. Please, contact "
 "your support personnel."
@@ -161,6 +179,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:10
 #: MSIBuild/En.x64.Release.Error-2.idtx:10
+#, fuzzy
 msgid ""
 "Error [4] moving \"[2]\" file to \"[3]\". Please, contact your support "
 "personnel."
@@ -170,6 +189,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:25
 #: MSIBuild/En.x64.Release.Error-2.idtx:25
+#, fuzzy
 msgid ""
 "Error [5] renaming profile \"[3]\" to \"[4]\" on WLAN interface [2]. Please, "
 "contact your support personnel."
@@ -179,6 +199,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:26
 #: MSIBuild/En.x64.Release.Error-2.idtx:26
+#, fuzzy
 msgid ""
 "Error [5] setting profile \"[3]\" on WLAN interface [2] (WLAN reason is "
 "[4]). Please, contact your support personnel."
@@ -188,6 +209,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:20
 #: MSIBuild/En.x64.Release.Error-2.idtx:20
+#, fuzzy
 msgid ""
 "Error installing WLAN profiles, because WLAN is not installed. Please, "
 "install Wireless LAN Service Windows feature, or contact your support "
@@ -199,6 +221,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:4
 #: MSIBuild/En.x64.Release.Error-2.idtx:4
+#, fuzzy
 msgid ""
 "Error opening installation package. Please, contact your support personnel."
 msgstr ""
@@ -207,6 +230,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:21
 #: MSIBuild/En.x64.Release.Error-2.idtx:21
+#, fuzzy
 msgid ""
 "Error opening WLAN handle, because WLAN AutoConfig service is not started. "
 "Please, enable and start WLAN AutoConfig service, or contact your support "
@@ -218,6 +242,7 @@ msgstr ""
 
 #: MSIBuild/En.Win32.Release.Error-2.idtx:23
 #: MSIBuild/En.x64.Release.Error-2.idtx:23
+#, fuzzy
 msgid ""
 "WLAN profile \"[2]\" XML data is not UTF-16 encoded. Please, contact your "
 "support personnel."
