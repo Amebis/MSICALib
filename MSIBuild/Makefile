@@ -77,6 +77,9 @@ i2	L0
 "It.$(PLAT).$(CFG).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\locale\it_IT.po"
 	rcxgettext.exe idtp $@ $**
 
+"Ru.$(PLAT).$(CFG).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\locale\ru_RU.po"
+	rcxgettext.exe idtp $@ $**
+
 "Sl.$(PLAT).$(CFG).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\locale\sl_SI.po"
 	rcxgettext.exe idtp $@ $**
 
