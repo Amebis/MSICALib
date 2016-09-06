@@ -68,20 +68,13 @@ i2	L0
 2576	Error [5] setting profile "[3]" on WLAN interface [2] (WLAN reason is [4]). Please, contact your support personnel.
 <<NOKEEP
 
-"De.$(PLAT).$(CFG).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\locale\de_DE.po"
-	rcxgettext.exe idtp $@ $**
-
+!IF "$(LANG)" == "En"
 "En.$(PLAT).$(CFG).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx"
 	copy /y $** $@ > NUL
-
-"It.$(PLAT).$(CFG).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\locale\it_IT.po"
+!ELSE
+"$(LANG).$(PLAT).$(CFG).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\locale\$(MSIBUILD_LANG_PO).po"
 	rcxgettext.exe idtp $@ $**
-
-"Ru.$(PLAT).$(CFG).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\locale\ru_RU.po"
-	rcxgettext.exe idtp $@ $**
-
-"Sl.$(PLAT).$(CFG).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\locale\sl_SI.po"
-	rcxgettext.exe idtp $@ $**
+!ENDIF
 
 
 ######################################################################
