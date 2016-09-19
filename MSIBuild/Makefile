@@ -73,7 +73,7 @@ i2	L0
 	copy /y $** $@ > NUL
 !ELSE
 "$(LANG).$(PLAT).$(CFG).Error-2.idt" : "en_US.$(PLAT).$(CFG).Error-2.idtx" "..\locale\$(LANG).po"
-	rcxgettext.exe idtp $@ $**
+	cscript.exe "..\..\..\MSI\MSIBuild\MSI.wsf" //Job:IDTTranslate //Nologo $@ $** /CP:$(MSIBUILD_CODEPAGE)
 !ENDIF
 
 
