@@ -37,7 +37,7 @@ i2	L0
 Error	Error
 <<NOKEEP
 
-"En.$(PLAT).$(CFG).Error-2.idtx" : "Makefile" "..\..\..\include\MSIBuildCfg.mak"
+"en_US.$(PLAT).$(CFG).Error-2.idtx" : "Makefile" "..\..\..\include\MSIBuildCfg.mak"
 	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
 Error	Message
@@ -68,11 +68,11 @@ i2	L0
 2576	Error [5] setting profile "[3]" on WLAN interface [2] (WLAN reason is [4]). Please, contact your support personnel.
 <<NOKEEP
 
-!IF "$(LANG)" == "En"
-"En.$(PLAT).$(CFG).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx"
+!IF "$(LANG)" == "en_US"
+"en_US.$(PLAT).$(CFG).Error-2.idt" : "en_US.$(PLAT).$(CFG).Error-2.idtx"
 	copy /y $** $@ > NUL
 !ELSE
-"$(LANG).$(PLAT).$(CFG).Error-2.idt" : "En.$(PLAT).$(CFG).Error-2.idtx" "..\locale\$(MSIBUILD_LANG_PO).po"
+"$(LANG).$(PLAT).$(CFG).Error-2.idt" : "en_US.$(PLAT).$(CFG).Error-2.idtx" "..\locale\$(LANG).po"
 	rcxgettext.exe idtp $@ $**
 !ENDIF
 
