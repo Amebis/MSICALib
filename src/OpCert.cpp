@@ -74,7 +74,7 @@ HRESULT COpCertInstall::Execute(CSession *pSession)
             ::CertGetNameStringW(pCertContext, CERT_NAME_FRIENDLY_DISPLAY_TYPE, 0, NULL, sCertName);
             ::MsiRecordSetStringW(hRecordMsg, 1, sCertName.c_str());
             if (MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ACTIONDATA, hRecordMsg) == IDCANCEL)
-                return AtlHresultFromWin32(ERROR_INSTALL_USEREXIT);
+                return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
 
             // Add certificate to certificate store.
             if (::CertAddCertificateContextToStore(hCertStore, pCertContext, CERT_STORE_ADD_NEW, NULL)) {
@@ -105,7 +105,7 @@ HRESULT COpCertInstall::Execute(CSession *pSession)
         ::MsiRecordSetStringW(hRecordProg, 2, m_sValue.c_str()          );
         ::MsiRecordSetInteger(hRecordProg, 3, dwError                   );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
-        return AtlHresultFromWin32(dwError);
+        return HRESULT_FROM_WIN32(dwError);
     }
 }
 
@@ -138,7 +138,7 @@ HRESULT COpCertRemove::Execute(CSession *pSession)
             ::CertGetNameStringW(pCertContext, CERT_NAME_FRIENDLY_DISPLAY_TYPE, 0, NULL, sCertName);
             ::MsiRecordSetStringW(hRecordMsg, 1, sCertName.c_str());
             if (MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ACTIONDATA, hRecordMsg) == IDCANCEL)
-                return AtlHresultFromWin32(ERROR_INSTALL_USEREXIT);
+                return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
 
             pCertContextExisting = ::CertFindCertificateInStore(hCertStore, m_dwEncodingType, 0, CERT_FIND_EXISTING, pCertContext, NULL);
             if (pCertContextExisting) {
@@ -172,7 +172,7 @@ HRESULT COpCertRemove::Execute(CSession *pSession)
         ::MsiRecordSetStringW(hRecordProg, 2, m_sValue.c_str()         );
         ::MsiRecordSetInteger(hRecordProg, 3, dwError                  );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
-        return AtlHresultFromWin32(dwError);
+        return HRESULT_FROM_WIN32(dwError);
     }
 }
 

@@ -81,7 +81,7 @@ HRESULT COpWLANProfileDelete::Execute(CSession *pSession)
             ::MsiRecordSetStringW(hRecordProg, 3, m_sValue.c_str()                             );
             ::MsiRecordSetInteger(hRecordProg, 4, dwError                                      );
             ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
-            return AtlHresultFromWin32(dwError);
+            return HRESULT_FROM_WIN32(dwError);
         }
     } else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(1);
@@ -148,7 +148,7 @@ HRESULT COpWLANProfileSet::Execute(CSession *pSession)
             ::MsiRecordSetStringW(hRecordProg, 4, sReason.c_str()               );
             ::MsiRecordSetInteger(hRecordProg, 5, dwError                       );
             ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
-            return AtlHresultFromWin32(dwError);
+            return HRESULT_FROM_WIN32(dwError);
         }
     } else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(1);

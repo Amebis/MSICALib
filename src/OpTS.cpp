@@ -44,12 +44,12 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
 {
     HRESULT hr;
     PMSIHANDLE hRecordMsg = ::MsiCreateRecord(1);
-    CComPtr<ITaskService> pService;
+    winstd::com_obj<ITaskService> pService;
 
     // Display our custom message in the progress bar.
     ::MsiRecordSetStringW(hRecordMsg, 1, m_sValue.c_str());
     if (MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ACTIONDATA, hRecordMsg) == IDCANCEL)
-        return AtlHresultFromWin32(ERROR_INSTALL_USEREXIT);
+        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
 
     {
         // Delete existing task first.
@@ -60,21 +60,21 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
         if (FAILED(hr)) goto finish;
     }
 
-    hr = pService.CoCreateInstance(CLSID_TaskScheduler, NULL, CLSCTX_INPROC_SERVER);
+    hr = pService.create(CLSID_TaskScheduler, NULL, CLSCTX_INPROC_SERVER);
     if (SUCCEEDED(hr)) {
         // Windows Vista or newer.
-        CComVariant vEmpty;
-        CComPtr<ITaskDefinition> pTaskDefinition;
-        CComPtr<ITaskSettings> pTaskSettings;
-        CComPtr<IPrincipal> pPrincipal;
-        CComPtr<IActionCollection> pActionCollection;
-        CComPtr<IAction> pAction;
-        CComPtr<IIdleSettings> pIdleSettings;
-        CComPtr<IExecAction> pExecAction;
-        CComPtr<IRegistrationInfo> pRegististrationInfo;
-        CComPtr<ITriggerCollection> pTriggerCollection;
-        CComPtr<ITaskFolder> pTaskFolder;
-        CComPtr<IRegisteredTask> pTask;
+        winstd::variant vEmpty;
+        winstd::com_obj<ITaskDefinition> pTaskDefinition;
+        winstd::com_obj<ITaskSettings> pTaskSettings;
+        winstd::com_obj<IPrincipal> pPrincipal;
+        winstd::com_obj<IActionCollection> pActionCollection;
+        winstd::com_obj<IAction> pAction;
+        winstd::com_obj<IIdleSettings> pIdleSettings;
+        winstd::com_obj<IExecAction> pExecAction;
+        winstd::com_obj<IRegistrationInfo> pRegististrationInfo;
+        winstd::com_obj<ITriggerCollection> pTriggerCollection;
+        winstd::com_obj<ITaskFolder> pTaskFolder;
+        winstd::com_obj<IRegisteredTask> pTask;
         std::wstring str;
         UINT iTrigger;
         TASK_LOGON_TYPE logonType;
@@ -108,7 +108,7 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
         // Add execute action.
         hr = pActionCollection->Create(TASK_ACTION_EXEC, &pAction);
         if (FAILED(hr)) goto finish;
-        hr = pAction.QueryInterface(&pExecAction);
+        hr = pAction.query_interface(&pExecAction);
         if (FAILED(hr)) goto finish;
 
         // Configure the action.
@@ -193,23 +193,23 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
         // Add triggers.
         iTrigger = 0;
         for (auto t = m_lTriggers.cbegin(), t_end = m_lTriggers.cend(); t != t_end; ++t, iTrigger++) {
-            CComPtr<ITrigger> pTrigger;
+            winstd::com_obj<ITrigger> pTrigger;
             const TASK_TRIGGER &ttData = *t;
 
             switch (ttData.TriggerType) {
                 case TASK_TIME_TRIGGER_ONCE: {
-                    CComPtr<ITimeTrigger> pTriggerTime;
+                    winstd::com_obj<ITimeTrigger> pTriggerTime;
                     hr = pTriggerCollection->Create(TASK_TRIGGER_TIME, &pTrigger); if (FAILED(hr)) goto finish;
-                    hr = pTrigger.QueryInterface(&pTriggerTime);                   if (FAILED(hr)) goto finish;
+                    hr = pTrigger.query_interface(&pTriggerTime);                  if (FAILED(hr)) goto finish;
                     sprintf(str, L"PT%uM", ttData.wRandomMinutesInterval);
                     hr = pTriggerTime->put_RandomDelay(winstd::bstr(str));         if (FAILED(hr)) goto finish;
                     break;
                 }
 
                 case TASK_TIME_TRIGGER_DAILY: {
-                    CComPtr<IDailyTrigger> pTriggerDaily;
+                    winstd::com_obj<IDailyTrigger> pTriggerDaily;
                     hr = pTriggerCollection->Create(TASK_TRIGGER_DAILY, &pTrigger);       if (FAILED(hr)) goto finish;
-                    hr = pTrigger.QueryInterface(&pTriggerDaily);                         if (FAILED(hr)) goto finish;
+                    hr = pTrigger.query_interface(&pTriggerDaily);                        if (FAILED(hr)) goto finish;
                     hr = pTriggerDaily->put_DaysInterval(ttData.Type.Daily.DaysInterval); if (FAILED(hr)) goto finish;
                     sprintf(str, L"PT%uM", ttData.wRandomMinutesInterval);
                     hr = pTriggerDaily->put_RandomDelay(winstd::bstr(str));               if (FAILED(hr)) goto finish;
@@ -217,9 +217,9 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
                 }
 
                 case TASK_TIME_TRIGGER_WEEKLY: {
-                    CComPtr<IWeeklyTrigger> pTriggerWeekly;
+                    winstd::com_obj<IWeeklyTrigger> pTriggerWeekly;
                     hr = pTriggerCollection->Create(TASK_TRIGGER_WEEKLY, &pTrigger);          if (FAILED(hr)) goto finish;
-                    hr = pTrigger.QueryInterface(&pTriggerWeekly);                            if (FAILED(hr)) goto finish;
+                    hr = pTrigger.query_interface(&pTriggerWeekly);                           if (FAILED(hr)) goto finish;
                     hr = pTriggerWeekly->put_WeeksInterval(ttData.Type.Weekly.WeeksInterval); if (FAILED(hr)) goto finish;
                     hr = pTriggerWeekly->put_DaysOfWeek(ttData.Type.Weekly.rgfDaysOfTheWeek); if (FAILED(hr)) goto finish;
                     sprintf(str, L"PT%uM", ttData.wRandomMinutesInterval);
@@ -228,9 +228,9 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
                 }
 
                 case TASK_TIME_TRIGGER_MONTHLYDATE: {
-                    CComPtr<IMonthlyTrigger> pTriggerMonthly;
+                    winstd::com_obj<IMonthlyTrigger> pTriggerMonthly;
                     hr = pTriggerCollection->Create(TASK_TRIGGER_MONTHLY, &pTrigger);          if (FAILED(hr)) goto finish;
-                    hr = pTrigger.QueryInterface(&pTriggerMonthly);                            if (FAILED(hr)) goto finish;
+                    hr = pTrigger.query_interface(&pTriggerMonthly);                           if (FAILED(hr)) goto finish;
                     hr = pTriggerMonthly->put_DaysOfMonth(ttData.Type.MonthlyDate.rgfDays);    if (FAILED(hr)) goto finish;
                     hr = pTriggerMonthly->put_MonthsOfYear(ttData.Type.MonthlyDate.rgfMonths); if (FAILED(hr)) goto finish;
                     sprintf(str, L"PT%uM", ttData.wRandomMinutesInterval);
@@ -239,9 +239,9 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
                 }
 
                 case TASK_TIME_TRIGGER_MONTHLYDOW: {
-                    CComPtr<IMonthlyDOWTrigger> pTriggerMonthlyDOW;
+                    winstd::com_obj<IMonthlyDOWTrigger> pTriggerMonthlyDOW;
                     hr = pTriggerCollection->Create(TASK_TRIGGER_MONTHLYDOW, &pTrigger);              if (FAILED(hr)) goto finish;
-                    hr = pTrigger.QueryInterface(&pTriggerMonthlyDOW);                                if (FAILED(hr)) goto finish;
+                    hr = pTrigger.query_interface(&pTriggerMonthlyDOW);                               if (FAILED(hr)) goto finish;
                     hr = pTriggerMonthlyDOW->put_WeeksOfMonth(
                         ttData.Type.MonthlyDOW.wWhichWeek == TASK_FIRST_WEEK  ? 0x01 :
                         ttData.Type.MonthlyDOW.wWhichWeek == TASK_SECOND_WEEK ? 0x02 :
@@ -261,18 +261,18 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
                 }
 
                 case TASK_EVENT_TRIGGER_AT_SYSTEMSTART: {
-                    CComPtr<IBootTrigger> pTriggerBoot;
+                    winstd::com_obj<IBootTrigger> pTriggerBoot;
                     hr = pTriggerCollection->Create(TASK_TRIGGER_BOOT, &pTrigger); if (FAILED(hr)) goto finish;
-                    hr = pTrigger.QueryInterface(&pTriggerBoot);                   if (FAILED(hr)) goto finish;
+                    hr = pTrigger.query_interface(&pTriggerBoot);                  if (FAILED(hr)) goto finish;
                     sprintf(str, L"PT%uM", ttData.wRandomMinutesInterval);
                     hr = pTriggerBoot->put_Delay(winstd::bstr(str));               if (FAILED(hr)) goto finish;
                     break;
                 }
 
                 case TASK_EVENT_TRIGGER_AT_LOGON: {
-                    CComPtr<ILogonTrigger> pTriggerLogon;
+                    winstd::com_obj<ILogonTrigger> pTriggerLogon;
                     hr = pTriggerCollection->Create(TASK_TRIGGER_LOGON, &pTrigger); if (FAILED(hr)) goto finish;
-                    hr = pTrigger.QueryInterface(&pTriggerLogon);                   if (FAILED(hr)) goto finish;
+                    hr = pTrigger.query_interface(&pTriggerLogon);                  if (FAILED(hr)) goto finish;
                     sprintf(str, L"PT%uM", ttData.wRandomMinutesInterval);
                     hr = pTriggerLogon->put_Delay(winstd::bstr(str));               if (FAILED(hr)) goto finish;
                     break;
@@ -298,7 +298,7 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
 
             // Set trigger repetition duration and interval.
             if (ttData.MinutesDuration || ttData.MinutesInterval) {
-                CComPtr<IRepetitionPattern> pRepetitionPattern;
+                winstd::com_obj<IRepetitionPattern> pRepetitionPattern;
 
                 hr = pTrigger->get_Repetition(&pRepetitionPattern);
                 if (FAILED(hr)) goto finish;
@@ -332,17 +332,17 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
             pTaskDefinition,        // pDefinition
             TASK_CREATE,            // flags
             vEmpty,                 // userId
-            logonType != TASK_LOGON_SERVICE_ACCOUNT && !m_sPassword.empty() ? CComVariant(m_sPassword.c_str()) : vEmpty, // password
+            logonType != TASK_LOGON_SERVICE_ACCOUNT && !m_sPassword.empty() ? winstd::variant(m_sPassword.c_str()) : vEmpty, // password
             logonType,              // logonType
             vEmpty,                 // sddl
             &pTask);                // ppTask
     } else {
         // Windows XP or older.
-        CComPtr<ITaskScheduler> pTaskScheduler;
-        CComPtr<ITask> pTask;
+        winstd::com_obj<ITaskScheduler> pTaskScheduler;
+        winstd::com_obj<ITask> pTask;
 
         // Get task scheduler object.
-        hr = pTaskScheduler.CoCreateInstance(CLSID_CTaskScheduler, NULL, CLSCTX_ALL);
+        hr = pTaskScheduler.create(CLSID_CTaskScheduler, NULL, CLSCTX_ALL);
         if (FAILED(hr)) goto finish;
 
         // Create the new task.
@@ -379,7 +379,7 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
         // Add triggers.
         for (auto t = m_lTriggers.cbegin(), t_end = m_lTriggers.cend(); t != t_end; ++t) {
             WORD wTriggerIdx;
-            CComPtr<ITaskTrigger> pTrigger;
+            winstd::com_obj<ITaskTrigger> pTrigger;
             TASK_TRIGGER ttData = *t; // Don't use reference! We don't want to modify original trigger data by adding random startup delay.
 
             hr = pTask->CreateTrigger(&wTriggerIdx, &pTrigger);
@@ -425,7 +425,7 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
         }
 
         // Save the task.
-        CComQIPtr<IPersistFile> pTaskFile(pTask);
+        winstd::com_obj<IPersistFile> pTaskFile(pTask);
         if (!pTaskFile) { hr = E_NOINTERFACE; goto finish; }
         hr = pTaskFile->Save(NULL, TRUE);
     }
@@ -616,8 +616,6 @@ UINT COpTaskCreate::SetTriggersFromView(MSIHANDLE hView)
 
         m_lTriggers.push_back(ttData);
     }
-
-    return NO_ERROR;
 }
 
 
@@ -634,13 +632,13 @@ COpTaskDelete::COpTaskDelete(LPCWSTR pszTaskName, int iTicks) :
 HRESULT COpTaskDelete::Execute(CSession *pSession)
 {
     HRESULT hr;
-    CComPtr<ITaskService> pService;
+    winstd::com_obj<ITaskService> pService;
 
-    hr = pService.CoCreateInstance(CLSID_TaskScheduler, NULL, CLSCTX_INPROC_SERVER);
+    hr = pService.create(CLSID_TaskScheduler, NULL, CLSCTX_INPROC_SERVER);
     if (SUCCEEDED(hr)) {
         // Windows Vista or newer.
-        CComVariant vEmpty;
-        CComPtr<ITaskFolder> pTaskFolder;
+        winstd::variant vEmpty;
+        winstd::com_obj<ITaskFolder> pTaskFolder;
 
         // Connect to local task service.
         hr = pService->Connect(vEmpty, vEmpty, vEmpty, vEmpty);
@@ -651,13 +649,13 @@ HRESULT COpTaskDelete::Execute(CSession *pSession)
         if (FAILED(hr)) goto finish;
 
         if (pSession->m_bRollbackEnabled) {
-            CComPtr<IRegisteredTask> pTask, pTaskOrig;
-            CComPtr<ITaskDefinition> pTaskDefinition;
-            CComPtr<IPrincipal> pPrincipal;
+            winstd::com_obj<IRegisteredTask> pTask, pTaskOrig;
+            winstd::com_obj<ITaskDefinition> pTaskDefinition;
+            winstd::com_obj<IPrincipal> pPrincipal;
             VARIANT_BOOL bEnabled;
             TASK_LOGON_TYPE logonType;
             winstd::bstr sSSDL;
-            CComVariant vSSDL;
+            winstd::variant vSSDL;
             std::wstring sDisplayNameOrig;
             UINT uiCount = 0;
 
@@ -694,7 +692,7 @@ HRESULT COpTaskDelete::Execute(CSession *pSession)
 
             // Get task security descriptor.
             hr = pTask->GetSecurityDescriptor(DACL_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | OWNER_SECURITY_INFORMATION | SACL_SECURITY_INFORMATION | LABEL_SECURITY_INFORMATION, &sSSDL);
-            if (hr == HRESULT_FROM_WIN32(ERROR_PRIVILEGE_NOT_HELD)) vSSDL.Clear();
+            if (hr == HRESULT_FROM_WIN32(ERROR_PRIVILEGE_NOT_HELD)) ::VariantClear(&vSSDL);
             else if (FAILED(hr)) goto finish;
             else {
                 V_VT  (&vSSDL) = VT_BSTR;
@@ -734,14 +732,14 @@ HRESULT COpTaskDelete::Execute(CSession *pSession)
         }
     } else {
         // Windows XP or older.
-        CComPtr<ITaskScheduler> pTaskScheduler;
+        winstd::com_obj<ITaskScheduler> pTaskScheduler;
 
         // Get task scheduler object.
-        hr = pTaskScheduler.CoCreateInstance(CLSID_CTaskScheduler, NULL, CLSCTX_ALL);
+        hr = pTaskScheduler.create(CLSID_CTaskScheduler, NULL, CLSCTX_ALL);
         if (FAILED(hr)) goto finish;
 
         if (pSession->m_bRollbackEnabled) {
-            CComPtr<ITask> pTask;
+            winstd::com_obj<ITask> pTask;
             DWORD dwFlags;
             std::wstring sDisplayNameOrig;
             UINT uiCount = 0;
@@ -776,7 +774,7 @@ HRESULT COpTaskDelete::Execute(CSession *pSession)
             if (FAILED(hr)) goto finish;
 
             // Save the backup copy.
-            CComQIPtr<IPersistFile> pTaskFile(pTask);
+            winstd::com_obj<IPersistFile> pTaskFile(pTask);
             if (!pTaskFile) { hr = E_NOINTERFACE; goto finish; }
             hr = pTaskFile->Save(NULL, TRUE);
             if (FAILED(hr)) goto finish;
@@ -823,14 +821,14 @@ COpTaskEnable::COpTaskEnable(LPCWSTR pszTaskName, BOOL bEnable, int iTicks) :
 HRESULT COpTaskEnable::Execute(CSession *pSession)
 {
     HRESULT hr;
-    CComPtr<ITaskService> pService;
+    winstd::com_obj<ITaskService> pService;
 
-    hr = pService.CoCreateInstance(CLSID_TaskScheduler, NULL, CLSCTX_INPROC_SERVER);
+    hr = pService.create(CLSID_TaskScheduler, NULL, CLSCTX_INPROC_SERVER);
     if (SUCCEEDED(hr)) {
         // Windows Vista or newer.
-        CComVariant vEmpty;
-        CComPtr<ITaskFolder> pTaskFolder;
-        CComPtr<IRegisteredTask> pTask;
+        winstd::variant vEmpty;
+        winstd::com_obj<ITaskFolder> pTaskFolder;
+        winstd::com_obj<IRegisteredTask> pTask;
         VARIANT_BOOL bEnabled;
 
         // Connect to local task service.
@@ -872,12 +870,12 @@ HRESULT COpTaskEnable::Execute(CSession *pSession)
         if (FAILED(hr)) goto finish;
     } else {
         // Windows XP or older.
-        CComPtr<ITaskScheduler> pTaskScheduler;
-        CComPtr<ITask> pTask;
+        winstd::com_obj<ITaskScheduler> pTaskScheduler;
+        winstd::com_obj<ITask> pTask;
         DWORD dwFlags;
 
         // Get task scheduler object.
-        hr = pTaskScheduler.CoCreateInstance(CLSID_CTaskScheduler, NULL, CLSCTX_ALL);
+        hr = pTaskScheduler.create(CLSID_CTaskScheduler, NULL, CLSCTX_ALL);
         if (FAILED(hr)) goto finish;
 
         // Load the task.
@@ -911,7 +909,7 @@ HRESULT COpTaskEnable::Execute(CSession *pSession)
         if (FAILED(hr)) goto finish;
 
         // Save the task.
-        CComQIPtr<IPersistFile> pTaskFile(pTask);
+        winstd::com_obj<IPersistFile> pTaskFile(pTask);
         if (!pTaskFile) { hr = E_NOINTERFACE; goto finish; }
         hr = pTaskFile->Save(NULL, TRUE);
         if (FAILED(hr)) goto finish;
@@ -942,16 +940,16 @@ COpTaskCopy::COpTaskCopy(LPCWSTR pszTaskSrc, LPCWSTR pszTaskDst, int iTicks) :
 HRESULT COpTaskCopy::Execute(CSession *pSession)
 {
     HRESULT hr;
-    CComPtr<ITaskService> pService;
+    winstd::com_obj<ITaskService> pService;
 
-    hr = pService.CoCreateInstance(CLSID_TaskScheduler, NULL, CLSCTX_INPROC_SERVER);
+    hr = pService.create(CLSID_TaskScheduler, NULL, CLSCTX_INPROC_SERVER);
     if (SUCCEEDED(hr)) {
         // Windows Vista or newer.
-        CComVariant vEmpty;
-        CComPtr<ITaskFolder> pTaskFolder;
-        CComPtr<IRegisteredTask> pTask, pTaskOrig;
-        CComPtr<ITaskDefinition> pTaskDefinition;
-        CComPtr<IPrincipal> pPrincipal;
+        winstd::variant vEmpty;
+        winstd::com_obj<ITaskFolder> pTaskFolder;
+        winstd::com_obj<IRegisteredTask> pTask, pTaskOrig;
+        winstd::com_obj<ITaskDefinition> pTaskDefinition;
+        winstd::com_obj<IPrincipal> pPrincipal;
         TASK_LOGON_TYPE logonType;
         winstd::bstr sSSDL;
 
@@ -991,16 +989,16 @@ HRESULT COpTaskCopy::Execute(CSession *pSession)
             vEmpty,                  // userId
             vEmpty,                  // password
             logonType,               // logonType
-            CComVariant(sSSDL),      // sddl
+            winstd::variant(sSSDL),      // sddl
             &pTaskOrig);             // ppTask
         if (FAILED(hr)) goto finish;
     } else {
         // Windows XP or older.
-        CComPtr<ITaskScheduler> pTaskScheduler;
-        CComPtr<ITask> pTask;
+        winstd::com_obj<ITaskScheduler> pTaskScheduler;
+        winstd::com_obj<ITask> pTask;
 
         // Get task scheduler object.
-        hr = pTaskScheduler.CoCreateInstance(CLSID_CTaskScheduler, NULL, CLSCTX_ALL);
+        hr = pTaskScheduler.create(CLSID_CTaskScheduler, NULL, CLSCTX_ALL);
         if (FAILED(hr)) goto finish;
 
         // Load the source task.
@@ -1016,7 +1014,7 @@ HRESULT COpTaskCopy::Execute(CSession *pSession)
         if (FAILED(hr)) goto finish;
 
         // Save the task.
-        CComQIPtr<IPersistFile> pTaskFile(pTask);
+        winstd::com_obj<IPersistFile> pTaskFile(pTask);
         if (!pTaskFile) { hr = E_NOINTERFACE; goto finish; }
         hr = pTaskFile->Save(NULL, TRUE);
         if (FAILED(hr)) goto finish;

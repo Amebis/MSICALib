@@ -24,16 +24,10 @@
 #include <WinStd/COM.h>
 #include <WinStd/Crypt.h>
 
-#include <atlex/atlcrypt.h>
-#include <atlex/atlwin.h>
-
-#include <atlbase.h>
-#include <atlfile.h>
-#include <atlstr.h>
-
 #include <msi.h>
 #include <msiquery.h>
 #include <mstask.h>
+#include <shlwapi.h>
 #include <taskschd.h>
 #include <wlanapi.h>
 

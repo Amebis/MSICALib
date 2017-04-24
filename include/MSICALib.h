@@ -19,11 +19,12 @@
 
 #pragma once
 
-#include <atlbase.h>
-#include <atlfile.h>
 #include <WinStd\Common.h>
+#include <WinStd\Win.h>
+
 #include <list>
 #include <string>
+
 #include <msi.h>
 #include <mstask.h>
 #include <wincrypt.h>
@@ -78,6 +79,15 @@ class CSession;
 
 
 ////////////////////////////////////////////////////////////////////////////
+// CStream
+////////////////////////////////////////////////////////////////////////////
+
+class CStream : public winstd::file
+{
+};
+
+
+////////////////////////////////////////////////////////////////////////////
 // COperation
 ////////////////////////////////////////////////////////////////////////////
 
@@ -89,8 +99,8 @@ public:
     virtual HRESULT Execute(CSession *pSession) = 0;
 
     friend class COpList;
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COperation &op);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COperation &op);
+    friend inline BOOL operator <<(CStream &f, const COperation &op);
+    friend inline BOOL operator >>(CStream &f, COperation &op);
 
 protected:
     int m_iTicks;   // Number of ticks on a progress bar required for this action execution
@@ -106,8 +116,8 @@ class COpTypeSingleString : public COperation
 public:
     COpTypeSingleString(LPCWSTR pszValue = L"", int iTicks = 0);
 
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpTypeSingleString &op);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpTypeSingleString &op);
+    friend inline BOOL operator <<(CStream &f, const COpTypeSingleString &op);
+    friend inline BOOL operator >>(CStream &f, COpTypeSingleString &op);
 
 protected:
     std::wstring m_sValue;
@@ -123,8 +133,8 @@ class COpTypeSrcDstString : public COperation
 public:
     COpTypeSrcDstString(LPCWSTR pszValue1 = L"", LPCWSTR pszValue2 = L"", int iTicks = 0);
 
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpTypeSrcDstString &op);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpTypeSrcDstString &op);
+    friend inline BOOL operator <<(CStream &f, const COpTypeSrcDstString &op);
+    friend inline BOOL operator >>(CStream &f, COpTypeSrcDstString &op);
 
 protected:
     std::wstring m_sValue1;
@@ -141,8 +151,8 @@ class COpTypeBoolean : public COperation
 public:
     COpTypeBoolean(BOOL bValue = TRUE, int iTicks = 0);
 
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpTypeBoolean &op);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpTypeBoolean &op);
+    friend inline BOOL operator <<(CStream &f, const COpTypeBoolean &op);
+    friend inline BOOL operator >>(CStream &f, COpTypeBoolean &op);
 
 protected:
     BOOL m_bValue;
@@ -194,8 +204,8 @@ class COpRegKeySingle : public COpTypeSingleString
 public:
     COpRegKeySingle(HKEY hKeyRoot = NULL, LPCWSTR pszKeyName = L"", int iTicks = 0);
 
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpRegKeySingle &op);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpRegKeySingle &op);
+    friend inline BOOL operator <<(CStream &f, const COpRegKeySingle &op);
+    friend inline BOOL operator >>(CStream &f, COpRegKeySingle &op);
 
 protected:
     HKEY m_hKeyRoot;
@@ -211,8 +221,8 @@ class COpRegKeySrcDst : public COpTypeSrcDstString
 public:
     COpRegKeySrcDst(HKEY hKeyRoot = NULL, LPCWSTR pszKeyNameSrc = L"", LPCWSTR pszKeyNameDst = L"", int iTicks = 0);
 
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpRegKeySrcDst &op);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpRegKeySrcDst &op);
+    friend inline BOOL operator <<(CStream &f, const COpRegKeySrcDst &op);
+    friend inline BOOL operator >>(CStream &f, COpRegKeySrcDst &op);
 
 protected:
     HKEY m_hKeyRoot;
@@ -271,8 +281,8 @@ class COpRegValueSingle : public COpRegKeySingle
 public:
     COpRegValueSingle(HKEY hKeyRoot = NULL, LPCWSTR pszKeyName = L"", LPCWSTR pszValueName = L"", int iTicks = 0);
 
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpRegValueSingle &op);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpRegValueSingle &op);
+    friend inline BOOL operator <<(CStream &f, const COpRegValueSingle &op);
+    friend inline BOOL operator >>(CStream &f, COpRegValueSingle &op);
 
 protected:
     std::wstring m_sValueName;
@@ -288,8 +298,8 @@ class COpRegValueSrcDst : public COpRegKeySingle
 public:
     COpRegValueSrcDst(HKEY hKeyRoot = NULL, LPCWSTR pszKeyName = L"", LPCWSTR pszValueNameSrc = L"", LPCWSTR pszValueNameDst = L"", int iTicks = 0);
 
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpRegValueSrcDst &op);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpRegValueSrcDst &op);
+    friend inline BOOL operator <<(CStream &f, const COpRegValueSrcDst &op);
+    friend inline BOOL operator >>(CStream &f, COpRegValueSrcDst &op);
 
 protected:
     std::wstring m_sValueName1;
@@ -311,8 +321,8 @@ public:
     COpRegValueCreate(HKEY hKeyRoot, LPCWSTR pszKeyName, LPCWSTR pszValueName, DWORDLONG qwData, int iTicks = 0);
     virtual HRESULT Execute(CSession *pSession);
 
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpRegValueCreate &op);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpRegValueCreate &op);
+    friend inline BOOL operator <<(CStream &f, const COpRegValueCreate &op);
+    friend inline BOOL operator >>(CStream &f, COpRegValueCreate &op);
 
 protected:
     DWORD              m_dwType;
@@ -361,8 +371,8 @@ public:
     UINT SetFromRecord(MSIHANDLE hInstall, MSIHANDLE hRecord);
     UINT SetTriggersFromView(MSIHANDLE hView);
 
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpTaskCreate &op);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpTaskCreate &op);
+    friend inline BOOL operator <<(CStream &f, const COpTaskCreate &op);
+    friend inline BOOL operator >>(CStream &f, COpTaskCreate &op);
 
 protected:
     std::wstring               m_sApplicationName;
@@ -404,8 +414,8 @@ public:
     COpTaskEnable(LPCWSTR pszTaskName = L"", BOOL bEnable = TRUE, int iTicks = 0);
     virtual HRESULT Execute(CSession *pSession);
 
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpTaskEnable &op);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpTaskEnable &op);
+    friend inline BOOL operator <<(CStream &f, const COpTaskEnable &op);
+    friend inline BOOL operator >>(CStream &f, COpTaskEnable &op);
 
 protected:
     BOOL m_bEnable;
@@ -433,8 +443,8 @@ class COpCertStore : public COpTypeSingleString
 public:
     COpCertStore(LPCWSTR pszStore = L"", DWORD dwEncodingType = 0, DWORD dwFlags = 0, int iTicks = 0);
 
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpCertStore &op);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpCertStore &op);
+    friend inline BOOL operator <<(CStream &f, const COpCertStore &op);
+    friend inline BOOL operator >>(CStream &f, COpCertStore &op);
 
 protected:
     DWORD m_dwEncodingType;
@@ -451,8 +461,8 @@ class COpCert : public COpCertStore
 public:
     COpCert(LPCVOID lpCert = NULL, SIZE_T nSize = 0, LPCWSTR pszStore = L"", DWORD dwEncodingType = 0, DWORD dwFlags = 0, int iTicks = 0);
 
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpCert &op);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpCert &op);
+    friend inline BOOL operator <<(CStream &f, const COpCert &op);
+    friend inline BOOL operator >>(CStream &f, COpCert &op);
 
 protected:
     std::vector<BYTE> m_binCert;
@@ -493,8 +503,8 @@ public:
     COpSvcSetStart(LPCWSTR pszService = L"", DWORD dwStartType = SERVICE_DEMAND_START, int iTicks = 0);
     virtual HRESULT Execute(CSession *pSession);
 
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpSvcSetStart &op);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpSvcSetStart &op);
+    friend inline BOOL operator <<(CStream &f, const COpSvcSetStart &op);
+    friend inline BOOL operator >>(CStream &f, COpSvcSetStart &op);
 
 protected:
     DWORD m_dwStartType;
@@ -512,8 +522,8 @@ public:
 
     static DWORD WaitForState(CSession *pSession, SC_HANDLE hService, DWORD dwPendingState, DWORD dwFinalState);
 
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpSvcControl &op);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpSvcControl &op);
+    friend inline BOOL operator <<(CStream &f, const COpSvcControl &op);
+    friend inline BOOL operator >>(CStream &f, COpSvcControl &op);
 
 protected:
     BOOL m_bWait;
@@ -553,8 +563,8 @@ class COpWLANProfile : public COpTypeSingleString
 public:
     COpWLANProfile(const GUID &guidInterface = GUID_NULL, LPCWSTR pszProfileName = L"", int iTicks = 0);
 
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpWLANProfile &op);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpWLANProfile &op);
+    friend inline BOOL operator <<(CStream &f, const COpWLANProfile &op);
+    friend inline BOOL operator >>(CStream &f, COpWLANProfile &op);
 
 protected:
     GUID m_guidInterface;
@@ -583,8 +593,8 @@ public:
     COpWLANProfileSet(const GUID &guidInterface = GUID_NULL, DWORD dwFlags = 0, LPCWSTR pszProfileName = L"", LPCWSTR pszProfileXML = L"", int iTicks = 0);
     virtual HRESULT Execute(CSession *pSession);
 
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpWLANProfileSet &op);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpWLANProfileSet &op);
+    friend inline BOOL operator <<(CStream &f, const COpWLANProfileSet &op);
+    friend inline BOOL operator >>(CStream &f, COpWLANProfileSet &op);
 
 protected:
     DWORD m_dwFlags;
@@ -596,19 +606,20 @@ protected:
 // COpList
 ////////////////////////////////////////////////////////////////////////////
 
-class COpList : public COperation, public std::list<COperation*>
+class COpList : public COperation, public std::list<std::unique_ptr<COperation> >
 {
 public:
     COpList(int iTicks = 0);
 
-    void Free();
-    HRESULT LoadFromFile(LPCTSTR pszFileName);
-    HRESULT SaveToFile(LPCTSTR pszFileName) const;
+    inline void push_front(COperation *pOp);
+    inline void push_back(COperation *pOp);
+    DWORD LoadFromFile(LPCTSTR pszFileName);
+    DWORD SaveToFile(LPCTSTR pszFileName) const;
 
     virtual HRESULT Execute(CSession *pSession);
 
-    friend inline HRESULT operator <<(ATL::CAtlFile &f, const COpList &list);
-    friend inline HRESULT operator >>(ATL::CAtlFile &f, COpList &list);
+    friend inline BOOL operator <<(CStream &f, const COpList &list);
+    friend inline BOOL operator >>(CStream &f, COpList &list);
 
 protected:
     enum OPERATION {
@@ -636,8 +647,8 @@ protected:
     };
 
 protected:
-    template <class T, enum OPERATION ID> inline static HRESULT Save(ATL::CAtlFile &f, const COperation *p);
-    template <class T> inline HRESULT load_back(ATL::CAtlFile &f);
+    template <class T, enum OPERATION ID> inline static BOOL write(CStream &f, const COperation *p);
+    template <class T> inline BOOL read_back(CStream &f);
 };
 
 
@@ -649,7 +660,6 @@ class CSession
 {
 public:
     CSession();
-    virtual ~CSession();
 
     MSIHANDLE m_hInstall;        // Installer handle
     BOOL m_bContinueOnError;     // Continue execution on operation error?
@@ -673,15 +683,13 @@ UINT ExecuteSequence(MSIHANDLE hInstall);
 // Local includes
 ////////////////////////////////////////////////////////////////////
 
-#include "../../../lib/atlex/include/atlex/atlmsi.h"
-#include <atlfile.h>
-#include <atlstr.h>
-#include <msiquery.h>
-#include <mstask.h>
-
 #include <WinStd/MSI.h>
 
 #include <memory>
+
+#include <msiquery.h>
+#include <mstask.h>
+#include <tchar.h>
 
 
 ////////////////////////////////////////////////////////////////////
@@ -752,692 +760,573 @@ namespace MSICA {
 // Inline operators
 ////////////////////////////////////////////////////////////////////////////
 
-inline HRESULT operator <<(ATL::CAtlFile &f, int i)
+template <class T>
+inline BOOL operator <<(CStream &f, const T &val)
 {
-    HRESULT hr;
     DWORD dwWritten;
 
-    hr = f.Write(&i, sizeof(int), &dwWritten);
-    return SUCCEEDED(hr) ? dwWritten == sizeof(int) ? hr : E_FAIL : hr;
+    if (!::WriteFile(f, &val, sizeof(T), &dwWritten, NULL)) return FALSE;
+    if (dwWritten != sizeof(T)) {
+        ::SetLastError(ERROR_WRITE_FAULT);
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, int &i)
+template <class T>
+inline BOOL operator >>(CStream &f, T &val)
 {
-    HRESULT hr;
     DWORD dwRead;
 
-    hr = f.Read(&i, sizeof(int), dwRead);
-    return SUCCEEDED(hr) ? dwRead == sizeof(int) ? hr : E_FAIL : hr;
-}
+    if (!::ReadFile(f, &val, sizeof(T), &dwRead, NULL)) return FALSE;
+    if (dwRead != sizeof(T)) {
+         ::SetLastError(ERROR_READ_FAULT);
+         return FALSE;
+    }
 
-
-inline HRESULT operator <<(ATL::CAtlFile &f, DWORDLONG i)
-{
-    HRESULT hr;
-    DWORD dwWritten;
-
-    hr = f.Write(&i, sizeof(DWORDLONG), &dwWritten);
-    return SUCCEEDED(hr) ? dwWritten == sizeof(DWORDLONG) ? hr : E_FAIL : hr;
-}
-
-
-inline HRESULT operator >>(ATL::CAtlFile &f, DWORDLONG &i)
-{
-    HRESULT hr;
-    DWORD dwRead;
-
-    hr = f.Read(&i, sizeof(DWORDLONG), dwRead);
-    return SUCCEEDED(hr) ? dwRead == sizeof(DWORDLONG) ? hr : E_FAIL : hr;
-}
-
-
-inline HRESULT operator <<(ATL::CAtlFile &f, const GUID &guid)
-{
-    HRESULT hr;
-    DWORD dwWritten;
-
-    hr = f.Write(&guid, sizeof(GUID), &dwWritten);
-    return SUCCEEDED(hr) ? dwWritten == sizeof(GUID) ? hr : E_FAIL : hr;
-}
-
-
-inline HRESULT operator >>(ATL::CAtlFile &f, GUID &guid)
-{
-    HRESULT hr;
-    DWORD dwRead;
-
-    hr = f.Read(&guid, sizeof(GUID), dwRead);
-    return SUCCEEDED(hr) ? dwRead == sizeof(GUID) ? hr : E_FAIL : hr;
+    return TRUE;
 }
 
 
 template <class _Ty, class _Ax>
-inline HRESULT operator <<(ATL::CAtlFile &f, const std::vector<_Ty, _Ax> &a)
+inline BOOL operator <<(CStream &f, const std::vector<_Ty, _Ax> &val)
 {
-    HRESULT hr;
-    size_t nCount = a.size();
-    DWORD dwWritten;
-
     // Write element count.
-    hr =  f.Write(&nCount, sizeof(size_t), &dwWritten);
-    if (FAILED(hr)) return hr;
-    if (dwWritten < sizeof(size_t)) return E_FAIL;
+    size_t nCount = val.size();
+    if (!(f << nCount)) return FALSE;
 
     // Write data (opaque).
-    hr = f.Write(a.data(), static_cast<DWORD>(sizeof(_Ty) * nCount), &dwWritten);
-    return SUCCEEDED(hr) ? dwWritten == sizeof(_Ty) * nCount ? hr : E_FAIL : hr;
+    DWORD dwWritten;
+    if (!::WriteFile(f, val.data(), static_cast<DWORD>(sizeof(_Ty) * nCount), &dwWritten, NULL)) return FALSE;
+    if (dwWritten != sizeof(_Ty) * nCount) {
+        ::SetLastError(ERROR_WRITE_FAULT);
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 
 template <class _Ty, class _Ax>
-inline HRESULT operator >>(ATL::CAtlFile &f, std::vector<_Ty, _Ax> &a)
+inline BOOL operator >>(CStream &f, std::vector<_Ty, _Ax> &val)
 {
-    HRESULT hr;
-    size_t nCount;
-    DWORD dwRead;
-
     // Read element count.
-    hr =  f.Read(&nCount, sizeof(size_t), dwRead);
-    if (FAILED(hr)) return hr;
-    if (dwRead < sizeof(size_t)) return E_FAIL;
+    size_t nCount;
+    if (!(f >> nCount)) return FALSE;
 
     // Allocate the buffer.
-    a.resize(nCount);
+    val.resize(nCount);
 
     // Read data (opaque).
-    hr = f.Read(a.data(), static_cast<DWORD>(sizeof(_Ty) * nCount), dwRead);
-    if (SUCCEEDED(hr)) a.resize(dwRead / sizeof(_Ty));
-    return hr;
+    DWORD dwRead;
+    if (!::ReadFile(f, val.data(), static_cast<DWORD>(sizeof(_Ty) * nCount), &dwRead, NULL)) return FALSE;
+    if (dwRead != sizeof(_Ty) * nCount) {
+         ::SetLastError(ERROR_READ_FAULT);
+         return FALSE;
+    }
+
+    return TRUE;
 }
 
 
 template<class _Elem, class _Traits, class _Ax>
-inline HRESULT operator <<(ATL::CAtlFile &f, const std::basic_string<_Elem, _Traits, _Ax> &str)
+inline BOOL operator <<(CStream &f, const std::basic_string<_Elem, _Traits, _Ax> &val)
 {
-    HRESULT hr;
-    size_t iLength = str.length();
-    DWORD dwWritten;
-
     // Write string length (in characters).
-    hr =  f.Write(&iLength, sizeof(size_t), &dwWritten);
-    if (FAILED(hr)) return hr;
-    if (dwWritten < sizeof(size_t)) return E_FAIL;
+    size_t iLength = val.length();
+    if (!(f << iLength)) return FALSE;
 
     // Write string data (without terminator).
-    hr = f.Write(str.c_str(), static_cast<DWORD>(sizeof(_Elem) * iLength), &dwWritten);
-    return SUCCEEDED(hr) ? dwWritten == sizeof(_Elem) * iLength ? hr : E_FAIL : hr;
+    DWORD dwWritten;
+    if (!::WriteFile(f, val.c_str(), static_cast<DWORD>(sizeof(_Elem) * iLength), &dwWritten, NULL)) return FALSE;
+    if (dwWritten != sizeof(_Elem) * iLength) {
+        ::SetLastError(ERROR_WRITE_FAULT);
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 
 template<class _Elem, class _Traits, class _Ax>
-inline HRESULT operator >>(ATL::CAtlFile &f, std::basic_string<_Elem, _Traits, _Ax> &str)
+inline BOOL operator >>(CStream &f, std::basic_string<_Elem, _Traits, _Ax> &val)
 {
-    HRESULT hr;
-    size_t iLength;
-    DWORD dwRead;
-
     // Read string length (in characters).
-    hr =  f.Read(&iLength, sizeof(size_t), dwRead);
-    if (FAILED(hr)) return hr;
-    if (dwRead < sizeof(size_t)) return E_FAIL;
+    size_t iLength;
+    if (!(f >> iLength)) return FALSE;
 
     // Allocate the buffer.
     std::unique_ptr<_Elem[]> buf(new _Elem[iLength]);
-    if (!buf) return E_OUTOFMEMORY;
+    if (!buf) {
+        ::SetLastError(ERROR_OUTOFMEMORY);
+        return FALSE;
+    }
 
     // Read string data (without terminator).
-    hr = f.Read(buf.get(), static_cast<DWORD>(sizeof(_Elem) * iLength), dwRead);
-    str.assign(buf.get(), SUCCEEDED(hr) ? dwRead / sizeof(_Elem) : 0);
-    return hr;
-}
-
-
-inline HRESULT operator <<(ATL::CAtlFile &f, const TASK_TRIGGER &ttData)
-{
-    HRESULT hr;
-    DWORD dwWritten;
-
-    hr = f.Write(&ttData, sizeof(TASK_TRIGGER), &dwWritten);
-    return SUCCEEDED(hr) ? dwWritten == sizeof(TASK_TRIGGER) ? hr : E_FAIL : hr;
-}
-
-
-inline HRESULT operator >>(ATL::CAtlFile &f, TASK_TRIGGER &ttData)
-{
-    HRESULT hr;
     DWORD dwRead;
+    if (!::ReadFile(f, buf.get(), static_cast<DWORD>(sizeof(_Elem) * iLength), &dwRead, NULL)) return FALSE;
+    if (dwRead != sizeof(_Elem) * iLength) {
+         ::SetLastError(ERROR_READ_FAULT);
+         return FALSE;
+    }
+    val.assign(buf.get(), iLength);
 
-    hr = f.Read(&ttData, sizeof(TASK_TRIGGER), dwRead);
-    return SUCCEEDED(hr) ? dwRead == sizeof(TASK_TRIGGER) ? hr : E_FAIL : hr;
+    return TRUE;
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const COperation &op)
+inline BOOL operator <<(CStream &f, const COperation &op)
 {
     return f << op.m_iTicks;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, COperation &op)
+inline BOOL operator >>(CStream &f, COperation &op)
 {
     return f >> op.m_iTicks;
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const COpTypeSingleString &op)
+inline BOOL operator <<(CStream &f, const COpTypeSingleString &op)
 {
-    HRESULT hr;
+    if (!(f << (const COperation &)op)) return FALSE;
+    if (!(f << op.m_sValue           )) return FALSE;
 
-    hr = f << (const COperation &)op; if (FAILED(hr)) return hr;
-    hr = f << op.m_sValue;            if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, COpTypeSingleString &op)
+inline BOOL operator >>(CStream &f, COpTypeSingleString &op)
 {
-    HRESULT hr;
+    if (!(f >> (COperation &)op)) return FALSE;
+    if (!(f >> op.m_sValue     )) return FALSE;
 
-    hr = f >> (COperation &)op; if (FAILED(hr)) return hr;
-    hr = f >> op.m_sValue;      if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const COpTypeSrcDstString &op)
+inline BOOL operator <<(CStream &f, const COpTypeSrcDstString &op)
 {
-    HRESULT hr;
+    if (!(f << (const COperation &)op)) return FALSE;
+    if (!(f << op.m_sValue1          )) return FALSE;
+    if (!(f << op.m_sValue2          )) return FALSE;
 
-    hr = f << (const COperation &)op; if (FAILED(hr)) return hr;
-    hr = f << op.m_sValue1;           if (FAILED(hr)) return hr;
-    hr = f << op.m_sValue2;           if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, COpTypeSrcDstString &op)
+inline BOOL operator >>(CStream &f, COpTypeSrcDstString &op)
 {
-    HRESULT hr;
+    if (!(f >> (COperation &)op)) return FALSE;
+    if (!(f >> op.m_sValue1    )) return FALSE;
+    if (!(f >> op.m_sValue2    )) return FALSE;
 
-    hr = f >> (COperation &)op; if (FAILED(hr)) return hr;
-    hr = f >> op.m_sValue1;     if (FAILED(hr)) return hr;
-    hr = f >> op.m_sValue2;     if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const COpTypeBoolean &op)
+inline BOOL operator <<(CStream &f, const COpTypeBoolean &op)
 {
-    HRESULT hr;
+    if (!(f << (const COperation &)op)) return FALSE;
+    if (!(f << op.m_bValue           )) return FALSE;
 
-    hr = f << (const COperation &)op; if (FAILED(hr)) return hr;
-    hr = f << (int)(op.m_bValue);     if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, COpTypeBoolean &op)
+inline BOOL operator >>(CStream &f, COpTypeBoolean &op)
 {
-    HRESULT hr;
-    int iValue;
+    if (!(f >> (COperation &)op)) return FALSE;
+    if (!(f >> op.m_bValue     )) return FALSE;
 
-    hr = f >> (COperation &)op; if (FAILED(hr)) return hr;
-    hr = f >> iValue;           if (FAILED(hr)) return hr; op.m_bValue = iValue ? TRUE : FALSE;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const COpRegKeySingle &op)
+inline BOOL operator <<(CStream &f, const COpRegKeySingle &op)
 {
-    HRESULT hr;
+    if (!(f << (const COpTypeSingleString &)op)) return FALSE;
+    if (!(f << op.m_hKeyRoot                  )) return FALSE;
 
-    hr = f << (const COpTypeSingleString &)op; if (FAILED(hr)) return hr;
-    hr = f << (int)(op.m_hKeyRoot);            if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, COpRegKeySingle &op)
+inline BOOL operator >>(CStream &f, COpRegKeySingle &op)
 {
-    HRESULT hr;
-    int iValue;
+    if (!(f >> (COpTypeSingleString &)op)) return FALSE;
+    if (!(f >> op.m_hKeyRoot            )) return FALSE;
 
-    hr = f >> (COpTypeSingleString &)op; if (FAILED(hr)) return hr;
-    hr = f >> iValue;                    if (FAILED(hr)) return hr; op.m_hKeyRoot = (HKEY)iValue;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const COpRegKeySrcDst &op)
+inline BOOL operator <<(CStream &f, const COpRegKeySrcDst &op)
 {
-    HRESULT hr;
+    if (!(f << (const COpTypeSrcDstString &)op)) return FALSE;
+    if (!(f << op.m_hKeyRoot                  )) return FALSE;
 
-    hr = f << (const COpTypeSrcDstString &)op; if (FAILED(hr)) return hr;
-    hr = f << (int)(op.m_hKeyRoot);            if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, COpRegKeySrcDst &op)
+inline BOOL operator >>(CStream &f, COpRegKeySrcDst &op)
 {
-    HRESULT hr;
-    int iValue;
+    if (!(f >> (COpTypeSrcDstString &)op)) return FALSE;
+    if (!(f >> op.m_hKeyRoot            )) return FALSE;
 
-    hr = f >> (COpTypeSrcDstString &)op; if (FAILED(hr)) return hr;
-    hr = f >> iValue;                    if (FAILED(hr)) return hr; op.m_hKeyRoot = (HKEY)iValue;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const COpRegValueSingle &op)
+inline BOOL operator <<(CStream &f, const COpRegValueSingle &op)
 {
-    HRESULT hr;
+    if (!(f << (const COpRegKeySingle &)op)) return FALSE;
+    if (!(f << op.m_sValueName            )) return FALSE;
 
-    hr = f << (const COpRegKeySingle &)op; if (FAILED(hr)) return hr;
-    hr = f << op.m_sValueName;             if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, COpRegValueSingle &op)
+inline BOOL operator >>(CStream &f, COpRegValueSingle &op)
 {
-    HRESULT hr;
+    if (!(f >> (COpRegKeySingle &)op)) return FALSE;
+    if (!(f >> op.m_sValueName      )) return FALSE;
 
-    hr = f >> (COpRegKeySingle &)op; if (FAILED(hr)) return hr;
-    hr = f >> op.m_sValueName;       if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const COpRegValueSrcDst &op)
+inline BOOL operator <<(CStream &f, const COpRegValueSrcDst &op)
 {
-    HRESULT hr;
+    if (!(f << (const COpRegKeySingle &)op)) return FALSE;
+    if (!(f << op.m_sValueName1           )) return FALSE;
+    if (!(f << op.m_sValueName2           )) return FALSE;
 
-    hr = f << (const COpRegKeySingle &)op; if (FAILED(hr)) return hr;
-    hr = f << op.m_sValueName1;            if (FAILED(hr)) return hr;
-    hr = f << op.m_sValueName2;            if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, COpRegValueSrcDst &op)
+inline BOOL operator >>(CStream &f, COpRegValueSrcDst &op)
 {
-    HRESULT hr;
+    if (!(f >> (COpRegKeySingle &)op)) return FALSE;
+    if (!(f >> op.m_sValueName1     )) return FALSE;
+    if (!(f >> op.m_sValueName2     )) return FALSE;
 
-    hr = f >> (COpRegKeySingle &)op; if (FAILED(hr)) return hr;
-    hr = f >> op.m_sValueName1;      if (FAILED(hr)) return hr;
-    hr = f >> op.m_sValueName2;      if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const COpRegValueCreate &op)
+inline BOOL operator <<(CStream &f, const COpRegValueCreate &op)
 {
-    HRESULT hr;
-
-    hr = f << (const COpRegValueSingle &)op; if (FAILED(hr)) return hr;
-    hr = f << (int)(op.m_dwType);            if (FAILED(hr)) return hr;
+    if (!(f << (const COpRegValueSingle &)op)) return FALSE;
+    if (!(f << op.m_dwType                  )) return FALSE;
     switch (op.m_dwType) {
     case REG_SZ:
     case REG_EXPAND_SZ:
-    case REG_LINK:                hr = f << op.m_sData;         if (FAILED(hr)) return hr; break;
-    case REG_BINARY:              hr = f << op.m_binData;       if (FAILED(hr)) return hr; break;
+    case REG_LINK:                if (!(f << op.m_sData  )) return FALSE; break;
+    case REG_BINARY:              if (!(f << op.m_binData)) return FALSE; break;
     case REG_DWORD_LITTLE_ENDIAN:
-    case REG_DWORD_BIG_ENDIAN:    hr = f << (int)(op.m_dwData); if (FAILED(hr)) return hr; break;
-    case REG_MULTI_SZ:            hr = f << op.m_szData;        if (FAILED(hr)) return hr; break;
-    case REG_QWORD_LITTLE_ENDIAN: hr = f << op.m_qwData;        if (FAILED(hr)) return hr; break;
-    default:                      return E_UNEXPECTED;
+    case REG_DWORD_BIG_ENDIAN:    if (!(f << op.m_dwData )) return FALSE; break;
+    case REG_MULTI_SZ:            if (!(f << op.m_szData )) return FALSE; break;
+    case REG_QWORD_LITTLE_ENDIAN: if (!(f << op.m_qwData )) return FALSE; break;
+    default: ::SetLastError(ERROR_INVALID_DATA); return FALSE;
     }
 
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, COpRegValueCreate &op)
+inline BOOL operator >>(CStream &f, COpRegValueCreate &op)
 {
-    HRESULT hr;
-
-    hr = f >> (COpRegValueSingle &)op; if (FAILED(hr)) return hr;
-    hr = f >> (int&)(op.m_dwType);     if (FAILED(hr)) return hr;
+    if (!(f >> (COpRegValueSingle &)op)) return FALSE;
+    if (!(f >> op.m_dwType            )) return FALSE;
     switch (op.m_dwType) {
     case REG_SZ:
     case REG_EXPAND_SZ:
-    case REG_LINK:                hr = f >> op.m_sData;          if (FAILED(hr)) return hr; break;
-    case REG_BINARY:              hr = f >> op.m_binData;        if (FAILED(hr)) return hr; break;
+    case REG_LINK:                if (!(f >> op.m_sData  )) return FALSE; break;
+    case REG_BINARY:              if (!(f >> op.m_binData)) return FALSE; break;
     case REG_DWORD_LITTLE_ENDIAN:
-    case REG_DWORD_BIG_ENDIAN:    hr = f >> (int&)(op.m_dwData); if (FAILED(hr)) return hr; break;
-    case REG_MULTI_SZ:            hr = f >> op.m_szData;         if (FAILED(hr)) return hr; break;
-    case REG_QWORD_LITTLE_ENDIAN: hr = f >> op.m_qwData;         if (FAILED(hr)) return hr; break;
-    default:                      return E_UNEXPECTED;
+    case REG_DWORD_BIG_ENDIAN:    if (!(f >> op.m_dwData )) return FALSE; break;
+    case REG_MULTI_SZ:            if (!(f >> op.m_szData )) return FALSE; break;
+    case REG_QWORD_LITTLE_ENDIAN: if (!(f >> op.m_qwData )) return FALSE; break;
+    default:                      ::SetLastError(ERROR_INVALID_DATA); return FALSE;
     }
 
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const COpTaskCreate &op)
+inline BOOL operator <<(CStream &f, const COpTaskCreate &op)
 {
-    HRESULT hr;
+    if (!(f << (const COpTypeSingleString&)op)) return FALSE;
+    if (!(f << op.m_sApplicationName         )) return FALSE;
+    if (!(f << op.m_sParameters              )) return FALSE;
+    if (!(f << op.m_sWorkingDirectory        )) return FALSE;
+    if (!(f << op.m_sAuthor                  )) return FALSE;
+    if (!(f << op.m_sComment                 )) return FALSE;
+    if (!(f << op.m_dwFlags                  )) return FALSE;
+    if (!(f << op.m_dwPriority               )) return FALSE;
+    if (!(f << op.m_sAccountName             )) return FALSE;
+    if (!(f << op.m_sPassword                )) return FALSE;
+    if (!(f << op.m_wDeadlineMinutes         )) return FALSE;
+    if (!(f << op.m_wIdleMinutes             )) return FALSE;
+    if (!(f << op.m_dwMaxRuntimeMS           )) return FALSE;
+    if (!(f << op.m_lTriggers.size()         )) return FALSE;
+    for (auto t = op.m_lTriggers.cbegin(), t_end = op.m_lTriggers.cend(); t != t_end; ++t)
+        if (!(f << *t)) return FALSE;
 
-    hr = f << (const COpTypeSingleString&)op;                          if (FAILED(hr)) return hr;
-    hr = f << op.m_sApplicationName;                                   if (FAILED(hr)) return hr;
-    hr = f << op.m_sParameters;                                        if (FAILED(hr)) return hr;
-    hr = f << op.m_sWorkingDirectory;                                  if (FAILED(hr)) return hr;
-    hr = f << op.m_sAuthor;                                            if (FAILED(hr)) return hr;
-    hr = f << op.m_sComment;                                           if (FAILED(hr)) return hr;
-    hr = f << (int)(op.m_dwFlags);                                     if (FAILED(hr)) return hr;
-    hr = f << (int)(op.m_dwPriority);                                  if (FAILED(hr)) return hr;
-    hr = f << op.m_sAccountName;                                       if (FAILED(hr)) return hr;
-    hr = f << op.m_sPassword;                                          if (FAILED(hr)) return hr;
-    hr = f << (int)MAKELONG(op.m_wDeadlineMinutes, op.m_wIdleMinutes); if (FAILED(hr)) return hr;
-    hr = f << (int)(op.m_dwMaxRuntimeMS);                              if (FAILED(hr)) return hr;
-    hr = f << (int)(op.m_lTriggers.size());                            if (FAILED(hr)) return hr;
-    for (auto t = op.m_lTriggers.cbegin(), t_end = op.m_lTriggers.cend(); t != t_end; ++t) {
-        hr = f << *t;
-        if (FAILED(hr)) return hr;
-    }
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, COpTaskCreate &op)
+inline BOOL operator >>(CStream &f, COpTaskCreate &op)
 {
-    HRESULT hr;
-    DWORD dwValue;
+    size_t nCount;
 
-    hr = f >> (COpTypeSingleString&)op;             if (FAILED(hr)) return hr;
-    hr = f >> op.m_sApplicationName;                if (FAILED(hr)) return hr;
-    hr = f >> op.m_sParameters;                     if (FAILED(hr)) return hr;
-    hr = f >> op.m_sWorkingDirectory;               if (FAILED(hr)) return hr;
-    hr = f >> op.m_sAuthor;                         if (FAILED(hr)) return hr;
-    hr = f >> op.m_sComment;                        if (FAILED(hr)) return hr;
-    hr = f >> (int&)(op.m_dwFlags);                 if (FAILED(hr)) return hr;
-    hr = f >> (int&)(op.m_dwPriority);              if (FAILED(hr)) return hr;
-    hr = f >> op.m_sAccountName;                    if (FAILED(hr)) return hr;
-    hr = f >> op.m_sPassword;                       if (FAILED(hr)) return hr;
-    hr = f >> (int&)dwValue;                        if (FAILED(hr)) return hr; op.m_wIdleMinutes = HIWORD(dwValue); op.m_wDeadlineMinutes = LOWORD(dwValue);
-    hr = f >> (int&)(op.m_dwMaxRuntimeMS);          if (FAILED(hr)) return hr;
-    hr = f >> (int&)dwValue;                        if (FAILED(hr)) return hr;
-    while (dwValue--) {
+    if (!(f >> (COpTypeSingleString&)op)) return FALSE;
+    if (!(f >> op.m_sApplicationName   )) return FALSE;
+    if (!(f >> op.m_sParameters        )) return FALSE;
+    if (!(f >> op.m_sWorkingDirectory  )) return FALSE;
+    if (!(f >> op.m_sAuthor            )) return FALSE;
+    if (!(f >> op.m_sComment           )) return FALSE;
+    if (!(f >> op.m_dwFlags            )) return FALSE;
+    if (!(f >> op.m_dwPriority         )) return FALSE;
+    if (!(f >> op.m_sAccountName       )) return FALSE;
+    if (!(f >> op.m_sPassword          )) return FALSE;
+    if (!(f >> op.m_wDeadlineMinutes   )) return FALSE;
+    if (!(f >> op.m_wIdleMinutes       )) return FALSE;
+    if (!(f >> op.m_dwMaxRuntimeMS     )) return FALSE;
+    if (!(f >> nCount                  )) return FALSE;
+    op.m_lTriggers.clear();
+    while (nCount--) {
         TASK_TRIGGER ttData;
-        hr = f >> ttData;
-        if (FAILED(hr)) return hr;
-        op.m_lTriggers.push_back(ttData);
+        if (!(f >> ttData)) return FALSE;
+        op.m_lTriggers.push_back(std::move(ttData));
     }
 
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const COpTaskEnable &op)
+inline BOOL operator <<(CStream &f, const COpTaskEnable &op)
 {
-    HRESULT hr;
+    if (!(f << (const COpTypeSingleString&)op)) return FALSE;
+    if (!(f << op.m_bEnable                  )) return FALSE;
 
-    hr = f << (const COpTypeSingleString&)op; if (FAILED(hr)) return hr;
-    hr = f << (int)(op.m_bEnable);            if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, COpTaskEnable &op)
+inline BOOL operator >>(CStream &f, COpTaskEnable &op)
 {
-    HRESULT hr;
-    int iTemp;
+    if (!(f >> (COpTypeSingleString&)op)) return FALSE;
+    if (!(f >> op.m_bEnable            )) return FALSE;
 
-    hr = f >> (COpTypeSingleString&)op; if (FAILED(hr)) return hr;
-    hr = f >> iTemp;                    if (FAILED(hr)) return hr; op.m_bEnable = iTemp ? TRUE : FALSE;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const COpCertStore &op)
+inline BOOL operator <<(CStream &f, const COpCertStore &op)
 {
-    HRESULT hr;
+    if (!(f << (const COpTypeSingleString&)op)) return FALSE;
+    if (!(f << op.m_dwEncodingType           )) return FALSE;
+    if (!(f << op.m_dwFlags                  )) return FALSE;
 
-    hr = f << (const COpTypeSingleString&)op; if (FAILED(hr)) return hr;
-    hr = f << (int)(op.m_dwEncodingType);     if (FAILED(hr)) return hr;
-    hr = f << (int)(op.m_dwFlags);            if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, COpCertStore &op)
+inline BOOL operator >>(CStream &f, COpCertStore &op)
 {
-    HRESULT hr;
+    if (!(f >> (COpTypeSingleString&)op)) return FALSE;
+    if (!(f >> op.m_dwEncodingType     )) return FALSE;
+    if (!(f >> op.m_dwFlags            )) return FALSE;
 
-    hr = f >> (COpTypeSingleString&)op;    if (FAILED(hr)) return hr;
-    hr = f >> (int&)(op.m_dwEncodingType); if (FAILED(hr)) return hr;
-    hr = f >> (int&)(op.m_dwFlags);        if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const COpCert &op)
+inline BOOL operator <<(CStream &f, const COpCert &op)
 {
-    HRESULT hr;
+    if (!(f << (const COpCertStore&)op)) return FALSE;
+    if (!(f << op.m_binCert           )) return FALSE;
 
-    hr = f << (const COpCertStore&)op; if (FAILED(hr)) return hr;
-    hr = f << op.m_binCert;            if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, COpCert &op)
+inline BOOL operator >>(CStream &f, COpCert &op)
 {
-    HRESULT hr;
+    if (!(f >> (COpCertStore&)op)) return FALSE;
+    if (!(f >> op.m_binCert     )) return FALSE;
 
-    hr = f >> (COpCertStore&)op; if (FAILED(hr)) return hr;
-    hr = f >> op.m_binCert;      if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const COpSvcSetStart &op)
+inline BOOL operator <<(CStream &f, const COpSvcSetStart &op)
 {
-    HRESULT hr;
+    if (!(f << (const COpTypeSingleString&)op)) return FALSE;
+    if (!(f << op.m_dwStartType              )) return FALSE;
 
-    hr = f << (const COpTypeSingleString&)op; if (FAILED(hr)) return hr;
-    hr = f << (int)(op.m_dwStartType);        if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, COpSvcSetStart &op)
+inline BOOL operator >>(CStream &f, COpSvcSetStart &op)
 {
-    HRESULT hr;
+    if (!(f >> (COpTypeSingleString&)op)) return FALSE;
+    if (!(f >> op.m_dwStartType        )) return FALSE;
 
-    hr = f >> (COpTypeSingleString&)op; if (FAILED(hr)) return hr;
-    hr = f >> (int&)(op.m_dwStartType); if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const COpSvcControl &op)
+inline BOOL operator <<(CStream &f, const COpSvcControl &op)
 {
-    HRESULT hr;
+    if (!(f << (const COpTypeSingleString&)op)) return FALSE;
+    if (!(f << op.m_bWait                    )) return FALSE;
 
-    hr = f << (const COpTypeSingleString&)op; if (FAILED(hr)) return hr;
-    hr = f << (int)(op.m_bWait);              if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, COpSvcControl &op)
+inline BOOL operator >>(CStream &f, COpSvcControl &op)
 {
-    HRESULT hr;
-    int iValue;
+    if (!(f >> (COpTypeSingleString&)op)) return FALSE;
+    if (!(f >> op.m_bWait              )) return FALSE;
 
-    hr = f >> (COpTypeSingleString&)op; if (FAILED(hr)) return hr;
-    hr = f >> iValue;                   if (FAILED(hr)) return hr; op.m_bWait = iValue ? TRUE : FALSE;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const COpWLANProfile &op)
+inline BOOL operator <<(CStream &f, const COpWLANProfile &op)
 {
-    HRESULT hr;
+    if (!(f << (const COpTypeSingleString&)op)) return FALSE;
+    if (!(f << op.m_guidInterface            )) return FALSE;
 
-    hr = f << (const COpTypeSingleString&)op; if (FAILED(hr)) return hr;
-    hr = f << op.m_guidInterface;             if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, COpWLANProfile &op)
+inline BOOL operator >>(CStream &f, COpWLANProfile &op)
 {
-    HRESULT hr;
+    if (!(f >> (COpTypeSingleString&)op)) return FALSE;
+    if (!(f >> op.m_guidInterface      )) return FALSE;
 
-    hr = f >> (COpTypeSingleString&)op; if (FAILED(hr)) return hr;
-    hr = f >> op.m_guidInterface;       if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const COpWLANProfileSet &op)
+inline BOOL operator <<(CStream &f, const COpWLANProfileSet &op)
 {
-    HRESULT hr;
+    if (!(f << (const COpWLANProfile&)op)) return FALSE;
+    if (!(f << op.m_dwFlags             )) return FALSE;
+    if (!(f << op.m_sProfileXML         )) return FALSE;
 
-    hr = f << (const COpWLANProfile&)op; if (FAILED(hr)) return hr;
-    hr = f << (int)(op.m_dwFlags);       if (FAILED(hr)) return hr;
-    hr = f << op.m_sProfileXML;          if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, COpWLANProfileSet &op)
+inline BOOL operator >>(CStream &f, COpWLANProfileSet &op)
 {
-    HRESULT hr;
+    if (!(f >> (COpWLANProfile&)op)) return FALSE;
+    if (!(f >> op.m_dwFlags       )) return FALSE;
+    if (!(f >> op.m_sProfileXML   )) return FALSE;
 
-    hr = f >> (COpWLANProfile&)op;  if (FAILED(hr)) return hr;
-    hr = f >> (int&)(op.m_dwFlags); if (FAILED(hr)) return hr;
-    hr = f >> op.m_sProfileXML;     if (FAILED(hr)) return hr;
-
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const COpList &list)
+inline BOOL operator <<(CStream &f, const COpList &list)
 {
-    HRESULT hr;
-
-    hr = f << (const COperation &)list;
-    if (FAILED(hr)) return hr;
-
-    hr = f << (int)(list.size());
-    if (FAILED(hr)) return hr;
-
-    for (auto i = list.cbegin(), i_end = list.cend(); i != i_end; ++i) {
-        const COperation *pOp = *i;
-             if (dynamic_cast<const COpRollbackEnable*   >(pOp)) hr = list.Save<COpRollbackEnable,    COpList::OP_ROLLBACK_ENABLE    >(f, pOp);
-        else if (dynamic_cast<const COpFileDelete*       >(pOp)) hr = list.Save<COpFileDelete,        COpList::OP_FILE_DELETE        >(f, pOp);
-        else if (dynamic_cast<const COpFileMove*         >(pOp)) hr = list.Save<COpFileMove,          COpList::OP_FILE_MOVE          >(f, pOp);
-        else if (dynamic_cast<const COpRegKeyCreate*     >(pOp)) hr = list.Save<COpRegKeyCreate,      COpList::OP_REG_KEY_CREATE     >(f, pOp);
-        else if (dynamic_cast<const COpRegKeyCopy*       >(pOp)) hr = list.Save<COpRegKeyCopy,        COpList::OP_REG_KEY_COPY       >(f, pOp);
-        else if (dynamic_cast<const COpRegKeyDelete*     >(pOp)) hr = list.Save<COpRegKeyDelete,      COpList::OP_REG_KEY_DELETE     >(f, pOp);
-        else if (dynamic_cast<const COpRegValueCreate*   >(pOp)) hr = list.Save<COpRegValueCreate,    COpList::OP_REG_VALUE_CREATE   >(f, pOp);
-        else if (dynamic_cast<const COpRegValueCopy*     >(pOp)) hr = list.Save<COpRegValueCopy,      COpList::OP_REG_VALUE_COPY     >(f, pOp);
-        else if (dynamic_cast<const COpRegValueDelete*   >(pOp)) hr = list.Save<COpRegValueDelete,    COpList::OP_REG_VALUE_DELETE   >(f, pOp);
-        else if (dynamic_cast<const COpTaskCreate*       >(pOp)) hr = list.Save<COpTaskCreate,        COpList::OP_TASK_CREATE        >(f, pOp);
-        else if (dynamic_cast<const COpTaskDelete*       >(pOp)) hr = list.Save<COpTaskDelete,        COpList::OP_TASK_DELETE        >(f, pOp);
-        else if (dynamic_cast<const COpTaskEnable*       >(pOp)) hr = list.Save<COpTaskEnable,        COpList::OP_TASK_ENABLE        >(f, pOp);
-        else if (dynamic_cast<const COpTaskCopy*         >(pOp)) hr = list.Save<COpTaskCopy,          COpList::OP_TASK_COPY          >(f, pOp);
-        else if (dynamic_cast<const COpCertInstall*      >(pOp)) hr = list.Save<COpCertInstall,       COpList::OP_CERT_INSTALL       >(f, pOp);
-        else if (dynamic_cast<const COpCertRemove*       >(pOp)) hr = list.Save<COpCertRemove,        COpList::OP_CERT_REMOVE        >(f, pOp);
-        else if (dynamic_cast<const COpSvcSetStart*      >(pOp)) hr = list.Save<COpSvcSetStart,       COpList::OP_SVC_SET_START      >(f, pOp);
-        else if (dynamic_cast<const COpSvcStart*         >(pOp)) hr = list.Save<COpSvcStart,          COpList::OP_SVC_START          >(f, pOp);
-        else if (dynamic_cast<const COpSvcStop*          >(pOp)) hr = list.Save<COpSvcStop,           COpList::OP_SVC_STOP           >(f, pOp);
-        else if (dynamic_cast<const COpWLANProfileDelete*>(pOp)) hr = list.Save<COpWLANProfileDelete, COpList::OP_WLAN_PROFILE_DELETE>(f, pOp);
-        else if (dynamic_cast<const COpWLANProfileSet*   >(pOp)) hr = list.Save<COpWLANProfileSet,    COpList::OP_WLAN_PROFILE_SET   >(f, pOp);
-        else if (dynamic_cast<const COpList*             >(pOp)) hr = list.Save<COpList,              COpList::OP_SUBLIST            >(f, pOp);
+    if (!(f << (const COperation &)list)) return FALSE;
+    if (!(f << list.size()             )) return FALSE;
+    for (auto o = list.cbegin(), o_end = list.cend(); o != o_end; ++o) {
+        BOOL bResult;
+        const COperation *pOp = o->get();
+             if (dynamic_cast<const COpRollbackEnable*   >(pOp)) bResult = list.write<COpRollbackEnable,    COpList::OP_ROLLBACK_ENABLE    >(f, pOp);
+        else if (dynamic_cast<const COpFileDelete*       >(pOp)) bResult = list.write<COpFileDelete,        COpList::OP_FILE_DELETE        >(f, pOp);
+        else if (dynamic_cast<const COpFileMove*         >(pOp)) bResult = list.write<COpFileMove,          COpList::OP_FILE_MOVE          >(f, pOp);
+        else if (dynamic_cast<const COpRegKeyCreate*     >(pOp)) bResult = list.write<COpRegKeyCreate,      COpList::OP_REG_KEY_CREATE     >(f, pOp);
+        else if (dynamic_cast<const COpRegKeyCopy*       >(pOp)) bResult = list.write<COpRegKeyCopy,        COpList::OP_REG_KEY_COPY       >(f, pOp);
+        else if (dynamic_cast<const COpRegKeyDelete*     >(pOp)) bResult = list.write<COpRegKeyDelete,      COpList::OP_REG_KEY_DELETE     >(f, pOp);
+        else if (dynamic_cast<const COpRegValueCreate*   >(pOp)) bResult = list.write<COpRegValueCreate,    COpList::OP_REG_VALUE_CREATE   >(f, pOp);
+        else if (dynamic_cast<const COpRegValueCopy*     >(pOp)) bResult = list.write<COpRegValueCopy,      COpList::OP_REG_VALUE_COPY     >(f, pOp);
+        else if (dynamic_cast<const COpRegValueDelete*   >(pOp)) bResult = list.write<COpRegValueDelete,    COpList::OP_REG_VALUE_DELETE   >(f, pOp);
+        else if (dynamic_cast<const COpTaskCreate*       >(pOp)) bResult = list.write<COpTaskCreate,        COpList::OP_TASK_CREATE        >(f, pOp);
+        else if (dynamic_cast<const COpTaskDelete*       >(pOp)) bResult = list.write<COpTaskDelete,        COpList::OP_TASK_DELETE        >(f, pOp);
+        else if (dynamic_cast<const COpTaskEnable*       >(pOp)) bResult = list.write<COpTaskEnable,        COpList::OP_TASK_ENABLE        >(f, pOp);
+        else if (dynamic_cast<const COpTaskCopy*         >(pOp)) bResult = list.write<COpTaskCopy,          COpList::OP_TASK_COPY          >(f, pOp);
+        else if (dynamic_cast<const COpCertInstall*      >(pOp)) bResult = list.write<COpCertInstall,       COpList::OP_CERT_INSTALL       >(f, pOp);
+        else if (dynamic_cast<const COpCertRemove*       >(pOp)) bResult = list.write<COpCertRemove,        COpList::OP_CERT_REMOVE        >(f, pOp);
+        else if (dynamic_cast<const COpSvcSetStart*      >(pOp)) bResult = list.write<COpSvcSetStart,       COpList::OP_SVC_SET_START      >(f, pOp);
+        else if (dynamic_cast<const COpSvcStart*         >(pOp)) bResult = list.write<COpSvcStart,          COpList::OP_SVC_START          >(f, pOp);
+        else if (dynamic_cast<const COpSvcStop*          >(pOp)) bResult = list.write<COpSvcStop,           COpList::OP_SVC_STOP           >(f, pOp);
+        else if (dynamic_cast<const COpWLANProfileDelete*>(pOp)) bResult = list.write<COpWLANProfileDelete, COpList::OP_WLAN_PROFILE_DELETE>(f, pOp);
+        else if (dynamic_cast<const COpWLANProfileSet*   >(pOp)) bResult = list.write<COpWLANProfileSet,    COpList::OP_WLAN_PROFILE_SET   >(f, pOp);
+        else if (dynamic_cast<const COpList*             >(pOp)) bResult = list.write<COpList,              COpList::OP_SUBLIST            >(f, pOp);
         else {
             // Unsupported type of operation.
-            hr = E_UNEXPECTED;
+            ::SetLastError(ERROR_INVALID_DATA);
+            return FALSE;
         }
 
-        if (FAILED(hr)) return hr;
+        if (!bResult) return FALSE;
     }
 
-    return S_OK;
+    return TRUE;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, COpList &list)
+inline BOOL operator >>(CStream &f, COpList &list)
 {
-    HRESULT hr;
-    int iCount;
+    size_t nCount;
 
-    hr = f >> (COperation &)list;
-    if (FAILED(hr)) return hr;
+    if (!(f >> (COperation &)list)) return FALSE;
+    if (!(f >> nCount            )) return FALSE;
+    list.clear();
+    while (nCount--) {
+        BOOL bResult;
+        COpList::OPERATION opCode;
 
-    hr = f >> iCount;
-    if (FAILED(hr)) return hr;
+        if (!(f >> opCode)) return FALSE;
 
-    while (iCount--) {
-        int iTemp;
-
-        hr = f >> iTemp;
-        if (FAILED(hr)) return hr;
-
-        switch ((COpList::OPERATION)iTemp) {
-        case COpList::OP_ROLLBACK_ENABLE:     hr = list.load_back<COpRollbackEnable   >(f); break;
-        case COpList::OP_FILE_DELETE:         hr = list.load_back<COpFileDelete       >(f); break;
-        case COpList::OP_FILE_MOVE:           hr = list.load_back<COpFileMove         >(f); break;
-        case COpList::OP_REG_KEY_CREATE:      hr = list.load_back<COpRegKeyCreate     >(f); break;
-        case COpList::OP_REG_KEY_COPY:        hr = list.load_back<COpRegKeyCopy       >(f); break;
-        case COpList::OP_REG_KEY_DELETE:      hr = list.load_back<COpRegKeyDelete     >(f); break;
-        case COpList::OP_REG_VALUE_CREATE:    hr = list.load_back<COpRegValueCreate   >(f); break;
-        case COpList::OP_REG_VALUE_COPY:      hr = list.load_back<COpRegValueCopy     >(f); break;
-        case COpList::OP_REG_VALUE_DELETE:    hr = list.load_back<COpRegValueDelete   >(f); break;
-        case COpList::OP_TASK_CREATE:         hr = list.load_back<COpTaskCreate       >(f); break;
-        case COpList::OP_TASK_DELETE:         hr = list.load_back<COpTaskDelete       >(f); break;
-        case COpList::OP_TASK_ENABLE:         hr = list.load_back<COpTaskEnable       >(f); break;
-        case COpList::OP_TASK_COPY:           hr = list.load_back<COpTaskCopy         >(f); break;
-        case COpList::OP_CERT_INSTALL:        hr = list.load_back<COpCertInstall      >(f); break;
-        case COpList::OP_CERT_REMOVE:         hr = list.load_back<COpCertRemove       >(f); break;
-        case COpList::OP_SVC_SET_START:       hr = list.load_back<COpSvcSetStart      >(f); break;
-        case COpList::OP_SVC_START:           hr = list.load_back<COpSvcStart         >(f); break;
-        case COpList::OP_SVC_STOP:            hr = list.load_back<COpSvcStop          >(f); break;
-        case COpList::OP_WLAN_PROFILE_DELETE: hr = list.load_back<COpWLANProfileDelete>(f); break;
-        case COpList::OP_WLAN_PROFILE_SET:    hr = list.load_back<COpWLANProfileSet   >(f); break;
-        case COpList::OP_SUBLIST:             hr = list.load_back<COpList             >(f); break;
+        switch (opCode) {
+        case COpList::OP_ROLLBACK_ENABLE:     bResult = list.read_back<COpRollbackEnable   >(f); break;
+        case COpList::OP_FILE_DELETE:         bResult = list.read_back<COpFileDelete       >(f); break;
+        case COpList::OP_FILE_MOVE:           bResult = list.read_back<COpFileMove         >(f); break;
+        case COpList::OP_REG_KEY_CREATE:      bResult = list.read_back<COpRegKeyCreate     >(f); break;
+        case COpList::OP_REG_KEY_COPY:        bResult = list.read_back<COpRegKeyCopy       >(f); break;
+        case COpList::OP_REG_KEY_DELETE:      bResult = list.read_back<COpRegKeyDelete     >(f); break;
+        case COpList::OP_REG_VALUE_CREATE:    bResult = list.read_back<COpRegValueCreate   >(f); break;
+        case COpList::OP_REG_VALUE_COPY:      bResult = list.read_back<COpRegValueCopy     >(f); break;
+        case COpList::OP_REG_VALUE_DELETE:    bResult = list.read_back<COpRegValueDelete   >(f); break;
+        case COpList::OP_TASK_CREATE:         bResult = list.read_back<COpTaskCreate       >(f); break;
+        case COpList::OP_TASK_DELETE:         bResult = list.read_back<COpTaskDelete       >(f); break;
+        case COpList::OP_TASK_ENABLE:         bResult = list.read_back<COpTaskEnable       >(f); break;
+        case COpList::OP_TASK_COPY:           bResult = list.read_back<COpTaskCopy         >(f); break;
+        case COpList::OP_CERT_INSTALL:        bResult = list.read_back<COpCertInstall      >(f); break;
+        case COpList::OP_CERT_REMOVE:         bResult = list.read_back<COpCertRemove       >(f); break;
+        case COpList::OP_SVC_SET_START:       bResult = list.read_back<COpSvcSetStart      >(f); break;
+        case COpList::OP_SVC_START:           bResult = list.read_back<COpSvcStart         >(f); break;
+        case COpList::OP_SVC_STOP:            bResult = list.read_back<COpSvcStop          >(f); break;
+        case COpList::OP_WLAN_PROFILE_DELETE: bResult = list.read_back<COpWLANProfileDelete>(f); break;
+        case COpList::OP_WLAN_PROFILE_SET:    bResult = list.read_back<COpWLANProfileSet   >(f); break;
+        case COpList::OP_SUBLIST:             bResult = list.read_back<COpList             >(f); break;
         default:
             // Unsupported type of operation.
-            hr = E_UNEXPECTED;
+            ::SetLastError(ERROR_INVALID_DATA);
+            return FALSE;
         }
 
-        if (FAILED(hr)) return hr;
+        if (!bResult) return FALSE;
     }
 
-    return S_OK;
+    return TRUE;
 }
 
 
@@ -1479,37 +1368,49 @@ inline BOOL IsWow64Process()
 // Inline methods
 ////////////////////////////////////////////////////////////////////////////
 
-template <class T, enum COpList::OPERATION ID> inline static HRESULT COpList::Save(ATL::CAtlFile &f, const COperation *p)
+inline void COpList::push_front(COperation *pOp)
 {
-    HRESULT hr;
-    const T *pp = dynamic_cast<const T*>(p);
-    if (!pp) return E_UNEXPECTED;
-
-    hr = f << (int)ID;
-    if (FAILED(hr)) return hr;
-
-    return f << *pp;
+    std::list<std::unique_ptr<COperation> >::push_front(std::move(std::unique_ptr<COperation>(pOp)));
 }
 
 
-template <class T> inline HRESULT COpList::load_back(ATL::CAtlFile &f)
+inline void COpList::push_back(COperation *pOp)
 {
-    HRESULT hr;
+    std::list<std::unique_ptr<COperation> >::push_back(std::move(std::unique_ptr<COperation>(pOp)));
+}
 
-    // Create element.
-    T *p = new T();
-    if (!p) return E_OUTOFMEMORY;
 
-    // Load element from file.
-    hr = f >> *p;
-    if (FAILED(hr)) {
-        delete p;
-        return hr;
+template <class T, enum COpList::OPERATION ID> inline static BOOL COpList::write(CStream &f, const COperation *p)
+{
+    const T *pp = dynamic_cast<const T*>(p);
+    if (!pp) {
+        // Wrong type.
+        ::SetLastError(ERROR_INVALID_DATA);
+        return FALSE;
     }
 
+    if (!(f << ID )) return FALSE;
+    if (!(f << *pp)) return FALSE;
+
+    return TRUE;
+}
+
+
+template <class T> inline BOOL COpList::read_back(CStream &f)
+{
+    // Create element.
+    std::unique_ptr<T> p(new T());
+    if (!p) {
+        ::SetLastError(ERROR_OUTOFMEMORY);
+        return FALSE;
+    }
+
+    // Load element from file.
+    if (!(f >> *p)) return FALSE;
+
     // Add element.
-    push_back(p);
-    return S_OK;
+    std::list<std::unique_ptr<COperation> >::push_back(std::move(p));
+    return TRUE;
 }
 
 } // namespace MSICA

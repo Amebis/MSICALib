@@ -90,7 +90,7 @@ HRESULT COpSvcSetStart::Execute(CSession *pSession)
         ::MsiRecordSetStringW(hRecordProg, 2, m_sValue.c_str()           );
         ::MsiRecordSetInteger(hRecordProg, 3, dwError                    );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
-        return AtlHresultFromWin32(dwError);
+        return HRESULT_FROM_WIN32(dwError);
     }
 }
 
@@ -193,7 +193,7 @@ HRESULT COpSvcStart::Execute(CSession *pSession)
         ::MsiRecordSetStringW(hRecordProg, 2, m_sValue.c_str()       );
         ::MsiRecordSetInteger(hRecordProg, 3, dwError                );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
-        return AtlHresultFromWin32(dwError);
+        return HRESULT_FROM_WIN32(dwError);
     }
 }
 
@@ -248,7 +248,7 @@ HRESULT COpSvcStop::Execute(CSession *pSession)
         ::MsiRecordSetStringW(hRecordProg, 2, m_sValue.c_str()      );
         ::MsiRecordSetInteger(hRecordProg, 3, dwError               );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
-        return AtlHresultFromWin32(dwError);
+        return HRESULT_FROM_WIN32(dwError);
     }
 }
 
