@@ -244,7 +244,7 @@ UINT ExecuteSequence(MSIHANDLE hInstall)
     UINT uiResult;
     DWORD dwResult;
     HRESULT hr;
-    BOOL bIsCoInitialized = SUCCEEDED(::CoInitialize(NULL));
+    winstd::com_initializer com_init(NULL);
     winstd::tstring sSequenceFilename;
 
     uiResult = ::MsiGetProperty(hInstall, _T("CustomActionData"), sSequenceFilename);
@@ -351,7 +351,6 @@ UINT ExecuteSequence(MSIHANDLE hInstall)
         // Couldn't get CustomActionData property. uiResult has the error code.
     }
 
-    if (bIsCoInitialized) ::CoUninitialize();
     return uiResult;
 }
 
