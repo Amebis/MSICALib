@@ -17,7 +17,7 @@
 #    along with MSICA. If not, see <http://www.gnu.org/licenses/>.
 #
 
-!INCLUDE "..\..\..\include\MSIBuildCfg.mak"
+!INCLUDE "..\..\..\..\..\include\MSIBuildCfg.mak"
 
 MSIBUILD_IS_LOCALIZEABLE=1
 
@@ -29,7 +29,7 @@ All :: \
 	"$(LANG).$(PLAT).$(CFG).Error-1.idt" \
 	"$(LANG).$(PLAT).$(CFG).Error-2.idt"
 
-"$(LANG).$(PLAT).$(CFG).Error-1.idt" : "Makefile" "..\..\..\include\MSIBuildCfg.mak"
+"$(LANG).$(PLAT).$(CFG).Error-1.idt" : "Makefile" "..\..\..\..\..\include\MSIBuildCfg.mak"
 	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
 Error	Message
@@ -37,7 +37,7 @@ i2	L0
 Error	Error
 <<NOKEEP
 
-"en_US.$(PLAT).$(CFG).Error-2.idtx" : "Makefile" "..\..\..\include\MSIBuildCfg.mak"
+"en_US.$(PLAT).$(CFG).Error-2.idtx" : "Makefile" "..\..\..\..\..\include\MSIBuildCfg.mak"
 	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
 Error	Message
@@ -73,7 +73,7 @@ i2	L0
 	copy /y $** $@ > NUL
 !ELSE
 "$(LANG).$(PLAT).$(CFG).Error-2.idt" : "en_US.$(PLAT).$(CFG).Error-2.idtx" "..\locale\$(LANG).po"
-	cscript.exe "..\..\..\MSI\MSIBuild\MSI.wsf" //Job:IDTTranslate //Nologo $@ $** /CP:$(MSIBUILD_CODEPAGE)
+	cscript.exe "..\..\..\..\..\MSI\MSIBuild\MSI.wsf" //Job:IDTTranslate //Nologo $@ $** /CP:$(MSIBUILD_CODEPAGE)
 !ENDIF
 
 
@@ -81,4 +81,4 @@ i2	L0
 # Build MSM module!
 ######################################################################
 
-!INCLUDE "..\..\..\MSI\MSIBuild\MSM.mak"
+!INCLUDE "..\..\..\..\..\MSI\MSIBuild\MSM.mak"
