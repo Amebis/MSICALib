@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MSICALib", "build\MSICALib.vcxproj", "{8552EE55-177E-4F51-B51B-BAF7D6462CDE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "atlex", "..\atlex\build\atlex.vcxproj", "{5A4EADF2-3237-457A-9DA8-BB9942A91019}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinStd", "..\WinStd\build\WinStd.vcxproj", "{47399D91-7EB9-41DE-B521-514BA5DB0C43}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,14 +21,14 @@ Global
 		{8552EE55-177E-4F51-B51B-BAF7D6462CDE}.Release|Win32.Build.0 = Release|Win32
 		{8552EE55-177E-4F51-B51B-BAF7D6462CDE}.Release|x64.ActiveCfg = Release|x64
 		{8552EE55-177E-4F51-B51B-BAF7D6462CDE}.Release|x64.Build.0 = Release|x64
-		{5A4EADF2-3237-457A-9DA8-BB9942A91019}.Debug|Win32.ActiveCfg = Debug|Win32
-		{5A4EADF2-3237-457A-9DA8-BB9942A91019}.Debug|Win32.Build.0 = Debug|Win32
-		{5A4EADF2-3237-457A-9DA8-BB9942A91019}.Debug|x64.ActiveCfg = Debug|x64
-		{5A4EADF2-3237-457A-9DA8-BB9942A91019}.Debug|x64.Build.0 = Debug|x64
-		{5A4EADF2-3237-457A-9DA8-BB9942A91019}.Release|Win32.ActiveCfg = Release|Win32
-		{5A4EADF2-3237-457A-9DA8-BB9942A91019}.Release|Win32.Build.0 = Release|Win32
-		{5A4EADF2-3237-457A-9DA8-BB9942A91019}.Release|x64.ActiveCfg = Release|x64
-		{5A4EADF2-3237-457A-9DA8-BB9942A91019}.Release|x64.Build.0 = Release|x64
+		{47399D91-7EB9-41DE-B521-514BA5DB0C43}.Debug|Win32.ActiveCfg = Debug|Win32
+		{47399D91-7EB9-41DE-B521-514BA5DB0C43}.Debug|Win32.Build.0 = Debug|Win32
+		{47399D91-7EB9-41DE-B521-514BA5DB0C43}.Debug|x64.ActiveCfg = Debug|x64
+		{47399D91-7EB9-41DE-B521-514BA5DB0C43}.Debug|x64.Build.0 = Debug|x64
+		{47399D91-7EB9-41DE-B521-514BA5DB0C43}.Release|Win32.ActiveCfg = Release|Win32
+		{47399D91-7EB9-41DE-B521-514BA5DB0C43}.Release|Win32.Build.0 = Release|Win32
+		{47399D91-7EB9-41DE-B521-514BA5DB0C43}.Release|x64.ActiveCfg = Release|x64
+		{47399D91-7EB9-41DE-B521-514BA5DB0C43}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

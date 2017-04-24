@@ -21,6 +21,9 @@
 
 #include <MSICALib.h>
 
+#include <WinStd/COM.h>
+#include <WinStd/Crypt.h>
+
 #include <atlex/atlcrypt.h>
 #include <atlex/atlwin.h>
 

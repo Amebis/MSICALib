@@ -20,9 +20,10 @@
 #pragma once
 
 #include <atlbase.h>
-#include <atlcoll.h>
 #include <atlfile.h>
-#include <atlstr.h>
+#include <WinStd\Common.h>
+#include <list>
+#include <string>
 #include <msi.h>
 #include <mstask.h>
 #include <wincrypt.h>
@@ -109,7 +110,7 @@ public:
     friend inline HRESULT operator >>(ATL::CAtlFile &f, COpTypeSingleString &op);
 
 protected:
-    ATL::CAtlStringW m_sValue;
+    std::wstring m_sValue;
 };
 
 
@@ -126,8 +127,8 @@ public:
     friend inline HRESULT operator >>(ATL::CAtlFile &f, COpTypeSrcDstString &op);
 
 protected:
-    ATL::CAtlStringW m_sValue1;
-    ATL::CAtlStringW m_sValue2;
+    std::wstring m_sValue1;
+    std::wstring m_sValue2;
 };
 
 
@@ -274,7 +275,7 @@ public:
     friend inline HRESULT operator >>(ATL::CAtlFile &f, COpRegValueSingle &op);
 
 protected:
-    ATL::CAtlStringW m_sValueName;
+    std::wstring m_sValueName;
 };
 
 
@@ -291,8 +292,8 @@ public:
     friend inline HRESULT operator >>(ATL::CAtlFile &f, COpRegValueSrcDst &op);
 
 protected:
-    ATL::CAtlStringW m_sValueName1;
-    ATL::CAtlStringW m_sValueName2;
+    std::wstring m_sValueName1;
+    std::wstring m_sValueName2;
 };
 
 
@@ -314,12 +315,12 @@ public:
     friend inline HRESULT operator >>(ATL::CAtlFile &f, COpRegValueCreate &op);
 
 protected:
-    DWORD m_dwType;
-    ATL::CAtlStringW m_sData;
-    ATL::CAtlArray<BYTE> m_binData;
-    DWORD m_dwData;
-    ATL::CAtlArray<WCHAR> m_szData;
-    DWORDLONG m_qwData;
+    DWORD              m_dwType;
+    std::wstring       m_sData;
+    std::vector<BYTE>  m_binData;
+    DWORD              m_dwData;
+    std::vector<WCHAR> m_szData;
+    DWORDLONG          m_qwData;
 };
 
 
@@ -355,7 +356,6 @@ class COpTaskCreate : public COpTypeSingleString
 {
 public:
     COpTaskCreate(LPCWSTR pszTaskName = L"", int iTicks = 0);
-    virtual ~COpTaskCreate();
     virtual HRESULT Execute(CSession *pSession);
 
     UINT SetFromRecord(MSIHANDLE hInstall, MSIHANDLE hRecord);
@@ -365,20 +365,20 @@ public:
     friend inline HRESULT operator >>(ATL::CAtlFile &f, COpTaskCreate &op);
 
 protected:
-    ATL::CAtlStringW m_sApplicationName;
-    ATL::CAtlStringW m_sParameters;
-    ATL::CAtlStringW m_sWorkingDirectory;
-    ATL::CAtlStringW m_sAuthor;
-    ATL::CAtlStringW m_sComment;
-    DWORD            m_dwFlags;
-    DWORD            m_dwPriority;
-    ATL::CAtlStringW m_sAccountName;
-    ATL::CAtlStringW m_sPassword;
-    WORD             m_wIdleMinutes;
-    WORD             m_wDeadlineMinutes;
-    DWORD            m_dwMaxRuntimeMS;
+    std::wstring               m_sApplicationName;
+    std::wstring               m_sParameters;
+    std::wstring               m_sWorkingDirectory;
+    std::wstring               m_sAuthor;
+    std::wstring               m_sComment;
+    DWORD                      m_dwFlags;
+    DWORD                      m_dwPriority;
+    std::wstring               m_sAccountName;
+    winstd::sanitizing_wstring m_sPassword;
+    WORD                       m_wIdleMinutes;
+    WORD                       m_wDeadlineMinutes;
+    DWORD                      m_dwMaxRuntimeMS;
 
-    ATL::CAtlList<TASK_TRIGGER> m_lTriggers;
+    std::list<TASK_TRIGGER>    m_lTriggers;
 };
 
 
@@ -455,7 +455,7 @@ public:
     friend inline HRESULT operator >>(ATL::CAtlFile &f, COpCert &op);
 
 protected:
-    ATL::CAtlArray<BYTE> m_binCert;
+    std::vector<BYTE> m_binCert;
 };
 
 
@@ -588,7 +588,7 @@ public:
 
 protected:
     DWORD m_dwFlags;
-    ATL::CAtlStringW m_sProfileXML;
+    std::wstring m_sProfileXML;
 };
 
 
@@ -596,7 +596,7 @@ protected:
 // COpList
 ////////////////////////////////////////////////////////////////////////////
 
-class COpList : public COperation, public ATL::CAtlList<COperation*>
+class COpList : public COperation, public std::list<COperation*>
 {
 public:
     COpList(int iTicks = 0);
@@ -637,7 +637,7 @@ protected:
 
 protected:
     template <class T, enum OPERATION ID> inline static HRESULT Save(ATL::CAtlFile &f, const COperation *p);
-    template <class T> inline HRESULT LoadAndAddTail(ATL::CAtlFile &f);
+    template <class T> inline HRESULT load_back(ATL::CAtlFile &f);
 };
 
 
@@ -679,12 +679,17 @@ UINT ExecuteSequence(MSIHANDLE hInstall);
 #include <msiquery.h>
 #include <mstask.h>
 
+#include <WinStd/MSI.h>
+
+#include <memory>
+
 
 ////////////////////////////////////////////////////////////////////
 // Inline helper functions
 ////////////////////////////////////////////////////////////////////
 
-inline UINT MsiRecordFormatStringA(MSIHANDLE hInstall, MSIHANDLE hRecord, unsigned int iField, ATL::CAtlStringA &sValue)
+template<class _Elem, class _Traits, class _Ax>
+inline UINT MsiRecordFormatStringA(MSIHANDLE hInstall, MSIHANDLE hRecord, unsigned int iField, std::basic_string<_Elem, _Traits, _Ax> &sValue)
 {
     UINT uiResult;
     PMSIHANDLE hRecordEx;
@@ -694,14 +699,14 @@ inline UINT MsiRecordFormatStringA(MSIHANDLE hInstall, MSIHANDLE hRecord, unsign
     if (uiResult != NO_ERROR) return uiResult;
 
     // If the string is empty, there's nothing left to do.
-    if (sValue.IsEmpty()) return NO_ERROR;
+    if (sValue.empty()) return NO_ERROR;
 
     // Create a record.
     hRecordEx = ::MsiCreateRecord(1);
     if (!hRecordEx) return ERROR_INVALID_HANDLE;
 
     // Populate record with data.
-    uiResult = ::MsiRecordSetStringA(hRecordEx, 0, sValue);
+    uiResult = ::MsiRecordSetStringA(hRecordEx, 0, sValue.c_str());
     if (uiResult != NO_ERROR) return uiResult;
 
     // Do the formatting.
@@ -709,7 +714,8 @@ inline UINT MsiRecordFormatStringA(MSIHANDLE hInstall, MSIHANDLE hRecord, unsign
 }
 
 
-inline UINT MsiRecordFormatStringW(MSIHANDLE hInstall, MSIHANDLE hRecord, unsigned int iField, ATL::CAtlStringW &sValue)
+template<class _Elem, class _Traits, class _Ax>
+inline UINT MsiRecordFormatStringW(MSIHANDLE hInstall, MSIHANDLE hRecord, unsigned int iField, std::basic_string<_Elem, _Traits, _Ax> &sValue)
 {
     UINT uiResult;
     PMSIHANDLE hRecordEx;
@@ -719,14 +725,14 @@ inline UINT MsiRecordFormatStringW(MSIHANDLE hInstall, MSIHANDLE hRecord, unsign
     if (uiResult != NO_ERROR) return uiResult;
 
     // If the string is empty, there's nothing left to do.
-    if (sValue.IsEmpty()) return NO_ERROR;
+    if (sValue.empty()) return NO_ERROR;
 
     // Create a record.
     hRecordEx = ::MsiCreateRecord(1);
     if (!hRecordEx) return ERROR_INVALID_HANDLE;
 
     // Populate record with data.
-    uiResult = ::MsiRecordSetStringW(hRecordEx, 0, sValue);
+    uiResult = ::MsiRecordSetStringW(hRecordEx, 0, sValue.c_str());
     if (uiResult != NO_ERROR) return uiResult;
 
     // Do the formatting.
@@ -806,120 +812,83 @@ inline HRESULT operator >>(ATL::CAtlFile &f, GUID &guid)
 }
 
 
-template <class E>
-inline HRESULT operator <<(ATL::CAtlFile &f, const ATL::CAtlArray<E> &a)
+template <class _Ty, class _Ax>
+inline HRESULT operator <<(ATL::CAtlFile &f, const std::vector<_Ty, _Ax> &a)
 {
     HRESULT hr;
-    DWORD dwCount = (DWORD)a.GetCount(), dwWritten;
+    size_t nCount = a.size();
+    DWORD dwWritten;
 
     // Write element count.
-    hr =  f.Write(&dwCount, sizeof(DWORD), &dwWritten);
+    hr =  f.Write(&nCount, sizeof(size_t), &dwWritten);
     if (FAILED(hr)) return hr;
-    if (dwWritten < sizeof(DWORD)) return E_FAIL;
+    if (dwWritten < sizeof(size_t)) return E_FAIL;
 
-    // Write data.
-    hr = f.Write(a.GetData(), sizeof(E) * dwCount, &dwWritten);
-    return SUCCEEDED(hr) ? dwWritten == sizeof(E) * dwCount ? hr : E_FAIL : hr;
+    // Write data (opaque).
+    hr = f.Write(a.data(), static_cast<DWORD>(sizeof(_Ty) * nCount), &dwWritten);
+    return SUCCEEDED(hr) ? dwWritten == sizeof(_Ty) * nCount ? hr : E_FAIL : hr;
 }
 
 
-template <class E>
-inline HRESULT operator >>(ATL::CAtlFile &f, ATL::CAtlArray<E> &a)
+template <class _Ty, class _Ax>
+inline HRESULT operator >>(ATL::CAtlFile &f, std::vector<_Ty, _Ax> &a)
 {
     HRESULT hr;
-    DWORD dwCount, dwRead;
+    size_t nCount;
+    DWORD dwRead;
 
-    // Read element count as 32-bit integer.
-    hr =  f.Read(&dwCount, sizeof(DWORD), dwRead);
+    // Read element count.
+    hr =  f.Read(&nCount, sizeof(size_t), dwRead);
     if (FAILED(hr)) return hr;
-    if (dwRead < sizeof(DWORD)) return E_FAIL;
+    if (dwRead < sizeof(size_t)) return E_FAIL;
 
     // Allocate the buffer.
-    if (!a.SetCount(dwCount)) return E_OUTOFMEMORY;
+    a.resize(nCount);
 
-    // Read data.
-    hr = f.Read(a.GetData(), sizeof(E) * dwCount, dwRead);
-    if (SUCCEEDED(hr)) a.SetCount(dwRead / sizeof(E));
+    // Read data (opaque).
+    hr = f.Read(a.data(), static_cast<DWORD>(sizeof(_Ty) * nCount), dwRead);
+    if (SUCCEEDED(hr)) a.resize(dwRead / sizeof(_Ty));
     return hr;
 }
 
 
-inline HRESULT operator <<(ATL::CAtlFile &f, const ATL::CAtlStringA &str)
+template<class _Elem, class _Traits, class _Ax>
+inline HRESULT operator <<(ATL::CAtlFile &f, const std::basic_string<_Elem, _Traits, _Ax> &str)
 {
     HRESULT hr;
-    int iLength = str.GetLength();
+    size_t iLength = str.length();
     DWORD dwWritten;
 
-    // Write string length (in characters) as 32-bit integer.
-    hr =  f.Write(&iLength, sizeof(int), &dwWritten);
+    // Write string length (in characters).
+    hr =  f.Write(&iLength, sizeof(size_t), &dwWritten);
     if (FAILED(hr)) return hr;
-    if (dwWritten < sizeof(int)) return E_FAIL;
+    if (dwWritten < sizeof(size_t)) return E_FAIL;
 
     // Write string data (without terminator).
-    hr = f.Write((LPCSTR)str, sizeof(CHAR) * iLength, &dwWritten);
-    return SUCCEEDED(hr) ? dwWritten == sizeof(CHAR) * iLength ? hr : E_FAIL : hr;
+    hr = f.Write(str.c_str(), static_cast<DWORD>(sizeof(_Elem) * iLength), &dwWritten);
+    return SUCCEEDED(hr) ? dwWritten == sizeof(_Elem) * iLength ? hr : E_FAIL : hr;
 }
 
 
-inline HRESULT operator >>(ATL::CAtlFile &f, ATL::CAtlStringA &str)
+template<class _Elem, class _Traits, class _Ax>
+inline HRESULT operator >>(ATL::CAtlFile &f, std::basic_string<_Elem, _Traits, _Ax> &str)
 {
     HRESULT hr;
-    int iLength;
-    LPSTR buf;
+    size_t iLength;
     DWORD dwRead;
 
-    // Read string length (in characters) as 32-bit integer.
-    hr =  f.Read(&iLength, sizeof(int), dwRead);
+    // Read string length (in characters).
+    hr =  f.Read(&iLength, sizeof(size_t), dwRead);
     if (FAILED(hr)) return hr;
-    if (dwRead < sizeof(int)) return E_FAIL;
+    if (dwRead < sizeof(size_t)) return E_FAIL;
 
     // Allocate the buffer.
-    buf = str.GetBuffer(iLength);
+    std::unique_ptr<_Elem[]> buf(new _Elem[iLength]);
     if (!buf) return E_OUTOFMEMORY;
 
     // Read string data (without terminator).
-    hr = f.Read(buf, sizeof(CHAR) * iLength, dwRead);
-    str.ReleaseBuffer(SUCCEEDED(hr) ? dwRead / sizeof(CHAR) : 0);
-    return hr;
-}
-
-
-inline HRESULT operator <<(ATL::CAtlFile &f, const ATL::CAtlStringW &str)
-{
-    HRESULT hr;
-    int iLength = str.GetLength();
-    DWORD dwWritten;
-
-    // Write string length (in characters) as 32-bit integer.
-    hr = f.Write(&iLength, sizeof(int), &dwWritten);
-    if (FAILED(hr)) return hr;
-    if (dwWritten < sizeof(int)) return E_FAIL;
-
-    // Write string data (without terminator).
-    hr = f.Write((LPCWSTR)str, sizeof(WCHAR) * iLength, &dwWritten);
-    return SUCCEEDED(hr) ? dwWritten == sizeof(WCHAR) * iLength ? hr : E_FAIL : hr;
-}
-
-
-inline HRESULT operator >>(ATL::CAtlFile &f, ATL::CAtlStringW &str)
-{
-    HRESULT hr;
-    int iLength;
-    LPWSTR buf;
-    DWORD dwRead;
-
-    // Read string length (in characters) as 32-bit integer.
-    hr =  f.Read(&iLength, sizeof(int), dwRead);
-    if (FAILED(hr)) return hr;
-    if (dwRead < sizeof(int)) return E_FAIL;
-
-    // Allocate the buffer.
-    buf = str.GetBuffer(iLength);
-    if (!buf) return E_OUTOFMEMORY;
-
-    // Read string data (without terminator).
-    hr = f.Read(buf, sizeof(WCHAR) * iLength, dwRead);
-    str.ReleaseBuffer(SUCCEEDED(hr) ? dwRead / sizeof(WCHAR) : 0);
+    hr = f.Read(buf.get(), static_cast<DWORD>(sizeof(_Elem) * iLength), dwRead);
+    str.assign(buf.get(), SUCCEEDED(hr) ? dwRead / sizeof(_Elem) : 0);
     return hr;
 }
 
@@ -1164,7 +1133,6 @@ inline HRESULT operator >>(ATL::CAtlFile &f, COpRegValueCreate &op)
 inline HRESULT operator <<(ATL::CAtlFile &f, const COpTaskCreate &op)
 {
     HRESULT hr;
-    POSITION pos;
 
     hr = f << (const COpTypeSingleString&)op;                          if (FAILED(hr)) return hr;
     hr = f << op.m_sApplicationName;                                   if (FAILED(hr)) return hr;
@@ -1178,9 +1146,9 @@ inline HRESULT operator <<(ATL::CAtlFile &f, const COpTaskCreate &op)
     hr = f << op.m_sPassword;                                          if (FAILED(hr)) return hr;
     hr = f << (int)MAKELONG(op.m_wDeadlineMinutes, op.m_wIdleMinutes); if (FAILED(hr)) return hr;
     hr = f << (int)(op.m_dwMaxRuntimeMS);                              if (FAILED(hr)) return hr;
-    hr = f << (int)(op.m_lTriggers.GetCount());                        if (FAILED(hr)) return hr;
-    for (pos = op.m_lTriggers.GetHeadPosition(); pos;) {
-        hr = f << op.m_lTriggers.GetNext(pos);
+    hr = f << (int)(op.m_lTriggers.size());                            if (FAILED(hr)) return hr;
+    for (auto t = op.m_lTriggers.cbegin(), t_end = op.m_lTriggers.cend(); t != t_end; ++t) {
+        hr = f << *t;
         if (FAILED(hr)) return hr;
     }
 
@@ -1210,7 +1178,7 @@ inline HRESULT operator >>(ATL::CAtlFile &f, COpTaskCreate &op)
         TASK_TRIGGER ttData;
         hr = f >> ttData;
         if (FAILED(hr)) return hr;
-        op.m_lTriggers.AddTail(ttData);
+        op.m_lTriggers.push_back(ttData);
     }
 
     return S_OK;
@@ -1379,17 +1347,16 @@ inline HRESULT operator >>(ATL::CAtlFile &f, COpWLANProfileSet &op)
 
 inline HRESULT operator <<(ATL::CAtlFile &f, const COpList &list)
 {
-    POSITION pos;
     HRESULT hr;
 
     hr = f << (const COperation &)list;
     if (FAILED(hr)) return hr;
 
-    hr = f << (int)(list.GetCount());
+    hr = f << (int)(list.size());
     if (FAILED(hr)) return hr;
 
-    for (pos = list.GetHeadPosition(); pos;) {
-        const COperation *pOp = list.GetNext(pos);
+    for (auto i = list.cbegin(), i_end = list.cend(); i != i_end; ++i) {
+        const COperation *pOp = *i;
              if (dynamic_cast<const COpRollbackEnable*   >(pOp)) hr = list.Save<COpRollbackEnable,    COpList::OP_ROLLBACK_ENABLE    >(f, pOp);
         else if (dynamic_cast<const COpFileDelete*       >(pOp)) hr = list.Save<COpFileDelete,        COpList::OP_FILE_DELETE        >(f, pOp);
         else if (dynamic_cast<const COpFileMove*         >(pOp)) hr = list.Save<COpFileMove,          COpList::OP_FILE_MOVE          >(f, pOp);
@@ -1441,27 +1408,27 @@ inline HRESULT operator >>(ATL::CAtlFile &f, COpList &list)
         if (FAILED(hr)) return hr;
 
         switch ((COpList::OPERATION)iTemp) {
-        case COpList::OP_ROLLBACK_ENABLE:     hr = list.LoadAndAddTail<COpRollbackEnable   >(f); break;
-        case COpList::OP_FILE_DELETE:         hr = list.LoadAndAddTail<COpFileDelete       >(f); break;
-        case COpList::OP_FILE_MOVE:           hr = list.LoadAndAddTail<COpFileMove         >(f); break;
-        case COpList::OP_REG_KEY_CREATE:      hr = list.LoadAndAddTail<COpRegKeyCreate     >(f); break;
-        case COpList::OP_REG_KEY_COPY:        hr = list.LoadAndAddTail<COpRegKeyCopy       >(f); break;
-        case COpList::OP_REG_KEY_DELETE:      hr = list.LoadAndAddTail<COpRegKeyDelete     >(f); break;
-        case COpList::OP_REG_VALUE_CREATE:    hr = list.LoadAndAddTail<COpRegValueCreate   >(f); break;
-        case COpList::OP_REG_VALUE_COPY:      hr = list.LoadAndAddTail<COpRegValueCopy     >(f); break;
-        case COpList::OP_REG_VALUE_DELETE:    hr = list.LoadAndAddTail<COpRegValueDelete   >(f); break;
-        case COpList::OP_TASK_CREATE:         hr = list.LoadAndAddTail<COpTaskCreate       >(f); break;
-        case COpList::OP_TASK_DELETE:         hr = list.LoadAndAddTail<COpTaskDelete       >(f); break;
-        case COpList::OP_TASK_ENABLE:         hr = list.LoadAndAddTail<COpTaskEnable       >(f); break;
-        case COpList::OP_TASK_COPY:           hr = list.LoadAndAddTail<COpTaskCopy         >(f); break;
-        case COpList::OP_CERT_INSTALL:        hr = list.LoadAndAddTail<COpCertInstall      >(f); break;
-        case COpList::OP_CERT_REMOVE:         hr = list.LoadAndAddTail<COpCertRemove       >(f); break;
-        case COpList::OP_SVC_SET_START:       hr = list.LoadAndAddTail<COpSvcSetStart      >(f); break;
-        case COpList::OP_SVC_START:           hr = list.LoadAndAddTail<COpSvcStart         >(f); break;
-        case COpList::OP_SVC_STOP:            hr = list.LoadAndAddTail<COpSvcStop          >(f); break;
-        case COpList::OP_WLAN_PROFILE_DELETE: hr = list.LoadAndAddTail<COpWLANProfileDelete>(f); break;
-        case COpList::OP_WLAN_PROFILE_SET:    hr = list.LoadAndAddTail<COpWLANProfileSet   >(f); break;
-        case COpList::OP_SUBLIST:             hr = list.LoadAndAddTail<COpList             >(f); break;
+        case COpList::OP_ROLLBACK_ENABLE:     hr = list.load_back<COpRollbackEnable   >(f); break;
+        case COpList::OP_FILE_DELETE:         hr = list.load_back<COpFileDelete       >(f); break;
+        case COpList::OP_FILE_MOVE:           hr = list.load_back<COpFileMove         >(f); break;
+        case COpList::OP_REG_KEY_CREATE:      hr = list.load_back<COpRegKeyCreate     >(f); break;
+        case COpList::OP_REG_KEY_COPY:        hr = list.load_back<COpRegKeyCopy       >(f); break;
+        case COpList::OP_REG_KEY_DELETE:      hr = list.load_back<COpRegKeyDelete     >(f); break;
+        case COpList::OP_REG_VALUE_CREATE:    hr = list.load_back<COpRegValueCreate   >(f); break;
+        case COpList::OP_REG_VALUE_COPY:      hr = list.load_back<COpRegValueCopy     >(f); break;
+        case COpList::OP_REG_VALUE_DELETE:    hr = list.load_back<COpRegValueDelete   >(f); break;
+        case COpList::OP_TASK_CREATE:         hr = list.load_back<COpTaskCreate       >(f); break;
+        case COpList::OP_TASK_DELETE:         hr = list.load_back<COpTaskDelete       >(f); break;
+        case COpList::OP_TASK_ENABLE:         hr = list.load_back<COpTaskEnable       >(f); break;
+        case COpList::OP_TASK_COPY:           hr = list.load_back<COpTaskCopy         >(f); break;
+        case COpList::OP_CERT_INSTALL:        hr = list.load_back<COpCertInstall      >(f); break;
+        case COpList::OP_CERT_REMOVE:         hr = list.load_back<COpCertRemove       >(f); break;
+        case COpList::OP_SVC_SET_START:       hr = list.load_back<COpSvcSetStart      >(f); break;
+        case COpList::OP_SVC_START:           hr = list.load_back<COpSvcStart         >(f); break;
+        case COpList::OP_SVC_STOP:            hr = list.load_back<COpSvcStop          >(f); break;
+        case COpList::OP_WLAN_PROFILE_DELETE: hr = list.load_back<COpWLANProfileDelete>(f); break;
+        case COpList::OP_WLAN_PROFILE_SET:    hr = list.load_back<COpWLANProfileSet   >(f); break;
+        case COpList::OP_SUBLIST:             hr = list.load_back<COpList             >(f); break;
         default:
             // Unsupported type of operation.
             hr = E_UNEXPECTED;
@@ -1525,7 +1492,7 @@ template <class T, enum COpList::OPERATION ID> inline static HRESULT COpList::Sa
 }
 
 
-template <class T> inline HRESULT COpList::LoadAndAddTail(ATL::CAtlFile &f)
+template <class T> inline HRESULT COpList::load_back(ATL::CAtlFile &f)
 {
     HRESULT hr;
 
@@ -1541,7 +1508,7 @@ template <class T> inline HRESULT COpList::LoadAndAddTail(ATL::CAtlFile &f)
     }
 
     // Add element.
-    AddTail(p);
+    push_back(p);
     return S_OK;
 }
 

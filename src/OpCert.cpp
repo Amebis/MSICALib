@@ -41,10 +41,9 @@ COpCertStore::COpCertStore(LPCWSTR pszStore, DWORD dwEncodingType, DWORD dwFlags
 ////////////////////////////////////////////////////////////////////////////
 
 COpCert::COpCert(LPCVOID lpCert, SIZE_T nSize, LPCWSTR pszStore, DWORD dwEncodingType, DWORD dwFlags, int iTicks) :
+    m_binCert(reinterpret_cast<LPCBYTE>(lpCert), reinterpret_cast<LPCBYTE>(lpCert) + nSize),
     COpCertStore(pszStore, dwEncodingType, dwFlags, iTicks)
 {
-    m_binCert.SetCount(nSize);
-    memcpy(m_binCert.GetData(), lpCert, nSize);
 }
 
 
@@ -63,17 +62,17 @@ HRESULT COpCertInstall::Execute(CSession *pSession)
     HCERTSTORE hCertStore;
 
     // Open certificate store.
-    hCertStore = ::CertOpenStore(CERT_STORE_PROV_SYSTEM_W, m_dwEncodingType, NULL, m_dwFlags, m_sValue);
+    hCertStore = ::CertOpenStore(CERT_STORE_PROV_SYSTEM_W, m_dwEncodingType, NULL, m_dwFlags, m_sValue.c_str());
     if (hCertStore) {
         // Create certificate context.
-        PCCERT_CONTEXT pCertContext = ::CertCreateCertificateContext(m_dwEncodingType, m_binCert.GetData(), (DWORD)(m_binCert.GetCount()));
+        PCCERT_CONTEXT pCertContext = ::CertCreateCertificateContext(m_dwEncodingType, m_binCert.data(), static_cast<DWORD>(m_binCert.size()));
         if (pCertContext) {
             PMSIHANDLE hRecordMsg = ::MsiCreateRecord(1);
-            ATL::CAtlStringW sCertName;
+            std::wstring sCertName;
 
             // Display our custom message in the progress bar.
             ::CertGetNameStringW(pCertContext, CERT_NAME_FRIENDLY_DISPLAY_TYPE, 0, NULL, sCertName);
-            ::MsiRecordSetStringW(hRecordMsg, 1, sCertName);
+            ::MsiRecordSetStringW(hRecordMsg, 1, sCertName.c_str());
             if (MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ACTIONDATA, hRecordMsg) == IDCANCEL)
                 return AtlHresultFromWin32(ERROR_INSTALL_USEREXIT);
 
@@ -81,7 +80,7 @@ HRESULT COpCertInstall::Execute(CSession *pSession)
             if (::CertAddCertificateContextToStore(hCertStore, pCertContext, CERT_STORE_ADD_NEW, NULL)) {
                 if (pSession->m_bRollbackEnabled) {
                     // Order rollback action to delete the certificate.
-                    pSession->m_olRollback.AddHead(new COpCertRemove(m_binCert.GetData(), m_binCert.GetCount(), m_sValue, m_dwEncodingType, m_dwFlags));
+                    pSession->m_olRollback.push_front(new COpCertRemove(m_binCert.data(), m_binCert.size(), m_sValue.c_str(), m_dwEncodingType, m_dwFlags));
                 }
                 dwError = NO_ERROR;
             } else {
@@ -103,7 +102,7 @@ HRESULT COpCertInstall::Execute(CSession *pSession)
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
         ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_CERT_INSTALL);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                  );
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue.c_str()          );
         ::MsiRecordSetInteger(hRecordProg, 3, dwError                   );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return AtlHresultFromWin32(dwError);
@@ -126,18 +125,18 @@ HRESULT COpCertRemove::Execute(CSession *pSession)
     HCERTSTORE hCertStore;
 
     // Open certificate store.
-    hCertStore = ::CertOpenStore(CERT_STORE_PROV_SYSTEM_W, m_dwEncodingType, NULL, m_dwFlags, m_sValue);
+    hCertStore = ::CertOpenStore(CERT_STORE_PROV_SYSTEM_W, m_dwEncodingType, NULL, m_dwFlags, m_sValue.c_str());
     if (hCertStore) {
         // Create certificate context.
-        PCCERT_CONTEXT pCertContext = ::CertCreateCertificateContext(m_dwEncodingType, m_binCert.GetData(), (DWORD)(m_binCert.GetCount()));
+        PCCERT_CONTEXT pCertContext = ::CertCreateCertificateContext(m_dwEncodingType, m_binCert.data(), static_cast<DWORD>(m_binCert.size()));
         if (pCertContext) {
             PMSIHANDLE hRecordMsg = ::MsiCreateRecord(1);
-            ATL::CAtlStringW sCertName;
+            std::wstring sCertName;
             PCCERT_CONTEXT pCertContextExisting;
 
             // Display our custom message in the progress bar.
             ::CertGetNameStringW(pCertContext, CERT_NAME_FRIENDLY_DISPLAY_TYPE, 0, NULL, sCertName);
-            ::MsiRecordSetStringW(hRecordMsg, 1, sCertName);
+            ::MsiRecordSetStringW(hRecordMsg, 1, sCertName.c_str());
             if (MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ACTIONDATA, hRecordMsg) == IDCANCEL)
                 return AtlHresultFromWin32(ERROR_INSTALL_USEREXIT);
 
@@ -147,7 +146,7 @@ HRESULT COpCertRemove::Execute(CSession *pSession)
                 if (::CertDeleteCertificateFromStore(pCertContextExisting)) {
                     if (pSession->m_bRollbackEnabled) {
                         // Order rollback action to reinstall the certificate.
-                        pSession->m_olRollback.AddHead(new COpCertInstall(m_binCert.GetData(), m_binCert.GetCount(), m_sValue, m_dwEncodingType, m_dwFlags));
+                        pSession->m_olRollback.push_front(new COpCertInstall(m_binCert.data(), m_binCert.size(), m_sValue.c_str(), m_dwEncodingType, m_dwFlags));
                     }
                     dwError = NO_ERROR;
                 } else {
@@ -170,7 +169,7 @@ HRESULT COpCertRemove::Execute(CSession *pSession)
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
         ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_CERT_REMOVE);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                 );
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue.c_str()         );
         ::MsiRecordSetInteger(hRecordProg, 3, dwError                  );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return AtlHresultFromWin32(dwError);

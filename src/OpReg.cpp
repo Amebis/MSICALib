@@ -58,8 +58,8 @@ HRESULT COpRegKeyCreate::Execute(CSession *pSession)
 {
     LONG lResult;
     REGSAM samAdditional = 0;
-    ATL::CAtlStringW sPartialName;
-    int iStart = 0;
+    std::wstring sPartialName;
+    size_t iStart = 0;
 
 #ifndef _WIN64
     if (IsWow64Process()) {
@@ -71,24 +71,24 @@ HRESULT COpRegKeyCreate::Execute(CSession *pSession)
     for (;;) {
         HKEY hKey;
 
-        int iStartNext = m_sValue.Find(L'\\', iStart);
-        if (iStartNext >= 0)
-            sPartialName.SetString(m_sValue, iStartNext);
+        size_t iStartNext = m_sValue.find(L'\\', iStart);
+        if (iStartNext != std::wstring::npos)
+            sPartialName.assign(m_sValue.c_str(), iStartNext);
         else
             sPartialName = m_sValue;
 
         // Try to open the key, to see if it exists.
-        lResult = ::RegOpenKeyExW(m_hKeyRoot, sPartialName, 0, KEY_ENUMERATE_SUB_KEYS | samAdditional, &hKey);
+        lResult = ::RegOpenKeyExW(m_hKeyRoot, sPartialName.c_str(), 0, KEY_ENUMERATE_SUB_KEYS | samAdditional, &hKey);
         if (lResult == ERROR_FILE_NOT_FOUND) {
             // The key doesn't exist yet. Create it.
 
             if (pSession->m_bRollbackEnabled) {
                 // Order rollback action to delete the key. ::RegCreateEx() might create a key but return failure.
-                pSession->m_olRollback.AddHead(new COpRegKeyDelete(m_hKeyRoot, sPartialName));
+                pSession->m_olRollback.push_front(new COpRegKeyDelete(m_hKeyRoot, sPartialName.c_str()));
             }
 
             // Create the key.
-            lResult = ::RegCreateKeyExW(m_hKeyRoot, sPartialName, NULL, NULL, REG_OPTION_NON_VOLATILE, KEY_ENUMERATE_SUB_KEYS | samAdditional, NULL, &hKey, NULL);
+            lResult = ::RegCreateKeyExW(m_hKeyRoot, sPartialName.c_str(), NULL, NULL, REG_OPTION_NON_VOLATILE, KEY_ENUMERATE_SUB_KEYS | samAdditional, NULL, &hKey, NULL);
             if (lResult != NO_ERROR) break;
             ::RegCloseKey(hKey);
         } else if (lResult == NO_ERROR) {
@@ -97,7 +97,7 @@ HRESULT COpRegKeyCreate::Execute(CSession *pSession)
         } else
             break;
 
-        if (iStartNext < 0) break;
+        if (iStartNext == std::wstring::npos) break;
         iStart = iStartNext + 1;
     }
 
@@ -107,7 +107,7 @@ HRESULT COpRegKeyCreate::Execute(CSession *pSession)
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(4);
         ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_CREATE  );
         ::MsiRecordSetInteger(hRecordProg, 2, (UINT)m_hKeyRoot & 0x7fffffff);
-        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue                     );
+        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue.c_str()             );
         ::MsiRecordSetInteger(hRecordProg, 4, lResult                      );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return AtlHresultFromWin32(lResult);
@@ -133,7 +133,7 @@ HRESULT COpRegKeyCopy::Execute(CSession *pSession)
         // Delete existing destination key first.
         // Since deleting registry key is a complicated job (when rollback/commit support is required), and we do have an operation just for that, we use it.
         // Don't worry, COpRegKeyDelete::Execute() returns S_OK if key doesn't exist.
-        COpRegKeyDelete opDelete(m_hKeyRoot, m_sValue2);
+        COpRegKeyDelete opDelete(m_hKeyRoot, m_sValue2.c_str());
         HRESULT hr = opDelete.Execute(pSession);
         if (FAILED(hr)) return hr;
     }
@@ -147,19 +147,19 @@ HRESULT COpRegKeyCopy::Execute(CSession *pSession)
 
     if (pSession->m_bRollbackEnabled) {
         // Order rollback action to delete the destination key.
-        pSession->m_olRollback.AddHead(new COpRegKeyDelete(m_hKeyRoot, m_sValue2));
+        pSession->m_olRollback.push_front(new COpRegKeyDelete(m_hKeyRoot, m_sValue2.c_str()));
     }
 
     // Copy the registry key.
-    lResult = CopyKeyRecursively(m_hKeyRoot, m_sValue1, m_sValue2, samAdditional);
+    lResult = CopyKeyRecursively(m_hKeyRoot, m_sValue1.c_str(), m_sValue2.c_str(), samAdditional);
     if (lResult == NO_ERROR)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(5);
         ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_COPY    );
         ::MsiRecordSetInteger(hRecordProg, 2, (UINT)m_hKeyRoot & 0x7fffffff);
-        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue1                    );
-        ::MsiRecordSetStringW(hRecordProg, 4, m_sValue2                    );
+        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue1.c_str()            );
+        ::MsiRecordSetStringW(hRecordProg, 4, m_sValue2.c_str()            );
         ::MsiRecordSetInteger(hRecordProg, 5, lResult                      );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return AtlHresultFromWin32(lResult);
@@ -179,29 +179,23 @@ LONG COpRegKeyCopy::CopyKeyRecursively(HKEY hKeyRoot, LPCWSTR pszKeyNameSrc, LPC
     {
         DWORD dwSecurityDescriptorSize, dwClassLen = MAX_PATH;
         SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES) };
-        LPWSTR pszClass = new WCHAR[dwClassLen];
+        std::unique_ptr<WCHAR[]> pszClass(new WCHAR[dwClassLen]);
+        if (!pszClass) return ERROR_OUTOFMEMORY;
 
         // Get source key class length and security descriptor size.
-        lResult = ::RegQueryInfoKeyW(hKeySrc, pszClass, &dwClassLen, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &dwSecurityDescriptorSize, NULL);
-        if (lResult != NO_ERROR) {
-            delete [] pszClass;
-            return lResult;
-        }
-        pszClass[dwClassLen] = 0;
+        lResult = ::RegQueryInfoKeyW(hKeySrc, pszClass.get(), &dwClassLen, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &dwSecurityDescriptorSize, NULL);
+        if (lResult != NO_ERROR) return lResult;
+        pszClass.get()[dwClassLen] = 0;
 
         // Get source key security descriptor.
-        sa.lpSecurityDescriptor = (PSECURITY_DESCRIPTOR)(new BYTE[dwSecurityDescriptorSize]);
+        std::unique_ptr<BYTE[]> sd(new BYTE[dwSecurityDescriptorSize]);
+        if (!sd) return ERROR_OUTOFMEMORY;
+        sa.lpSecurityDescriptor = (PSECURITY_DESCRIPTOR)sd.get();
         lResult = ::RegGetKeySecurity(hKeySrc, DACL_SECURITY_INFORMATION, sa.lpSecurityDescriptor, &dwSecurityDescriptorSize);
-        if (lResult != NO_ERROR) {
-            delete [] (LPBYTE)(sa.lpSecurityDescriptor);
-            delete [] pszClass;
-            return lResult;
-        }
+        if (lResult != NO_ERROR) return lResult;
 
         // Create new destination key of the same class and security.
-        lResult = ::RegCreateKeyExW(hKeyRoot, pszKeyNameDst, 0, pszClass, REG_OPTION_NON_VOLATILE, KEY_WRITE | samAdditional, &sa, &hKeyDst, NULL);
-        delete [] (LPBYTE)(sa.lpSecurityDescriptor);
-        delete [] pszClass;
+        lResult = ::RegCreateKeyExW(hKeyRoot, pszKeyNameDst, 0, pszClass.get(), REG_OPTION_NON_VOLATILE, KEY_WRITE | samAdditional, &sa, &hKeyDst, NULL);
         if (lResult != NO_ERROR) return lResult;
     }
 
@@ -214,88 +208,80 @@ LONG COpRegKeyCopy::CopyKeyRecursively(HKEY hKeySrc, HKEY hKeyDst, REGSAM samAdd
 {
     LONG lResult;
     DWORD dwMaxSubKeyLen, dwMaxValueNameLen, dwMaxClassLen, dwMaxDataSize, dwIndex;
-    LPWSTR pszName, pszClass;
-    LPBYTE lpData;
 
     // Query the source key.
     lResult = ::RegQueryInfoKeyW(hKeySrc, NULL, NULL, NULL, NULL, &dwMaxSubKeyLen, &dwMaxClassLen, NULL, &dwMaxValueNameLen, &dwMaxDataSize, NULL, NULL);
     if (lResult != NO_ERROR) return lResult;
 
-    // Copy values first.
-    dwMaxValueNameLen++;
-    pszName = new WCHAR[dwMaxValueNameLen];
-    lpData = new BYTE[dwMaxDataSize];
-    for (dwIndex = 0; ; dwIndex++) {
-        DWORD dwNameLen = dwMaxValueNameLen, dwType, dwValueSize = dwMaxDataSize;
+    {
+        // Copy values first.
+        dwMaxValueNameLen++;
+        std::unique_ptr<WCHAR[]> pszName(new WCHAR[dwMaxValueNameLen]);
+        if (!pszName) return ERROR_OUTOFMEMORY;
+        std::unique_ptr<BYTE[]> lpData(new BYTE[dwMaxDataSize]);
+        if (!lpData) return ERROR_OUTOFMEMORY;
+        for (dwIndex = 0; ; dwIndex++) {
+            DWORD dwNameLen = dwMaxValueNameLen, dwType, dwValueSize = dwMaxDataSize;
 
-        // Read value.
-        lResult = ::RegEnumValueW(hKeySrc, dwIndex, pszName, &dwNameLen, NULL, &dwType, lpData, &dwValueSize);
-        if (lResult == ERROR_NO_MORE_ITEMS) {
-            lResult = NO_ERROR;
-            break;
-        } else if (lResult != NO_ERROR)
-            break;
+            // Read value.
+            lResult = ::RegEnumValueW(hKeySrc, dwIndex, pszName.get(), &dwNameLen, NULL, &dwType, lpData.get(), &dwValueSize);
+                 if (lResult == ERROR_NO_MORE_ITEMS) break;
+            else if (lResult != NO_ERROR           ) return lResult;
 
-        // Save value.
-        lResult = ::RegSetValueExW(hKeyDst, pszName, 0, dwType, lpData, dwValueSize);
-        if (lResult != NO_ERROR)
-            break;
+            // Save value.
+            lResult = ::RegSetValueExW(hKeyDst, pszName.get(), 0, dwType, lpData.get(), dwValueSize);
+            if (lResult != NO_ERROR) return lResult;
+        }
     }
-    delete [] lpData;
-    delete [] pszName;
-    if (lResult != NO_ERROR) return lResult;
 
-    // Iterate over all subkeys and copy them.
-    dwMaxSubKeyLen++;
-    pszName = new WCHAR[dwMaxSubKeyLen];
-    dwMaxClassLen++;
-    pszClass = new WCHAR[dwMaxClassLen];
-    for (dwIndex = 0; ; dwIndex++) {
-        DWORD dwNameLen = dwMaxSubKeyLen, dwClassLen = dwMaxClassLen;
-        HKEY hKeySrcSub, hKeyDstSub;
+    {
+        // Iterate over all subkeys and copy them.
+        dwMaxSubKeyLen++;
+        std::unique_ptr<WCHAR[]> pszName(new WCHAR[dwMaxSubKeyLen]);
+        if (!pszName) return ERROR_OUTOFMEMORY;
+        dwMaxClassLen++;
+        std::unique_ptr<WCHAR[]> pszClass(new WCHAR[dwMaxClassLen]);
+        if (!pszClass) return ERROR_OUTOFMEMORY;
+        for (dwIndex = 0; ; dwIndex++) {
+            DWORD dwNameLen = dwMaxSubKeyLen, dwClassLen = dwMaxClassLen;
+            HKEY hKeySrcSub, hKeyDstSub;
 
-        // Read subkey.
-        lResult = ::RegEnumKeyExW(hKeySrc, dwIndex, pszName, &dwNameLen, NULL, pszClass, &dwClassLen, NULL);
-        if (lResult == ERROR_NO_MORE_ITEMS) {
-            lResult = NO_ERROR;
-            break;
-        } else if (lResult != NO_ERROR)
-            break;
+            // Read subkey.
+            lResult = ::RegEnumKeyExW(hKeySrc, dwIndex, pszName.get(), &dwNameLen, NULL, pszClass.get(), &dwClassLen, NULL);
+                 if (lResult == ERROR_NO_MORE_ITEMS) break;
+            else if (lResult != NO_ERROR           ) return lResult;
 
-        // Open source subkey.
-        lResult = ::RegOpenKeyExW(hKeySrc, pszName, 0, READ_CONTROL | KEY_READ | samAdditional, &hKeySrcSub);
-        if (lResult != NO_ERROR) break;
+            // Open source subkey.
+            lResult = ::RegOpenKeyExW(hKeySrc, pszName.get(), 0, READ_CONTROL | KEY_READ | samAdditional, &hKeySrcSub);
+            if (lResult != NO_ERROR) return lResult;
 
-        {
-            DWORD dwSecurityDescriptorSize;
-            SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES) };
+            {
+                DWORD dwSecurityDescriptorSize;
+                SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES) };
 
-            // Get source subkey security descriptor size.
-            lResult = ::RegQueryInfoKeyW(hKeySrcSub, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &dwSecurityDescriptorSize, NULL);
-            if (lResult != NO_ERROR) break;
+                // Get source subkey security descriptor size.
+                lResult = ::RegQueryInfoKeyW(hKeySrcSub, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &dwSecurityDescriptorSize, NULL);
+                if (lResult != NO_ERROR) return lResult;
 
-            // Get source subkey security descriptor.
-            sa.lpSecurityDescriptor = (PSECURITY_DESCRIPTOR)(new BYTE[dwSecurityDescriptorSize]);
-            lResult = ::RegGetKeySecurity(hKeySrc, DACL_SECURITY_INFORMATION, sa.lpSecurityDescriptor, &dwSecurityDescriptorSize);
-            if (lResult != NO_ERROR) {
-                delete [] (LPBYTE)(sa.lpSecurityDescriptor);
-                break;
+                // Get source subkey security descriptor.
+                std::unique_ptr<BYTE[]> sd(new BYTE[dwSecurityDescriptorSize]);
+                if (!sd) return ERROR_OUTOFMEMORY;
+                sa.lpSecurityDescriptor = (PSECURITY_DESCRIPTOR)sd.get();
+                lResult = ::RegGetKeySecurity(hKeySrc, DACL_SECURITY_INFORMATION, sa.lpSecurityDescriptor, &dwSecurityDescriptorSize);
+                if (lResult != NO_ERROR) return lResult;
+
+                // Create new destination subkey of the same class and security.
+                lResult = ::RegCreateKeyExW(hKeyDst, pszName.get(), 0, pszClass.get(), REG_OPTION_NON_VOLATILE, KEY_WRITE | samAdditional, &sa, &hKeyDstSub, NULL);
+                if (lResult != NO_ERROR) return lResult;
             }
 
-            // Create new destination subkey of the same class and security.
-            lResult = ::RegCreateKeyExW(hKeyDst, pszName, 0, pszClass, REG_OPTION_NON_VOLATILE, KEY_WRITE | samAdditional, &sa, &hKeyDstSub, NULL);
-            delete [] (LPBYTE)(sa.lpSecurityDescriptor);
-            if (lResult != NO_ERROR) break;
+            // Copy subkey recursively.
+            lResult = CopyKeyRecursively(hKeySrcSub, hKeyDstSub, samAdditional);
+            if (lResult != NO_ERROR) return lResult;
         }
-
-        // Copy subkey recursively.
-        lResult = CopyKeyRecursively(hKeySrcSub, hKeyDstSub, samAdditional);
-        if (lResult != NO_ERROR) break;
     }
-    delete [] pszClass;
-    delete [] pszName;
 
-    return lResult;
+    return NO_ERROR;
 }
 
 
@@ -322,42 +308,42 @@ HRESULT COpRegKeyDelete::Execute(CSession *pSession)
 #endif
 
     // Probe to see if the key exists.
-    lResult = ::RegOpenKeyExW(m_hKeyRoot, m_sValue, 0, DELETE | samAdditional, &hKey);
+    lResult = ::RegOpenKeyExW(m_hKeyRoot, m_sValue.c_str(), 0, DELETE | samAdditional, &hKey);
     if (lResult == NO_ERROR) {
         ::RegCloseKey(hKey);
 
         if (pSession->m_bRollbackEnabled) {
             // Make a backup of the key first.
-            ATL::CAtlStringW sBackupName;
+            std::wstring sBackupName;
             UINT uiCount = 0;
-            int iLength = m_sValue.GetLength();
+            auto iLength = m_sValue.length();
 
             // Trim trailing backslashes.
-            while (iLength && m_sValue.GetAt(iLength - 1) == L'\\') iLength--;
+            while (iLength && m_sValue[iLength - 1] == L'\\') iLength--;
 
             for (;;) {
                 HKEY hKey;
-                sBackupName.Format(L"%.*ls (orig %u)", iLength, (LPCWSTR)m_sValue, ++uiCount);
-                lResult = ::RegOpenKeyExW(m_hKeyRoot, sBackupName, 0, KEY_ENUMERATE_SUB_KEYS | samAdditional, &hKey);
+                sprintf(sBackupName, L"%.*ls (orig %u)", iLength, m_sValue.c_str(), ++uiCount);
+                lResult = ::RegOpenKeyExW(m_hKeyRoot, sBackupName.c_str(), 0, KEY_ENUMERATE_SUB_KEYS | samAdditional, &hKey);
                 if (lResult != NO_ERROR) break;
                 ::RegCloseKey(hKey);
             }
             if (lResult == ERROR_FILE_NOT_FOUND) {
                 // Since copying registry key is a complicated job (when rollback/commit support is required), and we do have an operation just for that, we use it.
-                COpRegKeyCopy opCopy(m_hKeyRoot, m_sValue, sBackupName);
+                COpRegKeyCopy opCopy(m_hKeyRoot, m_sValue.c_str(), sBackupName.c_str());
                 HRESULT hr = opCopy.Execute(pSession);
                 if (FAILED(hr)) return hr;
 
                 // Order rollback action to restore the key from backup copy.
-                pSession->m_olRollback.AddHead(new COpRegKeyCopy(m_hKeyRoot, sBackupName, m_sValue));
+                pSession->m_olRollback.push_front(new COpRegKeyCopy(m_hKeyRoot, sBackupName.c_str(), m_sValue.c_str()));
 
                 // Order commit action to delete backup copy.
-                pSession->m_olCommit.AddTail(new COpRegKeyDelete(m_hKeyRoot, sBackupName));
+                pSession->m_olCommit.push_back(new COpRegKeyDelete(m_hKeyRoot, sBackupName.c_str()));
             } else {
                 PMSIHANDLE hRecordProg = ::MsiCreateRecord(4);
                 ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_PROBING );
                 ::MsiRecordSetInteger(hRecordProg, 2, (UINT)m_hKeyRoot & 0x7fffffff);
-                ::MsiRecordSetStringW(hRecordProg, 3, sBackupName                  );
+                ::MsiRecordSetStringW(hRecordProg, 3, sBackupName.c_str()          );
                 ::MsiRecordSetInteger(hRecordProg, 4, lResult                      );
                 ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
                 return AtlHresultFromWin32(lResult);
@@ -365,7 +351,7 @@ HRESULT COpRegKeyDelete::Execute(CSession *pSession)
         }
 
         // Delete the registry key.
-        lResult = DeleteKeyRecursively(m_hKeyRoot, m_sValue, samAdditional);
+        lResult = DeleteKeyRecursively(m_hKeyRoot, m_sValue.c_str(), samAdditional);
     }
 
     if (lResult == NO_ERROR || lResult == ERROR_FILE_NOT_FOUND)
@@ -374,7 +360,7 @@ HRESULT COpRegKeyDelete::Execute(CSession *pSession)
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(4);
         ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_DELETE  );
         ::MsiRecordSetInteger(hRecordProg, 2, (UINT)m_hKeyRoot & 0x7fffffff);
-        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue                     );
+        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue.c_str()             );
         ::MsiRecordSetInteger(hRecordProg, 4, lResult                      );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return AtlHresultFromWin32(lResult);
@@ -395,20 +381,18 @@ LONG COpRegKeyDelete::DeleteKeyRecursively(HKEY hKeyRoot, LPCWSTR pszKeyName, RE
         // Determine the largest subkey name.
         lResult = ::RegQueryInfoKeyW(hKey, NULL, NULL, NULL, NULL, &dwMaxSubKeyLen, NULL, NULL, NULL, NULL, NULL, NULL);
         if (lResult == NO_ERROR) {
-            LPWSTR pszSubKeyName;
-
             // Prepare buffer to hold the subkey names (including zero terminator).
             dwMaxSubKeyLen++;
-            pszSubKeyName = new WCHAR[dwMaxSubKeyLen];
+            std::unique_ptr<WCHAR[]> pszSubKeyName(new WCHAR[dwMaxSubKeyLen]);
             if (pszSubKeyName) {
                 DWORD dwIndex;
 
                 // Iterate over all subkeys and delete them. Skip failed.
                 for (dwIndex = 0; ;) {
                     DWORD dwNameLen = dwMaxSubKeyLen;
-                    lResult = ::RegEnumKeyExW(hKey, dwIndex, pszSubKeyName, &dwNameLen, NULL, NULL, NULL, NULL);
+                    lResult = ::RegEnumKeyExW(hKey, dwIndex, pszSubKeyName.get(), &dwNameLen, NULL, NULL, NULL, NULL);
                     if (lResult == NO_ERROR) {
-                        lResult = DeleteKeyRecursively(hKey, pszSubKeyName, samAdditional);
+                        lResult = DeleteKeyRecursively(hKey, pszSubKeyName.get(), samAdditional);
                         if (lResult != NO_ERROR)
                             dwIndex++;
                     } else if (lResult == ERROR_NO_MORE_ITEMS) {
@@ -417,8 +401,6 @@ LONG COpRegKeyDelete::DeleteKeyRecursively(HKEY hKeyRoot, LPCWSTR pszKeyName, RE
                     } else
                         dwIndex++;
                 }
-
-                delete [] pszSubKeyName;
             } else
                 lResult = ERROR_OUTOFMEMORY;
         }
@@ -480,10 +462,9 @@ COpRegValueCreate::COpRegValueCreate(HKEY hKeyRoot, LPCWSTR pszKeyName, LPCWSTR 
 
 COpRegValueCreate::COpRegValueCreate(HKEY hKeyRoot, LPCWSTR pszKeyName, LPCWSTR pszValueName, LPCVOID lpData, SIZE_T nSize, int iTicks) :
     m_dwType(REG_BINARY),
+    m_binData(reinterpret_cast<LPCBYTE>(lpData), reinterpret_cast<LPCBYTE>(lpData) + nSize),
     COpRegValueSingle(hKeyRoot, pszKeyName, pszValueName, iTicks)
 {
-    m_binData.SetCount(nSize);
-    memcpy(m_binData.GetData(), lpData, nSize);
 }
 
 
@@ -513,7 +494,7 @@ HRESULT COpRegValueCreate::Execute(CSession *pSession)
         // Delete existing value first.
         // Since deleting registry value is a complicated job (when rollback/commit support is required), and we do have an operation just for that, we use it.
         // Don't worry, COpRegValueDelete::Execute() returns S_OK if key doesn't exist.
-        COpRegValueDelete opDelete(m_hKeyRoot, m_sValue, m_sValueName);
+        COpRegValueDelete opDelete(m_hKeyRoot, m_sValue.c_str(), m_sValueName.c_str());
         HRESULT hr = opDelete.Execute(pSession);
         if (FAILED(hr)) return hr;
     }
@@ -526,11 +507,11 @@ HRESULT COpRegValueCreate::Execute(CSession *pSession)
 #endif
 
     // Open the key.
-    lResult = ::RegOpenKeyExW(m_hKeyRoot, m_sValue, 0, sam, &hKey);
+    lResult = ::RegOpenKeyExW(m_hKeyRoot, m_sValue.c_str(), 0, sam, &hKey);
     if (lResult == NO_ERROR) {
         if (pSession->m_bRollbackEnabled) {
             // Order rollback action to delete the value.
-            pSession->m_olRollback.AddHead(new COpRegValueDelete(m_hKeyRoot, m_sValue, m_sValueName));
+            pSession->m_olRollback.push_front(new COpRegValueDelete(m_hKeyRoot, m_sValue.c_str(), m_sValueName.c_str()));
         }
 
         // Set the registry value.
@@ -538,23 +519,23 @@ HRESULT COpRegValueCreate::Execute(CSession *pSession)
         case REG_SZ:
         case REG_EXPAND_SZ:
         case REG_LINK:
-            lResult = ::RegSetValueExW(hKey, m_sValueName, 0, m_dwType, (const BYTE*)(LPCWSTR)m_sData, (m_sData.GetLength() + 1) * sizeof(WCHAR)); break;
+            lResult = ::RegSetValueExW(hKey, m_sValueName.c_str(), 0, m_dwType, (const BYTE*)m_sData.c_str(), static_cast<DWORD>((m_sData.length() + 1) * sizeof(WCHAR))); break;
             break;
 
         case REG_BINARY:
-            lResult = ::RegSetValueExW(hKey, m_sValueName, 0, m_dwType, m_binData.GetData(), (DWORD)m_binData.GetCount() * sizeof(BYTE)); break;
+            lResult = ::RegSetValueExW(hKey, m_sValueName.c_str(), 0, m_dwType, m_binData.data(), static_cast<DWORD>(m_binData.size() * sizeof(BYTE))); break;
 
         case REG_DWORD_LITTLE_ENDIAN:
         case REG_DWORD_BIG_ENDIAN:
-            lResult = ::RegSetValueExW(hKey, m_sValueName, 0, m_dwType, (const BYTE*)&m_dwData, sizeof(DWORD)); break;
+            lResult = ::RegSetValueExW(hKey, m_sValueName.c_str(), 0, m_dwType, (const BYTE*)&m_dwData, sizeof(DWORD)); break;
             break;
 
         case REG_MULTI_SZ:
-            lResult = ::RegSetValueExW(hKey, m_sValueName, 0, m_dwType, (const BYTE*)m_szData.GetData(), (DWORD)m_szData.GetCount() * sizeof(WCHAR)); break;
+            lResult = ::RegSetValueExW(hKey, m_sValueName.c_str(), 0, m_dwType, (const BYTE*)m_szData.data(), static_cast<DWORD>(m_szData.size() * sizeof(WCHAR))); break;
             break;
 
         case REG_QWORD_LITTLE_ENDIAN:
-            lResult = ::RegSetValueExW(hKey, m_sValueName, 0, m_dwType, (const BYTE*)&m_qwData, sizeof(DWORDLONG)); break;
+            lResult = ::RegSetValueExW(hKey, m_sValueName.c_str(), 0, m_dwType, (const BYTE*)&m_qwData, sizeof(DWORDLONG)); break;
             break;
 
         default:
@@ -570,8 +551,8 @@ HRESULT COpRegValueCreate::Execute(CSession *pSession)
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(5);
         ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_SETVALUE);
         ::MsiRecordSetInteger(hRecordProg, 2, (UINT)m_hKeyRoot & 0x7fffffff);
-        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue                     );
-        ::MsiRecordSetStringW(hRecordProg, 4, m_sValueName                 );
+        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue.c_str()             );
+        ::MsiRecordSetStringW(hRecordProg, 4, m_sValueName.c_str()         );
         ::MsiRecordSetInteger(hRecordProg, 5, lResult                      );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return AtlHresultFromWin32(lResult);
@@ -598,7 +579,7 @@ HRESULT COpRegValueCopy::Execute(CSession *pSession)
         // Delete existing destination value first.
         // Since deleting registry value is a complicated job (when rollback/commit support is required), and we do have an operation just for that, we use it.
         // Don't worry, COpRegValueDelete::Execute() returns S_OK if key doesn't exist.
-        COpRegValueDelete opDelete(m_hKeyRoot, m_sValue, m_sValueName2);
+        COpRegValueDelete opDelete(m_hKeyRoot, m_sValue.c_str(), m_sValueName2.c_str());
         HRESULT hr = opDelete.Execute(pSession);
         if (FAILED(hr)) return hr;
     }
@@ -611,26 +592,28 @@ HRESULT COpRegValueCopy::Execute(CSession *pSession)
 #endif
 
     // Open the key.
-    lResult = ::RegOpenKeyExW(m_hKeyRoot, m_sValue, 0, sam, &hKey);
+    lResult = ::RegOpenKeyExW(m_hKeyRoot, m_sValue.c_str(), 0, sam, &hKey);
     if (lResult == NO_ERROR) {
         DWORD dwType, dwSize;
 
         // Query the source registry value size.
-        lResult = ::RegQueryValueExW(hKey, m_sValueName1, 0, NULL, NULL, &dwSize);
+        lResult = ::RegQueryValueExW(hKey, m_sValueName1.c_str(), 0, NULL, NULL, &dwSize);
         if (lResult == NO_ERROR) {
-            LPBYTE lpData = new BYTE[dwSize];
             // Read the source registry value.
-            lResult = ::RegQueryValueExW(hKey, m_sValueName1, 0, &dwType, lpData, &dwSize);
-            if (lResult == NO_ERROR) {
-                if (pSession->m_bRollbackEnabled) {
-                    // Order rollback action to delete the destination copy.
-                    pSession->m_olRollback.AddHead(new COpRegValueDelete(m_hKeyRoot, m_sValue, m_sValueName2));
-                }
+            std::unique_ptr<BYTE> lpData(new BYTE[dwSize]);
+            if (lpData) {
+                lResult = ::RegQueryValueExW(hKey, m_sValueName1.c_str(), 0, &dwType, lpData.get(), &dwSize);
+                if (lResult == NO_ERROR) {
+                    if (pSession->m_bRollbackEnabled) {
+                        // Order rollback action to delete the destination copy.
+                        pSession->m_olRollback.push_front(new COpRegValueDelete(m_hKeyRoot, m_sValue.c_str(), m_sValueName2.c_str()));
+                    }
 
-                // Store the value to destination.
-                lResult = ::RegSetValueExW(hKey, m_sValueName2, 0, dwType, lpData, dwSize);
-            }
-            delete [] lpData;
+                    // Store the value to destination.
+                    lResult = ::RegSetValueExW(hKey, m_sValueName2.c_str(), 0, dwType, lpData.get(), dwSize);
+                }
+            } else
+                lResult = ERROR_OUTOFMEMORY;
         }
 
         ::RegCloseKey(hKey);
@@ -642,9 +625,9 @@ HRESULT COpRegValueCopy::Execute(CSession *pSession)
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(6);
         ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_COPYVALUE);
         ::MsiRecordSetInteger(hRecordProg, 2, (UINT)m_hKeyRoot & 0x7fffffff );
-        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue                      );
-        ::MsiRecordSetStringW(hRecordProg, 4, m_sValueName1                 );
-        ::MsiRecordSetStringW(hRecordProg, 5, m_sValueName2                 );
+        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue.c_str()              );
+        ::MsiRecordSetStringW(hRecordProg, 4, m_sValueName1.c_str()         );
+        ::MsiRecordSetStringW(hRecordProg, 5, m_sValueName2.c_str()         );
         ::MsiRecordSetInteger(hRecordProg, 6, lResult                       );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return AtlHresultFromWin32(lResult);
@@ -675,26 +658,26 @@ HRESULT COpRegValueDelete::Execute(CSession *pSession)
 #endif
 
     // Open the key.
-    lResult = ::RegOpenKeyExW(m_hKeyRoot, m_sValue, 0, sam, &hKey);
+    lResult = ::RegOpenKeyExW(m_hKeyRoot, m_sValue.c_str(), 0, sam, &hKey);
     if (lResult == NO_ERROR) {
         DWORD dwType;
 
         // See if the value exists at all.
-        lResult = ::RegQueryValueExW(hKey, m_sValueName, 0, &dwType, NULL, NULL);
+        lResult = ::RegQueryValueExW(hKey, m_sValueName.c_str(), 0, &dwType, NULL, NULL);
         if (lResult == NO_ERROR) {
             if (pSession->m_bRollbackEnabled) {
                 // Make a backup of the value first.
-                ATL::CAtlStringW sBackupName;
+                std::wstring sBackupName;
                 UINT uiCount = 0;
 
                 for (;;) {
-                    sBackupName.Format(L"%ls (orig %u)", (LPCWSTR)m_sValueName, ++uiCount);
-                    lResult = ::RegQueryValueExW(hKey, sBackupName, 0, &dwType, NULL, NULL);
+                    sprintf(sBackupName, L"%ls (orig %u)", m_sValueName.c_str(), ++uiCount);
+                    lResult = ::RegQueryValueExW(hKey, sBackupName.c_str(), 0, &dwType, NULL, NULL);
                     if (lResult != NO_ERROR) break;
                 }
                 if (lResult == ERROR_FILE_NOT_FOUND) {
                     // Since copying registry value is a complicated job (when rollback/commit support is required), and we do have an operation just for that, we use it.
-                    COpRegValueCopy opCopy(m_hKeyRoot, m_sValue, m_sValueName, sBackupName);
+                    COpRegValueCopy opCopy(m_hKeyRoot, m_sValue.c_str(), m_sValueName.c_str(), sBackupName.c_str());
                     HRESULT hr = opCopy.Execute(pSession);
                     if (FAILED(hr)) {
                         ::RegCloseKey(hKey);
@@ -702,16 +685,16 @@ HRESULT COpRegValueDelete::Execute(CSession *pSession)
                     }
 
                     // Order rollback action to restore the key from backup copy.
-                    pSession->m_olRollback.AddHead(new COpRegValueCopy(m_hKeyRoot, m_sValue, sBackupName, m_sValueName));
+                    pSession->m_olRollback.push_front(new COpRegValueCopy(m_hKeyRoot, m_sValue.c_str(), sBackupName.c_str(), m_sValueName.c_str()));
 
                     // Order commit action to delete backup copy.
-                    pSession->m_olCommit.AddTail(new COpRegValueDelete(m_hKeyRoot, m_sValue, sBackupName));
+                    pSession->m_olCommit.push_back(new COpRegValueDelete(m_hKeyRoot, m_sValue.c_str(), sBackupName.c_str()));
                 } else {
                     PMSIHANDLE hRecordProg = ::MsiCreateRecord(5);
                     ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_PROBINGVAL);
                     ::MsiRecordSetInteger(hRecordProg, 2, (UINT)m_hKeyRoot & 0x7fffffff  );
-                    ::MsiRecordSetStringW(hRecordProg, 3, m_sValue                       );
-                    ::MsiRecordSetStringW(hRecordProg, 3, sBackupName                    );
+                    ::MsiRecordSetStringW(hRecordProg, 3, m_sValue.c_str()               );
+                    ::MsiRecordSetStringW(hRecordProg, 3, sBackupName.c_str()            );
                     ::MsiRecordSetInteger(hRecordProg, 4, lResult                        );
                     ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
                     ::RegCloseKey(hKey);
@@ -720,7 +703,7 @@ HRESULT COpRegValueDelete::Execute(CSession *pSession)
             }
 
             // Delete the registry value.
-            lResult = ::RegDeleteValueW(hKey, m_sValueName);
+            lResult = ::RegDeleteValueW(hKey, m_sValueName.c_str());
         }
 
         ::RegCloseKey(hKey);
@@ -732,8 +715,8 @@ HRESULT COpRegValueDelete::Execute(CSession *pSession)
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(5);
         ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_DELETEVALUE);
         ::MsiRecordSetInteger(hRecordProg, 2, (UINT)m_hKeyRoot & 0x7fffffff   );
-        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue                        );
-        ::MsiRecordSetStringW(hRecordProg, 4, m_sValueName                    );
+        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue.c_str()                );
+        ::MsiRecordSetStringW(hRecordProg, 4, m_sValueName.c_str()            );
         ::MsiRecordSetInteger(hRecordProg, 5, lResult                         );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return AtlHresultFromWin32(lResult);

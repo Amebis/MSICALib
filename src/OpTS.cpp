@@ -40,24 +40,14 @@ COpTaskCreate::COpTaskCreate(LPCWSTR pszTaskName, int iTicks) :
 }
 
 
-COpTaskCreate::~COpTaskCreate()
-{
-    // Clear the password in memory.
-    int iLength = m_sPassword.GetLength();
-    ::SecureZeroMemory(m_sPassword.GetBuffer(iLength), sizeof(WCHAR) * iLength);
-    m_sPassword.ReleaseBuffer(0);
-}
-
-
 HRESULT COpTaskCreate::Execute(CSession *pSession)
 {
     HRESULT hr;
     PMSIHANDLE hRecordMsg = ::MsiCreateRecord(1);
     CComPtr<ITaskService> pService;
-    POSITION pos;
 
     // Display our custom message in the progress bar.
-    ::MsiRecordSetStringW(hRecordMsg, 1, m_sValue);
+    ::MsiRecordSetStringW(hRecordMsg, 1, m_sValue.c_str());
     if (MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ACTIONDATA, hRecordMsg) == IDCANCEL)
         return AtlHresultFromWin32(ERROR_INSTALL_USEREXIT);
 
@@ -65,7 +55,7 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
         // Delete existing task first.
         // Since task deleting is a complicated job (when rollback/commit support is required), and we do have an operation just for that, we use it.
         // Don't worry, COpTaskDelete::Execute() returns S_OK if task doesn't exist.
-        COpTaskDelete opDelete(m_sValue);
+        COpTaskDelete opDelete(m_sValue.c_str());
         hr = opDelete.Execute(pSession);
         if (FAILED(hr)) goto finish;
     }
@@ -85,10 +75,10 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
         CComPtr<ITriggerCollection> pTriggerCollection;
         CComPtr<ITaskFolder> pTaskFolder;
         CComPtr<IRegisteredTask> pTask;
-        ATL::CAtlStringW str;
+        std::wstring str;
         UINT iTrigger;
         TASK_LOGON_TYPE logonType;
-        CComBSTR bstrContext(L"Author");
+        winstd::bstr bstrContext(L"Author");
 
         // Connect to local task service.
         hr = pService->Connect(vEmpty, vEmpty, vEmpty, vEmpty);
@@ -106,7 +96,7 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
         if (pSession->m_bRollbackEnabled && (m_dwFlags & TASK_FLAG_DISABLED) == 0) {
             // The task is supposed to be enabled.
             // However, we shall enable it at commit to prevent it from accidentally starting in the very installation phase.
-            pSession->m_olCommit.AddTail(new COpTaskEnable(m_sValue, TRUE));
+            pSession->m_olCommit.push_back(new COpTaskEnable(m_sValue.c_str(), TRUE));
             m_dwFlags |= TASK_FLAG_DISABLED;
         }
         hr = pTaskSettings->put_Enabled(m_dwFlags & TASK_FLAG_DISABLED ? VARIANT_FALSE : VARIANT_TRUE); if (FAILED(hr)) goto finish;
@@ -122,31 +112,24 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
         if (FAILED(hr)) goto finish;
 
         // Configure the action.
-        hr = pExecAction->put_Path            (CComBSTR(m_sApplicationName )); if (FAILED(hr)) goto finish;
-        hr = pExecAction->put_Arguments       (CComBSTR(m_sParameters      )); if (FAILED(hr)) goto finish;
-        hr = pExecAction->put_WorkingDirectory(CComBSTR(m_sWorkingDirectory)); if (FAILED(hr)) goto finish;
+        hr = pExecAction->put_Path            (winstd::bstr(m_sApplicationName )); if (FAILED(hr)) goto finish;
+        hr = pExecAction->put_Arguments       (winstd::bstr(m_sParameters      )); if (FAILED(hr)) goto finish;
+        hr = pExecAction->put_WorkingDirectory(winstd::bstr(m_sWorkingDirectory)); if (FAILED(hr)) goto finish;
 
         // Set task description.
-        hr = pTaskDefinition->get_RegistrationInfo(&pRegististrationInfo);
-        if (FAILED(hr)) goto finish;
-        hr = pRegististrationInfo->put_Author(CComBSTR(m_sAuthor));
-        if (FAILED(hr)) goto finish;
-        hr = pRegististrationInfo->put_Description(CComBSTR(m_sComment));
-        if (FAILED(hr)) goto finish;
+        hr = pTaskDefinition->get_RegistrationInfo(&pRegististrationInfo);    if (FAILED(hr)) goto finish;
+        hr = pRegististrationInfo->put_Author(winstd::bstr(m_sAuthor));       if (FAILED(hr)) goto finish;
+        hr = pRegististrationInfo->put_Description(winstd::bstr(m_sComment)); if (FAILED(hr)) goto finish;
 
         // Configure task "flags".
         if (m_dwFlags & TASK_FLAG_DELETE_WHEN_DONE) {
-            hr = pTaskSettings->put_DeleteExpiredTaskAfter(CComBSTR(L"PT24H"));
+            hr = pTaskSettings->put_DeleteExpiredTaskAfter(winstd::bstr(L"PT24H"));
             if (FAILED(hr)) goto finish;
         }
-        hr = pTaskSettings->put_Hidden(m_dwFlags & TASK_FLAG_HIDDEN ? VARIANT_TRUE : VARIANT_FALSE);
-        if (FAILED(hr)) goto finish;
-        hr = pTaskSettings->put_WakeToRun(m_dwFlags & TASK_FLAG_SYSTEM_REQUIRED ? VARIANT_TRUE : VARIANT_FALSE);
-        if (FAILED(hr)) goto finish;
-        hr = pTaskSettings->put_DisallowStartIfOnBatteries(m_dwFlags & TASK_FLAG_DONT_START_IF_ON_BATTERIES ? VARIANT_TRUE : VARIANT_FALSE);
-        if (FAILED(hr)) goto finish;
-        hr = pTaskSettings->put_StopIfGoingOnBatteries(m_dwFlags & TASK_FLAG_KILL_IF_GOING_ON_BATTERIES ? VARIANT_TRUE : VARIANT_FALSE);
-        if (FAILED(hr)) goto finish;
+        hr = pTaskSettings->put_Hidden(m_dwFlags & TASK_FLAG_HIDDEN ? VARIANT_TRUE : VARIANT_FALSE);                                         if (FAILED(hr)) goto finish;
+        hr = pTaskSettings->put_WakeToRun(m_dwFlags & TASK_FLAG_SYSTEM_REQUIRED ? VARIANT_TRUE : VARIANT_FALSE);                             if (FAILED(hr)) goto finish;
+        hr = pTaskSettings->put_DisallowStartIfOnBatteries(m_dwFlags & TASK_FLAG_DONT_START_IF_ON_BATTERIES ? VARIANT_TRUE : VARIANT_FALSE); if (FAILED(hr)) goto finish;
+        hr = pTaskSettings->put_StopIfGoingOnBatteries(m_dwFlags & TASK_FLAG_KILL_IF_GOING_ON_BATTERIES ? VARIANT_TRUE : VARIANT_FALSE);     if (FAILED(hr)) goto finish;
 
         // Configure task priority.
         hr = pTaskSettings->put_Priority(
@@ -162,38 +145,36 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
         hr = pTaskDefinition->get_Principal(&pPrincipal);
         if (FAILED(hr)) goto finish;
 
-        if (m_sAccountName.IsEmpty()) {
+        if (m_sAccountName.empty()) {
             logonType = TASK_LOGON_SERVICE_ACCOUNT;
-            hr = pPrincipal->put_LogonType(logonType);             if (FAILED(hr)) goto finish;
-            hr = pPrincipal->put_UserId(CComBSTR(L"S-1-5-18"));    if (FAILED(hr)) goto finish;
-            hr = pPrincipal->put_RunLevel(TASK_RUNLEVEL_HIGHEST);  if (FAILED(hr)) goto finish;
+            hr = pPrincipal->put_LogonType(logonType);                 if (FAILED(hr)) goto finish;
+            hr = pPrincipal->put_UserId(winstd::bstr(L"S-1-5-18"));    if (FAILED(hr)) goto finish;
+            hr = pPrincipal->put_RunLevel(TASK_RUNLEVEL_HIGHEST);      if (FAILED(hr)) goto finish;
         } else if (m_dwFlags & TASK_FLAG_RUN_ONLY_IF_LOGGED_ON) {
             logonType = TASK_LOGON_INTERACTIVE_TOKEN;
-            hr = pPrincipal->put_LogonType(logonType);             if (FAILED(hr)) goto finish;
-            hr = pPrincipal->put_RunLevel(TASK_RUNLEVEL_LUA);      if (FAILED(hr)) goto finish;
+            hr = pPrincipal->put_LogonType(logonType);                 if (FAILED(hr)) goto finish;
+            hr = pPrincipal->put_RunLevel(TASK_RUNLEVEL_LUA);          if (FAILED(hr)) goto finish;
         } else {
             logonType = TASK_LOGON_PASSWORD;
-            hr = pPrincipal->put_LogonType(logonType);             if (FAILED(hr)) goto finish;
-            hr = pPrincipal->put_UserId(CComBSTR(m_sAccountName)); if (FAILED(hr)) goto finish;
-            hr = pPrincipal->put_RunLevel(TASK_RUNLEVEL_HIGHEST);  if (FAILED(hr)) goto finish;
+            hr = pPrincipal->put_LogonType(logonType);                 if (FAILED(hr)) goto finish;
+            hr = pPrincipal->put_UserId(winstd::bstr(m_sAccountName)); if (FAILED(hr)) goto finish;
+            hr = pPrincipal->put_RunLevel(TASK_RUNLEVEL_HIGHEST);      if (FAILED(hr)) goto finish;
         }
 
         // Connect principal and action collection.
-        hr = pPrincipal->put_Id(bstrContext);
-        if (FAILED(hr)) goto finish;
-        hr = pActionCollection->put_Context(bstrContext);
-        if (FAILED(hr)) goto finish;
+        hr = pPrincipal->put_Id(bstrContext);             if (FAILED(hr)) goto finish;
+        hr = pActionCollection->put_Context(bstrContext); if (FAILED(hr)) goto finish;
 
         // Configure idle settings.
         hr = pTaskSettings->put_RunOnlyIfIdle(m_dwFlags & TASK_FLAG_START_ONLY_IF_IDLE ? VARIANT_TRUE : VARIANT_FALSE);
         if (FAILED(hr)) goto finish;
         hr = pTaskSettings->get_IdleSettings(&pIdleSettings);
         if (FAILED(hr)) goto finish;
-        str.Format(L"PT%uS", m_wIdleMinutes*60);
-        hr = pIdleSettings->put_IdleDuration(CComBSTR(str));
+        sprintf(str, L"PT%uS", m_wIdleMinutes*60);
+        hr = pIdleSettings->put_IdleDuration(winstd::bstr(str));
         if (FAILED(hr)) goto finish;
-        str.Format(L"PT%uS", m_wDeadlineMinutes*60);
-        hr = pIdleSettings->put_WaitTimeout(CComBSTR(str));
+        sprintf(str, L"PT%uS", m_wDeadlineMinutes*60);
+        hr = pIdleSettings->put_WaitTimeout(winstd::bstr(str));
         if (FAILED(hr)) goto finish;
         hr = pIdleSettings->put_RestartOnIdle(m_dwFlags & TASK_FLAG_RESTART_ON_IDLE_RESUME ? VARIANT_TRUE : VARIANT_FALSE);
         if (FAILED(hr)) goto finish;
@@ -201,8 +182,8 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
         if (FAILED(hr)) goto finish;
 
         // Configure task runtime limit.
-        str.Format(L"PT%uS", m_dwMaxRuntimeMS != INFINITE ? (m_dwMaxRuntimeMS + 500) / 1000 : 0);
-        hr = pTaskSettings->put_ExecutionTimeLimit(CComBSTR(str));
+        sprintf(str, L"PT%uS", m_dwMaxRuntimeMS != INFINITE ? (m_dwMaxRuntimeMS + 500) / 1000 : 0);
+        hr = pTaskSettings->put_ExecutionTimeLimit(winstd::bstr(str));
         if (FAILED(hr)) goto finish;
 
         // Get task trigger colection.
@@ -210,17 +191,18 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
         if (FAILED(hr)) goto finish;
 
         // Add triggers.
-        for (pos = m_lTriggers.GetHeadPosition(), iTrigger = 0; pos; iTrigger++) {
+        iTrigger = 0;
+        for (auto t = m_lTriggers.cbegin(), t_end = m_lTriggers.cend(); t != t_end; ++t, iTrigger++) {
             CComPtr<ITrigger> pTrigger;
-            TASK_TRIGGER &ttData = m_lTriggers.GetNext(pos);
+            const TASK_TRIGGER &ttData = *t;
 
             switch (ttData.TriggerType) {
                 case TASK_TIME_TRIGGER_ONCE: {
                     CComPtr<ITimeTrigger> pTriggerTime;
                     hr = pTriggerCollection->Create(TASK_TRIGGER_TIME, &pTrigger); if (FAILED(hr)) goto finish;
                     hr = pTrigger.QueryInterface(&pTriggerTime);                   if (FAILED(hr)) goto finish;
-                    str.Format(L"PT%uM", ttData.wRandomMinutesInterval);
-                    hr = pTriggerTime->put_RandomDelay(CComBSTR(str));             if (FAILED(hr)) goto finish;
+                    sprintf(str, L"PT%uM", ttData.wRandomMinutesInterval);
+                    hr = pTriggerTime->put_RandomDelay(winstd::bstr(str));         if (FAILED(hr)) goto finish;
                     break;
                 }
 
@@ -229,8 +211,8 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
                     hr = pTriggerCollection->Create(TASK_TRIGGER_DAILY, &pTrigger);       if (FAILED(hr)) goto finish;
                     hr = pTrigger.QueryInterface(&pTriggerDaily);                         if (FAILED(hr)) goto finish;
                     hr = pTriggerDaily->put_DaysInterval(ttData.Type.Daily.DaysInterval); if (FAILED(hr)) goto finish;
-                    str.Format(L"PT%uM", ttData.wRandomMinutesInterval);
-                    hr = pTriggerDaily->put_RandomDelay(CComBSTR(str));                   if (FAILED(hr)) goto finish;
+                    sprintf(str, L"PT%uM", ttData.wRandomMinutesInterval);
+                    hr = pTriggerDaily->put_RandomDelay(winstd::bstr(str));               if (FAILED(hr)) goto finish;
                     break;
                 }
 
@@ -240,8 +222,8 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
                     hr = pTrigger.QueryInterface(&pTriggerWeekly);                            if (FAILED(hr)) goto finish;
                     hr = pTriggerWeekly->put_WeeksInterval(ttData.Type.Weekly.WeeksInterval); if (FAILED(hr)) goto finish;
                     hr = pTriggerWeekly->put_DaysOfWeek(ttData.Type.Weekly.rgfDaysOfTheWeek); if (FAILED(hr)) goto finish;
-                    str.Format(L"PT%uM", ttData.wRandomMinutesInterval);
-                    hr = pTriggerWeekly->put_RandomDelay(CComBSTR(str));                      if (FAILED(hr)) goto finish;
+                    sprintf(str, L"PT%uM", ttData.wRandomMinutesInterval);
+                    hr = pTriggerWeekly->put_RandomDelay(winstd::bstr(str));                  if (FAILED(hr)) goto finish;
                     break;
                 }
 
@@ -251,8 +233,8 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
                     hr = pTrigger.QueryInterface(&pTriggerMonthly);                            if (FAILED(hr)) goto finish;
                     hr = pTriggerMonthly->put_DaysOfMonth(ttData.Type.MonthlyDate.rgfDays);    if (FAILED(hr)) goto finish;
                     hr = pTriggerMonthly->put_MonthsOfYear(ttData.Type.MonthlyDate.rgfMonths); if (FAILED(hr)) goto finish;
-                    str.Format(L"PT%uM", ttData.wRandomMinutesInterval);
-                    hr = pTriggerMonthly->put_RandomDelay(CComBSTR(str));                      if (FAILED(hr)) goto finish;
+                    sprintf(str, L"PT%uM", ttData.wRandomMinutesInterval);
+                    hr = pTriggerMonthly->put_RandomDelay(winstd::bstr(str));                  if (FAILED(hr)) goto finish;
                     break;
                 }
 
@@ -268,8 +250,8 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
                         ttData.Type.MonthlyDOW.wWhichWeek == TASK_LAST_WEEK   ? 0x10 : 0x00);         if (FAILED(hr)) goto finish;
                     hr = pTriggerMonthlyDOW->put_DaysOfWeek(ttData.Type.MonthlyDOW.rgfDaysOfTheWeek); if (FAILED(hr)) goto finish;
                     hr = pTriggerMonthlyDOW->put_MonthsOfYear(ttData.Type.MonthlyDOW.rgfMonths);      if (FAILED(hr)) goto finish;
-                    str.Format(L"PT%uM", ttData.wRandomMinutesInterval);
-                    hr = pTriggerMonthlyDOW->put_RandomDelay(CComBSTR(str));                          if (FAILED(hr)) goto finish;
+                    sprintf(str, L"PT%uM", ttData.wRandomMinutesInterval);
+                    hr = pTriggerMonthlyDOW->put_RandomDelay(winstd::bstr(str));                      if (FAILED(hr)) goto finish;
                     break;
                 }
 
@@ -282,8 +264,8 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
                     CComPtr<IBootTrigger> pTriggerBoot;
                     hr = pTriggerCollection->Create(TASK_TRIGGER_BOOT, &pTrigger); if (FAILED(hr)) goto finish;
                     hr = pTrigger.QueryInterface(&pTriggerBoot);                   if (FAILED(hr)) goto finish;
-                    str.Format(L"PT%uM", ttData.wRandomMinutesInterval);
-                    hr = pTriggerBoot->put_Delay(CComBSTR(str));                   if (FAILED(hr)) goto finish;
+                    sprintf(str, L"PT%uM", ttData.wRandomMinutesInterval);
+                    hr = pTriggerBoot->put_Delay(winstd::bstr(str));               if (FAILED(hr)) goto finish;
                     break;
                 }
 
@@ -291,26 +273,26 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
                     CComPtr<ILogonTrigger> pTriggerLogon;
                     hr = pTriggerCollection->Create(TASK_TRIGGER_LOGON, &pTrigger); if (FAILED(hr)) goto finish;
                     hr = pTrigger.QueryInterface(&pTriggerLogon);                   if (FAILED(hr)) goto finish;
-                    str.Format(L"PT%uM", ttData.wRandomMinutesInterval);
-                    hr = pTriggerLogon->put_Delay(CComBSTR(str));                   if (FAILED(hr)) goto finish;
+                    sprintf(str, L"PT%uM", ttData.wRandomMinutesInterval);
+                    hr = pTriggerLogon->put_Delay(winstd::bstr(str));               if (FAILED(hr)) goto finish;
                     break;
                 }
             }
 
             // Set trigger ID.
-            str.Format(L"%u", iTrigger);
-            hr = pTrigger->put_Id(CComBSTR(str));
+            sprintf(str, L"%u", iTrigger);
+            hr = pTrigger->put_Id(winstd::bstr(str));
             if (FAILED(hr)) goto finish;
 
             // Set trigger start date.
-            str.Format(L"%04u-%02u-%02uT%02u:%02u:00", ttData.wBeginYear, ttData.wBeginMonth, ttData.wBeginDay, ttData.wStartHour, ttData.wStartMinute);
-            hr = pTrigger->put_StartBoundary(CComBSTR(str));
+            sprintf(str, L"%04u-%02u-%02uT%02u:%02u:00", ttData.wBeginYear, ttData.wBeginMonth, ttData.wBeginDay, ttData.wStartHour, ttData.wStartMinute);
+            hr = pTrigger->put_StartBoundary(winstd::bstr(str));
             if (FAILED(hr)) goto finish;
 
             if (ttData.rgFlags & TASK_TRIGGER_FLAG_HAS_END_DATE) {
                 // Set trigger end date.
-                str.Format(L"%04u-%02u-%02u", ttData.wEndYear, ttData.wEndMonth, ttData.wEndDay);
-                hr = pTrigger->put_EndBoundary(CComBSTR(str));
+                sprintf(str, L"%04u-%02u-%02u", ttData.wEndYear, ttData.wEndMonth, ttData.wEndDay);
+                hr = pTrigger->put_EndBoundary(winstd::bstr(str));
                 if (FAILED(hr)) goto finish;
             }
 
@@ -320,11 +302,11 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
 
                 hr = pTrigger->get_Repetition(&pRepetitionPattern);
                 if (FAILED(hr)) goto finish;
-                str.Format(L"PT%uM", ttData.MinutesDuration);
-                hr = pRepetitionPattern->put_Duration(CComBSTR(str));
+                sprintf(str, L"PT%uM", ttData.MinutesDuration);
+                hr = pRepetitionPattern->put_Duration(winstd::bstr(str));
                 if (FAILED(hr)) goto finish;
-                str.Format(L"PT%uM", ttData.MinutesInterval);
-                hr = pRepetitionPattern->put_Interval(CComBSTR(str));
+                sprintf(str, L"PT%uM", ttData.MinutesInterval);
+                hr = pRepetitionPattern->put_Interval(winstd::bstr(str));
                 if (FAILED(hr)) goto finish;
                 hr = pRepetitionPattern->put_StopAtDurationEnd(ttData.rgFlags & TASK_TRIGGER_FLAG_KILL_AT_DURATION_END ? VARIANT_TRUE : VARIANT_FALSE);
                 if (FAILED(hr)) goto finish;
@@ -336,24 +318,24 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
         }
 
         // Get the task folder.
-        hr = pService->GetFolder(CComBSTR(L"\\"), &pTaskFolder);
+        hr = pService->GetFolder(winstd::bstr(L"\\"), &pTaskFolder);
         if (FAILED(hr)) goto finish;
 
 #ifdef _DEBUG
-        CComBSTR xml;
+        winstd::bstr xml;
         hr = pTaskDefinition->get_XmlText(&xml);
 #endif
 
         // Register the task.
         hr = pTaskFolder->RegisterTaskDefinition(
-            CComBSTR(m_sValue), // path
-            pTaskDefinition,    // pDefinition
-            TASK_CREATE,        // flags
-            vEmpty,             // userId
-            logonType != TASK_LOGON_SERVICE_ACCOUNT && !m_sPassword.IsEmpty() ? CComVariant(m_sPassword) : vEmpty, // password
-            logonType,          // logonType
-            vEmpty,             // sddl
-            &pTask);            // ppTask
+            winstd::bstr(m_sValue), // path
+            pTaskDefinition,        // pDefinition
+            TASK_CREATE,            // flags
+            vEmpty,                 // userId
+            logonType != TASK_LOGON_SERVICE_ACCOUNT && !m_sPassword.empty() ? CComVariant(m_sPassword.c_str()) : vEmpty, // password
+            logonType,              // logonType
+            vEmpty,                 // sddl
+            &pTask);                // ppTask
     } else {
         // Windows XP or older.
         CComPtr<ITaskScheduler> pTaskScheduler;
@@ -364,41 +346,41 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
         if (FAILED(hr)) goto finish;
 
         // Create the new task.
-        hr = pTaskScheduler->NewWorkItem(m_sValue, CLSID_CTask, IID_ITask, (IUnknown**)&pTask);
+        hr = pTaskScheduler->NewWorkItem(m_sValue.c_str(), CLSID_CTask, IID_ITask, (IUnknown**)&pTask);
         if (pSession->m_bRollbackEnabled) {
             // Order rollback action to delete the task. ITask::NewWorkItem() might made a blank task already.
-            pSession->m_olRollback.AddHead(new COpTaskDelete(m_sValue));
+            pSession->m_olRollback.push_front(new COpTaskDelete(m_sValue.c_str()));
         }
         if (FAILED(hr)) goto finish;
 
         // Set its properties.
-        hr = pTask->SetApplicationName (m_sApplicationName ); if (FAILED(hr)) goto finish;
-        hr = pTask->SetParameters      (m_sParameters      ); if (FAILED(hr)) goto finish;
-        hr = pTask->SetWorkingDirectory(m_sWorkingDirectory); if (FAILED(hr)) goto finish;
-        hr = pTask->SetComment         (m_sComment         ); if (FAILED(hr)) goto finish;
+        hr = pTask->SetApplicationName (m_sApplicationName.c_str() ); if (FAILED(hr)) goto finish;
+        hr = pTask->SetParameters      (m_sParameters.c_str()      ); if (FAILED(hr)) goto finish;
+        hr = pTask->SetWorkingDirectory(m_sWorkingDirectory.c_str()); if (FAILED(hr)) goto finish;
+        hr = pTask->SetComment         (m_sComment.c_str()         ); if (FAILED(hr)) goto finish;
         if (pSession->m_bRollbackEnabled && (m_dwFlags & TASK_FLAG_DISABLED) == 0) {
             // The task is supposed to be enabled.
             // However, we shall enable it at commit to prevent it from accidentally starting in the very installation phase.
-            pSession->m_olCommit.AddTail(new COpTaskEnable(m_sValue, TRUE));
+            pSession->m_olCommit.push_back(new COpTaskEnable(m_sValue.c_str(), TRUE));
             m_dwFlags |= TASK_FLAG_DISABLED;
         }
         hr = pTask->SetFlags           (m_dwFlags          ); if (FAILED(hr)) goto finish;
         hr = pTask->SetPriority        (m_dwPriority       ); if (FAILED(hr)) goto finish;
 
         // Set task credentials.
-        hr = m_sAccountName.IsEmpty() ?
-            pTask->SetAccountInformation(L"",            NULL       ) :
-            pTask->SetAccountInformation(m_sAccountName, m_sPassword);
+        hr = m_sAccountName.empty() ?
+            pTask->SetAccountInformation(L""                   , NULL               ) :
+            pTask->SetAccountInformation(m_sAccountName.c_str(), m_sPassword.c_str());
         if (FAILED(hr)) goto finish;
 
         hr = pTask->SetIdleWait  (m_wIdleMinutes, m_wDeadlineMinutes); if (FAILED(hr)) goto finish;
         hr = pTask->SetMaxRunTime(m_dwMaxRuntimeMS                  ); if (FAILED(hr)) goto finish;
 
         // Add triggers.
-        for (pos = m_lTriggers.GetHeadPosition(); pos;) {
+        for (auto t = m_lTriggers.cbegin(), t_end = m_lTriggers.cend(); t != t_end; ++t) {
             WORD wTriggerIdx;
             CComPtr<ITaskTrigger> pTrigger;
-            TASK_TRIGGER ttData = m_lTriggers.GetNext(pos); // Don't use reference! We don't want to modify original trigger data by adding random startup delay.
+            TASK_TRIGGER ttData = *t; // Don't use reference! We don't want to modify original trigger data by adding random startup delay.
 
             hr = pTask->CreateTrigger(&wTriggerIdx, &pTrigger);
             if (FAILED(hr)) goto finish;
@@ -426,8 +408,8 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
                 }
 
                 // Convert numerical date to DMY (ULONGLONG -> FILETIME -> SYSTEMTIME).
-                ftValue.dwHighDateTime = (DWORD)((ullValue >> 32) & 0xffffffff);
-                ftValue.dwLowDateTime  = (DWORD)( ullValue        & 0xffffffff);
+                ftValue.dwHighDateTime = static_cast<DWORD>((ullValue >> 32) & 0xffffffff);
+                ftValue.dwLowDateTime  = static_cast<DWORD>( ullValue        & 0xffffffff);
                 ::FileTimeToSystemTime(&ftValue, &stValue);
 
                 // Set new trigger date and time.
@@ -452,7 +434,7 @@ finish:
     if (FAILED(hr)) {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
         ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_TASK_CREATE);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                 );
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue.c_str()         );
         ::MsiRecordSetInteger(hRecordProg, 3, hr                       );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
     }
@@ -464,7 +446,7 @@ UINT COpTaskCreate::SetFromRecord(MSIHANDLE hInstall, MSIHANDLE hRecord)
 {
     UINT uiResult;
     int iValue;
-    ATL::CAtlStringW sFolder;
+    std::wstring sFolder;
 
     uiResult = ::MsiRecordFormatStringW(hInstall, hRecord,  3, m_sApplicationName);
     if (uiResult != NO_ERROR) return uiResult;
@@ -474,11 +456,11 @@ UINT COpTaskCreate::SetFromRecord(MSIHANDLE hInstall, MSIHANDLE hRecord)
 
     uiResult = ::MsiRecordGetStringW(hRecord, 5, sFolder);
     if (uiResult != NO_ERROR) return uiResult;
-    uiResult = ::MsiGetTargetPathW(hInstall, sFolder, m_sWorkingDirectory);
+    uiResult = ::MsiGetTargetPathW(hInstall, sFolder.c_str(), m_sWorkingDirectory);
     if (uiResult != NO_ERROR) return uiResult;
-    if (!m_sWorkingDirectory.IsEmpty() && m_sWorkingDirectory.GetAt(m_sWorkingDirectory.GetLength() - 1) == L'\\') {
+    if (!m_sWorkingDirectory.empty() && m_sWorkingDirectory.back() == L'\\') {
         // Trim trailing backslash.
-        m_sWorkingDirectory.Truncate(m_sWorkingDirectory.GetLength() - 1);
+        m_sWorkingDirectory.resize(m_sWorkingDirectory.length() - 1);
     }
 
     uiResult = ::MsiRecordFormatStringW(hInstall, hRecord, 10, m_sAuthor);
@@ -532,8 +514,8 @@ UINT COpTaskCreate::SetTriggersFromView(MSIHANDLE hView)
         iValue = ::MsiRecordGetInteger(hRecord, 2);
         if (iValue == MSI_NULL_INTEGER) return ERROR_INVALID_FIELD;
         ullValue = ((ULONGLONG)iValue + 138426) * 864000000000;
-        ftValue.dwHighDateTime = (DWORD)((ullValue >> 32) & 0xffffffff);
-        ftValue.dwLowDateTime  = (DWORD)( ullValue        & 0xffffffff);
+        ftValue.dwHighDateTime = static_cast<DWORD>((ullValue >> 32) & 0xffffffff);
+        ftValue.dwLowDateTime  = static_cast<DWORD>( ullValue        & 0xffffffff);
         if (!::FileTimeToSystemTime(&ftValue, &stValue))
             return ::GetLastError();
         ttData.wBeginYear  = stValue.wYear;
@@ -544,8 +526,8 @@ UINT COpTaskCreate::SetTriggersFromView(MSIHANDLE hView)
         iValue = ::MsiRecordGetInteger(hRecord, 3);
         if (iValue != MSI_NULL_INTEGER) {
             ullValue = ((ULONGLONG)iValue + 138426) * 864000000000;
-            ftValue.dwHighDateTime = (DWORD)((ullValue >> 32) & 0xffffffff);
-            ftValue.dwLowDateTime  = (DWORD)( ullValue        & 0xffffffff);
+            ftValue.dwHighDateTime = static_cast<DWORD>((ullValue >> 32) & 0xffffffff);
+            ftValue.dwLowDateTime  = static_cast<DWORD>( ullValue        & 0xffffffff);
             if (!::FileTimeToSystemTime(&ftValue, &stValue))
                 return ::GetLastError();
             ttData.wEndYear  = stValue.wYear;
@@ -632,7 +614,7 @@ UINT COpTaskCreate::SetTriggersFromView(MSIHANDLE hView)
             break;
         }
 
-        m_lTriggers.AddTail(ttData);
+        m_lTriggers.push_back(ttData);
     }
 
     return NO_ERROR;
@@ -665,7 +647,7 @@ HRESULT COpTaskDelete::Execute(CSession *pSession)
         if (FAILED(hr)) goto finish;
 
         // Get task folder.
-        hr = pService->GetFolder(CComBSTR(L"\\"), &pTaskFolder);
+        hr = pService->GetFolder(winstd::bstr(L"\\"), &pTaskFolder);
         if (FAILED(hr)) goto finish;
 
         if (pSession->m_bRollbackEnabled) {
@@ -674,13 +656,13 @@ HRESULT COpTaskDelete::Execute(CSession *pSession)
             CComPtr<IPrincipal> pPrincipal;
             VARIANT_BOOL bEnabled;
             TASK_LOGON_TYPE logonType;
-            CComBSTR sSSDL;
+            winstd::bstr sSSDL;
             CComVariant vSSDL;
-            ATL::CAtlStringW sDisplayNameOrig;
+            std::wstring sDisplayNameOrig;
             UINT uiCount = 0;
 
             // Get the source task.
-            hr = pTaskFolder->GetTask(CComBSTR(m_sValue), &pTask);
+            hr = pTaskFolder->GetTask(winstd::bstr(m_sValue), &pTask);
             if (hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) { hr = S_OK; goto finish; }
             else if (FAILED(hr)) goto finish;
 
@@ -691,7 +673,7 @@ HRESULT COpTaskDelete::Execute(CSession *pSession)
                 // The task is enabled.
 
                 // In case the task disabling fails halfway, try to re-enable it anyway on rollback.
-                pSession->m_olRollback.AddHead(new COpTaskEnable(m_sValue, TRUE));
+                pSession->m_olRollback.push_front(new COpTaskEnable(m_sValue.c_str(), TRUE));
 
                 // Disable it.
                 hr = pTask->put_Enabled(VARIANT_FALSE);
@@ -716,38 +698,38 @@ HRESULT COpTaskDelete::Execute(CSession *pSession)
             else if (FAILED(hr)) goto finish;
             else {
                 V_VT  (&vSSDL) = VT_BSTR;
-                V_BSTR(&vSSDL) = sSSDL.Detach();
+                V_BSTR(&vSSDL) = sSSDL.detach();
             }
 
             // Register a backup copy of task.
             do {
-                sDisplayNameOrig.Format(L"%ls (orig %u)", (LPCWSTR)m_sValue, ++uiCount);
+                sprintf(sDisplayNameOrig, L"%ls (orig %u)", m_sValue.c_str(), ++uiCount);
                 hr = pTaskFolder->RegisterTaskDefinition(
-                    CComBSTR(sDisplayNameOrig), // path
-                    pTaskDefinition,            // pDefinition
-                    TASK_CREATE,                // flags
-                    vEmpty,                     // userId
-                    vEmpty,                     // password
-                    logonType,                  // logonType
-                    vSSDL,                      // sddl
-                    &pTaskOrig);                // ppTask
+                    winstd::bstr(sDisplayNameOrig), // path
+                    pTaskDefinition,                // pDefinition
+                    TASK_CREATE,                    // flags
+                    vEmpty,                         // userId
+                    vEmpty,                         // password
+                    logonType,                      // logonType
+                    vSSDL,                          // sddl
+                    &pTaskOrig);                    // ppTask
             } while (hr == HRESULT_FROM_WIN32(ERROR_FILE_EXISTS));
             // In case the backup copy creation failed halfway, try to delete its remains anyway on rollback.
-            pSession->m_olRollback.AddHead(new COpTaskDelete(sDisplayNameOrig));
+            pSession->m_olRollback.push_front(new COpTaskDelete(sDisplayNameOrig.c_str()));
             if (FAILED(hr)) goto finish;
 
             // Order rollback action to restore from backup copy.
-            pSession->m_olRollback.AddHead(new COpTaskCopy(sDisplayNameOrig, m_sValue));
+            pSession->m_olRollback.push_front(new COpTaskCopy(sDisplayNameOrig.c_str(), m_sValue.c_str()));
 
             // Delete it.
-            hr = pTaskFolder->DeleteTask(CComBSTR(m_sValue), 0);
+            hr = pTaskFolder->DeleteTask(winstd::bstr(m_sValue), 0);
             if (FAILED(hr)) goto finish;
 
             // Order commit action to delete backup copy.
-            pSession->m_olCommit.AddTail(new COpTaskDelete(sDisplayNameOrig));
+            pSession->m_olCommit.push_back(new COpTaskDelete(sDisplayNameOrig.c_str()));
         } else {
             // Delete the task.
-            hr = pTaskFolder->DeleteTask(CComBSTR(m_sValue), 0);
+            hr = pTaskFolder->DeleteTask(winstd::bstr(m_sValue), 0);
             if (hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) hr = S_OK;
         }
     } else {
@@ -761,11 +743,11 @@ HRESULT COpTaskDelete::Execute(CSession *pSession)
         if (pSession->m_bRollbackEnabled) {
             CComPtr<ITask> pTask;
             DWORD dwFlags;
-            ATL::CAtlStringW sDisplayNameOrig;
+            std::wstring sDisplayNameOrig;
             UINT uiCount = 0;
 
             // Load the task.
-            hr = pTaskScheduler->Activate(m_sValue, IID_ITask, (IUnknown**)&pTask);
+            hr = pTaskScheduler->Activate(m_sValue.c_str(), IID_ITask, (IUnknown**)&pTask);
             if (hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) { hr = S_OK; goto finish; }
             else if (FAILED(hr)) goto finish;
 
@@ -776,7 +758,7 @@ HRESULT COpTaskDelete::Execute(CSession *pSession)
                 // The task is enabled.
 
                 // In case the task disabling fails halfway, try to re-enable it anyway on rollback.
-                pSession->m_olRollback.AddHead(new COpTaskEnable(m_sValue, TRUE));
+                pSession->m_olRollback.push_front(new COpTaskEnable(m_sValue.c_str(), TRUE));
 
                 // Disable it.
                 dwFlags |= TASK_FLAG_DISABLED;
@@ -786,11 +768,11 @@ HRESULT COpTaskDelete::Execute(CSession *pSession)
 
             // Prepare a backup copy of task.
             do {
-                sDisplayNameOrig.Format(L"%ls (orig %u)", (LPCWSTR)m_sValue, ++uiCount);
-                hr = pTaskScheduler->AddWorkItem(sDisplayNameOrig, pTask);
+                sprintf(sDisplayNameOrig, L"%ls (orig %u)", m_sValue.c_str(), ++uiCount);
+                hr = pTaskScheduler->AddWorkItem(sDisplayNameOrig.c_str(), pTask);
             } while (hr == HRESULT_FROM_WIN32(ERROR_FILE_EXISTS));
             // In case the backup copy creation failed halfway, try to delete its remains anyway on rollback.
-            pSession->m_olRollback.AddHead(new COpTaskDelete(sDisplayNameOrig));
+            pSession->m_olRollback.push_front(new COpTaskDelete(sDisplayNameOrig.c_str()));
             if (FAILED(hr)) goto finish;
 
             // Save the backup copy.
@@ -800,17 +782,17 @@ HRESULT COpTaskDelete::Execute(CSession *pSession)
             if (FAILED(hr)) goto finish;
 
             // Order rollback action to restore from backup copy.
-            pSession->m_olRollback.AddHead(new COpTaskCopy(sDisplayNameOrig, m_sValue));
+            pSession->m_olRollback.push_front(new COpTaskCopy(sDisplayNameOrig.c_str(), m_sValue.c_str()));
 
             // Delete it.
-            hr = pTaskScheduler->Delete(m_sValue);
+            hr = pTaskScheduler->Delete(m_sValue.c_str());
             if (FAILED(hr)) goto finish;
 
             // Order commit action to delete backup copy.
-            pSession->m_olCommit.AddTail(new COpTaskDelete(sDisplayNameOrig));
+            pSession->m_olCommit.push_back(new COpTaskDelete(sDisplayNameOrig.c_str()));
         } else {
             // Delete the task.
-            hr = pTaskScheduler->Delete(m_sValue);
+            hr = pTaskScheduler->Delete(m_sValue.c_str());
             if (hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) hr = S_OK;
         }
     }
@@ -819,7 +801,7 @@ finish:
     if (FAILED(hr)) {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
         ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_TASK_DELETE);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                 );
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue.c_str()         );
         ::MsiRecordSetInteger(hRecordProg, 3, hr                       );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
     }
@@ -856,11 +838,11 @@ HRESULT COpTaskEnable::Execute(CSession *pSession)
         if (FAILED(hr)) goto finish;
 
         // Get task folder.
-        hr = pService->GetFolder(CComBSTR(L"\\"), &pTaskFolder);
+        hr = pService->GetFolder(winstd::bstr(L"\\"), &pTaskFolder);
         if (FAILED(hr)) goto finish;
 
         // Get task.
-        hr = pTaskFolder->GetTask(CComBSTR(m_sValue), &pTask);
+        hr = pTaskFolder->GetTask(winstd::bstr(m_sValue), &pTask);
         if (FAILED(hr)) goto finish;
 
         // Get currently enabled state.
@@ -872,7 +854,7 @@ HRESULT COpTaskEnable::Execute(CSession *pSession)
             if (pSession->m_bRollbackEnabled && !bEnabled) {
                 // The task is disabled and supposed to be enabled.
                 // However, we shall enable it at commit to prevent it from accidentally starting in the very installation phase.
-                pSession->m_olCommit.AddTail(new COpTaskEnable(m_sValue, TRUE));
+                pSession->m_olCommit.push_back(new COpTaskEnable(m_sValue.c_str(), TRUE));
                 hr = S_OK; goto finish;
             } else
                 bEnabled = VARIANT_TRUE;
@@ -880,7 +862,7 @@ HRESULT COpTaskEnable::Execute(CSession *pSession)
             if (pSession->m_bRollbackEnabled && bEnabled) {
                 // The task is enabled and we will disable it now.
                 // Order rollback to re-enable it.
-                pSession->m_olRollback.AddHead(new COpTaskEnable(m_sValue, TRUE));
+                pSession->m_olRollback.push_front(new COpTaskEnable(m_sValue.c_str(), TRUE));
             }
             bEnabled = VARIANT_FALSE;
         }
@@ -899,7 +881,7 @@ HRESULT COpTaskEnable::Execute(CSession *pSession)
         if (FAILED(hr)) goto finish;
 
         // Load the task.
-        hr = pTaskScheduler->Activate(m_sValue, IID_ITask, (IUnknown**)&pTask);
+        hr = pTaskScheduler->Activate(m_sValue.c_str(), IID_ITask, (IUnknown**)&pTask);
         if (FAILED(hr)) goto finish;
 
         // Get task's current flags.
@@ -911,7 +893,7 @@ HRESULT COpTaskEnable::Execute(CSession *pSession)
             if (pSession->m_bRollbackEnabled && (dwFlags & TASK_FLAG_DISABLED)) {
                 // The task is disabled and supposed to be enabled.
                 // However, we shall enable it at commit to prevent it from accidentally starting in the very installation phase.
-                pSession->m_olCommit.AddTail(new COpTaskEnable(m_sValue, TRUE));
+                pSession->m_olCommit.push_back(new COpTaskEnable(m_sValue.c_str(), TRUE));
                 hr = S_OK; goto finish;
             } else
                 dwFlags &= ~TASK_FLAG_DISABLED;
@@ -919,7 +901,7 @@ HRESULT COpTaskEnable::Execute(CSession *pSession)
             if (pSession->m_bRollbackEnabled && !(dwFlags & TASK_FLAG_DISABLED)) {
                 // The task is enabled and we will disable it now.
                 // Order rollback to re-enable it.
-                pSession->m_olRollback.AddHead(new COpTaskEnable(m_sValue, TRUE));
+                pSession->m_olRollback.push_front(new COpTaskEnable(m_sValue.c_str(), TRUE));
             }
             dwFlags |=  TASK_FLAG_DISABLED;
         }
@@ -939,7 +921,7 @@ finish:
     if (FAILED(hr)) {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
         ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_TASK_ENABLE);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                 );
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue.c_str()         );
         ::MsiRecordSetInteger(hRecordProg, 3, hr                       );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
     }
@@ -971,18 +953,18 @@ HRESULT COpTaskCopy::Execute(CSession *pSession)
         CComPtr<ITaskDefinition> pTaskDefinition;
         CComPtr<IPrincipal> pPrincipal;
         TASK_LOGON_TYPE logonType;
-        CComBSTR sSSDL;
+        winstd::bstr sSSDL;
 
         // Connect to local task service.
         hr = pService->Connect(vEmpty, vEmpty, vEmpty, vEmpty);
         if (FAILED(hr)) goto finish;
 
         // Get task folder.
-        hr = pService->GetFolder(CComBSTR(L"\\"), &pTaskFolder);
+        hr = pService->GetFolder(winstd::bstr(L"\\"), &pTaskFolder);
         if (FAILED(hr)) goto finish;
 
         // Get the source task.
-        hr = pTaskFolder->GetTask(CComBSTR(m_sValue1), &pTask);
+        hr = pTaskFolder->GetTask(winstd::bstr(m_sValue1), &pTask);
         if (FAILED(hr)) goto finish;
 
         // Get task's definition.
@@ -1003,14 +985,14 @@ HRESULT COpTaskCopy::Execute(CSession *pSession)
 
         // Register a new task.
         hr = pTaskFolder->RegisterTaskDefinition(
-            CComBSTR(m_sValue2), // path
-            pTaskDefinition,     // pDefinition
-            TASK_CREATE,         // flags
-            vEmpty,              // userId
-            vEmpty,              // password
-            logonType,           // logonType
-            CComVariant(sSSDL),  // sddl
-            &pTaskOrig);         // ppTask
+            winstd::bstr(m_sValue2), // path
+            pTaskDefinition,         // pDefinition
+            TASK_CREATE,             // flags
+            vEmpty,                  // userId
+            vEmpty,                  // password
+            logonType,               // logonType
+            CComVariant(sSSDL),      // sddl
+            &pTaskOrig);             // ppTask
         if (FAILED(hr)) goto finish;
     } else {
         // Windows XP or older.
@@ -1022,14 +1004,14 @@ HRESULT COpTaskCopy::Execute(CSession *pSession)
         if (FAILED(hr)) goto finish;
 
         // Load the source task.
-        hr = pTaskScheduler->Activate(m_sValue1, IID_ITask, (IUnknown**)&pTask);
+        hr = pTaskScheduler->Activate(m_sValue1.c_str(), IID_ITask, (IUnknown**)&pTask);
         if (FAILED(hr)) goto finish;
 
         // Add with different name.
-        hr = pTaskScheduler->AddWorkItem(m_sValue2, pTask);
+        hr = pTaskScheduler->AddWorkItem(m_sValue2.c_str(), pTask);
         if (pSession->m_bRollbackEnabled) {
             // Order rollback action to delete the new copy. ITask::AddWorkItem() might made a blank task already.
-            pSession->m_olRollback.AddHead(new COpTaskDelete(m_sValue2));
+            pSession->m_olRollback.push_front(new COpTaskDelete(m_sValue2.c_str()));
         }
         if (FAILED(hr)) goto finish;
 
@@ -1044,8 +1026,8 @@ finish:
     if (FAILED(hr)) {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(4);
         ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_TASK_COPY);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue1              );
-        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue2              );
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue1.c_str()      );
+        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue2.c_str()      );
         ::MsiRecordSetInteger(hRecordProg, 4, hr                     );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
     }

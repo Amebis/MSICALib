@@ -46,7 +46,7 @@ HRESULT COpSvcSetStart::Execute(CSession *pSession)
         SC_HANDLE hService;
 
         // Open the specified service.
-        hService = ::OpenServiceW(hSCM, m_sValue, SERVICE_QUERY_CONFIG | SERVICE_CHANGE_CONFIG);
+        hService = ::OpenServiceW(hSCM, m_sValue.c_str(), SERVICE_QUERY_CONFIG | SERVICE_CHANGE_CONFIG);
         if (hService) {
             QUERY_SERVICE_CONFIG *sc;
             DWORD dwSize;
@@ -62,7 +62,7 @@ HRESULT COpSvcSetStart::Execute(CSession *pSession)
                         if (::ChangeServiceConfig(hService, SERVICE_NO_CHANGE, m_dwStartType, SERVICE_NO_CHANGE, NULL, NULL, NULL, NULL, NULL, NULL, NULL)) {
                             if (pSession->m_bRollbackEnabled) {
                                 // Order rollback action to revert the service start change.
-                                pSession->m_olRollback.AddHead(new COpSvcSetStart(m_sValue, sc->dwStartType));
+                                pSession->m_olRollback.push_front(new COpSvcSetStart(m_sValue.c_str(), sc->dwStartType));
                             }
                             dwError = NO_ERROR;
                         } else
@@ -87,7 +87,7 @@ HRESULT COpSvcSetStart::Execute(CSession *pSession)
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
         ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_SVC_SET_START);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue                   );
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue.c_str()           );
         ::MsiRecordSetInteger(hRecordProg, 3, dwError                    );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return AtlHresultFromWin32(dwError);
@@ -164,14 +164,14 @@ HRESULT COpSvcStart::Execute(CSession *pSession)
         SC_HANDLE hService;
 
         // Open the specified service.
-        hService = ::OpenServiceW(hSCM, m_sValue, SERVICE_START | (m_bWait ? SERVICE_QUERY_STATUS : 0));
+        hService = ::OpenServiceW(hSCM, m_sValue.c_str(), SERVICE_START | (m_bWait ? SERVICE_QUERY_STATUS : 0));
         if (hService) {
             // Start the service.
             if (::StartService(hService, 0, NULL)) {
                 dwError = m_bWait ? WaitForState(pSession, hService, SERVICE_START_PENDING, SERVICE_RUNNING) : NO_ERROR;
                 if (dwError == NO_ERROR && pSession->m_bRollbackEnabled) {
                     // Order rollback action to stop the service.
-                    pSession->m_olRollback.AddHead(new COpSvcStop(m_sValue));
+                    pSession->m_olRollback.push_front(new COpSvcStop(m_sValue.c_str()));
                 }
             } else {
                 dwError = ::GetLastError();
@@ -190,7 +190,7 @@ HRESULT COpSvcStart::Execute(CSession *pSession)
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
         ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_SVC_START);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue               );
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue.c_str()       );
         ::MsiRecordSetInteger(hRecordProg, 3, dwError                );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return AtlHresultFromWin32(dwError);
@@ -218,7 +218,7 @@ HRESULT COpSvcStop::Execute(CSession *pSession)
         SC_HANDLE hService;
 
         // Open the specified service.
-        hService = ::OpenServiceW(hSCM, m_sValue, SERVICE_STOP | (m_bWait ? SERVICE_QUERY_STATUS : 0));
+        hService = ::OpenServiceW(hSCM, m_sValue.c_str(), SERVICE_STOP | (m_bWait ? SERVICE_QUERY_STATUS : 0));
         if (hService) {
             SERVICE_STATUS ss;
             // Stop the service.
@@ -226,7 +226,7 @@ HRESULT COpSvcStop::Execute(CSession *pSession)
                 dwError = m_bWait ? WaitForState(pSession, hService, SERVICE_STOP_PENDING, SERVICE_STOPPED) : NO_ERROR;
                 if (dwError == NO_ERROR && pSession->m_bRollbackEnabled) {
                     // Order rollback action to start the service.
-                    pSession->m_olRollback.AddHead(new COpSvcStart(m_sValue));
+                    pSession->m_olRollback.push_front(new COpSvcStart(m_sValue.c_str()));
                 }
             } else {
                 dwError = ::GetLastError();
@@ -245,7 +245,7 @@ HRESULT COpSvcStop::Execute(CSession *pSession)
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
         ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_SVC_STOP);
-        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue              );
+        ::MsiRecordSetStringW(hRecordProg, 2, m_sValue.c_str()      );
         ::MsiRecordSetInteger(hRecordProg, 3, dwError               );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return AtlHresultFromWin32(dwError);

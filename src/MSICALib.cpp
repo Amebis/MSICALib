@@ -89,19 +89,15 @@ HRESULT COpRollbackEnable::Execute(CSession *pSession)
 // COpList
 ////////////////////////////////////////////////////////////////////////////
 
-COpList::COpList(int iTicks) :
-    COperation(iTicks),
-    ATL::CAtlList<COperation*>(sizeof(COperation*))
+COpList::COpList(int iTicks) : COperation(iTicks)
 {
 }
 
 
 void COpList::Free()
 {
-    POSITION pos;
-
-    for (pos = GetHeadPosition(); pos;) {
-        COperation *pOp = GetNext(pos);
+    for (auto i = begin(), i_end = end(); i != i_end; ++i) {
+        COperation *pOp = *i;
         COpList *pOpList = dynamic_cast<COpList*>(pOp);
 
         if (pOpList) {
@@ -111,7 +107,7 @@ void COpList::Free()
         delete pOp;
     }
 
-    RemoveAll();
+    clear();
 }
 
 
@@ -147,7 +143,6 @@ HRESULT COpList::SaveToFile(LPCTSTR pszFileName) const
 
 HRESULT COpList::Execute(CSession *pSession)
 {
-    POSITION pos;
     HRESULT hr;
     PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
 
@@ -161,8 +156,8 @@ HRESULT COpList::Execute(CSession *pSession)
     ::MsiRecordSetInteger(hRecordProg, 1, 2);
     ::MsiRecordSetInteger(hRecordProg, 3, 0);
 
-    for (pos = GetHeadPosition(); pos;) {
-        COperation *pOp = GetNext(pos);
+    for (auto i = cbegin(), i_end = cend(); i != i_end; ++i) {
+        COperation *pOp = *i;
 
         hr = pOp->Execute(pSession);
         if (!pSession->m_bContinueOnError && FAILED(hr)) {
@@ -210,7 +205,7 @@ UINT SaveSequence(MSIHANDLE hInstall, LPCTSTR szActionExecute, LPCTSTR szActionC
 {
     HRESULT hr;
     UINT uiResult;
-    ATL::CAtlString sSequenceFilename;
+    winstd::tstring sSequenceFilename;
     ATL::CAtlFile fSequence;
     PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
 
@@ -218,25 +213,26 @@ UINT SaveSequence(MSIHANDLE hInstall, LPCTSTR szActionExecute, LPCTSTR szActionC
     // The InstallCertificates is a deferred custom action, thus all this information will be unavailable to it.
     // Therefore save all required info to file now.
     {
-        LPTSTR szBuffer = sSequenceFilename.GetBuffer(MAX_PATH);
-        ::GetTempPath(MAX_PATH, szBuffer);
-        ::GetTempFileName(szBuffer, _T("MSICA"), 0, szBuffer);
-        sSequenceFilename.ReleaseBuffer();
+        std::unique_ptr<TCHAR> szBuffer(new TCHAR[MAX_PATH]);
+        if (!szBuffer) return ERROR_OUTOFMEMORY;
+        ::GetTempPath(MAX_PATH, szBuffer.get());
+        ::GetTempFileName(szBuffer.get(), _T("MSICA"), 0, szBuffer.get());
+        sSequenceFilename.assign(szBuffer.get(), wcsnlen(szBuffer.get(), MAX_PATH));
     }
     // Save execute sequence to file.
-    hr = olExecute.SaveToFile(sSequenceFilename);
+    hr = olExecute.SaveToFile(sSequenceFilename.c_str());
     if (SUCCEEDED(hr)) {
         // Store sequence script file names to properties for deferred custiom actions.
-        uiResult = ::MsiSetProperty(hInstall, szActionExecute, sSequenceFilename);
+        uiResult = ::MsiSetProperty(hInstall, szActionExecute, sSequenceFilename.c_str());
         if (uiResult == NO_ERROR) {
-            LPCTSTR pszExtension = ::PathFindExtension(sSequenceFilename);
-            ATL::CAtlString sSequenceFilename2;
+            LPCTSTR pszExtension = ::PathFindExtension(sSequenceFilename.c_str());
+            winstd::tstring sSequenceFilename2;
 
-            sSequenceFilename2.Format(_T("%.*ls-rb%ls"), pszExtension - (LPCTSTR)sSequenceFilename, (LPCTSTR)sSequenceFilename, pszExtension);
-            uiResult = ::MsiSetProperty(hInstall, szActionRollback, sSequenceFilename2);
+            sprintf(sSequenceFilename2, _T("%.*ls-rb%ls"), pszExtension - sSequenceFilename.c_str(), sSequenceFilename.c_str(), pszExtension);
+            uiResult = ::MsiSetProperty(hInstall, szActionRollback, sSequenceFilename2.c_str());
             if (uiResult == NO_ERROR) {
-                sSequenceFilename2.Format(_T("%.*ls-cm%ls"), pszExtension - (LPCTSTR)sSequenceFilename, (LPCTSTR)sSequenceFilename, pszExtension);
-                uiResult = ::MsiSetProperty(hInstall, szActionCommit, sSequenceFilename2);
+                sprintf(sSequenceFilename2, _T("%.*ls-cm%ls"), pszExtension - sSequenceFilename.c_str(), sSequenceFilename.c_str(), pszExtension);
+                uiResult = ::MsiSetProperty(hInstall, szActionCommit, sSequenceFilename2.c_str());
                 if (uiResult != NO_ERROR) {
                     ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_PROPERTY_SET);
                     ::MsiRecordSetString (hRecordProg, 2, szActionCommit            );
@@ -255,12 +251,12 @@ UINT SaveSequence(MSIHANDLE hInstall, LPCTSTR szActionExecute, LPCTSTR szActionC
             ::MsiRecordSetInteger(hRecordProg, 3, uiResult                  );
             ::MsiProcessMessage(hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         }
-        if (uiResult != NO_ERROR) ::DeleteFile(sSequenceFilename);
+        if (uiResult != NO_ERROR) ::DeleteFile(sSequenceFilename.c_str());
     } else {
         uiResult = ERROR_INSTALL_SCRIPT_WRITE;
-        ::MsiRecordSetInteger(hRecordProg, 1, uiResult         );
-        ::MsiRecordSetString (hRecordProg, 2, sSequenceFilename);
-        ::MsiRecordSetInteger(hRecordProg, 3, hr               );
+        ::MsiRecordSetInteger(hRecordProg, 1, uiResult                 );
+        ::MsiRecordSetString (hRecordProg, 2, sSequenceFilename.c_str());
+        ::MsiRecordSetInteger(hRecordProg, 3, hr                       );
         ::MsiProcessMessage(hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
     }
 
@@ -273,7 +269,7 @@ UINT ExecuteSequence(MSIHANDLE hInstall)
     UINT uiResult;
     HRESULT hr;
     BOOL bIsCoInitialized = SUCCEEDED(::CoInitialize(NULL));
-    ATL::CAtlString sSequenceFilename;
+    winstd::tstring sSequenceFilename;
 
     uiResult = ::MsiGetProperty(hInstall, _T("CustomActionData"), sSequenceFilename);
     if (uiResult == NO_ERROR) {
@@ -281,7 +277,7 @@ UINT ExecuteSequence(MSIHANDLE hInstall)
         BOOL bIsCleanup = ::MsiGetMode(hInstall, MSIRUNMODE_COMMIT) || ::MsiGetMode(hInstall, MSIRUNMODE_ROLLBACK);
 
         // Load operation sequence.
-        hr = lstOperations.LoadFromFile(sSequenceFilename);
+        hr = lstOperations.LoadFromFile(sSequenceFilename.c_str());
         if (SUCCEEDED(hr)) {
             MSICA::CSession session;
 
@@ -295,52 +291,52 @@ UINT ExecuteSequence(MSIHANDLE hInstall)
             if (!bIsCleanup) {
                 // Save cleanup scripts of delayed action regardless of action's execution status.
                 // Rollback action MUST be scheduled in InstallExecuteSequence before this action! Otherwise cleanup won't be performed in case this action execution failed.
-                LPCTSTR pszExtension = ::PathFindExtension(sSequenceFilename);
-                ATL::CAtlString sSequenceFilenameCM, sSequenceFilenameRB;
+                LPCTSTR pszExtension = ::PathFindExtension(sSequenceFilename.c_str());
+                winstd::tstring sSequenceFilenameCM, sSequenceFilenameRB;
                 HRESULT hr;
 
-                sSequenceFilenameRB.Format(_T("%.*ls-rb%ls"), pszExtension - (LPCTSTR)sSequenceFilename, (LPCTSTR)sSequenceFilename, pszExtension);
-                sSequenceFilenameCM.Format(_T("%.*ls-cm%ls"), pszExtension - (LPCTSTR)sSequenceFilename, (LPCTSTR)sSequenceFilename, pszExtension);
+                sprintf(sSequenceFilenameRB, _T("%.*ls-rb%ls"), pszExtension - sSequenceFilename.c_str(), sSequenceFilename.c_str(), pszExtension);
+                sprintf(sSequenceFilenameCM, _T("%.*ls-cm%ls"), pszExtension - sSequenceFilename.c_str(), sSequenceFilename.c_str(), pszExtension);
 
                 // After commit, delete rollback file. After rollback, delete commit file.
-                session.m_olCommit.AddTail(new MSICA::COpFileDelete(
+                session.m_olCommit.push_back(new MSICA::COpFileDelete(
 #ifdef _UNICODE
-                    sSequenceFilenameRB
+                    sSequenceFilenameRB.c_str()
 #else
-                    ATL::CAtlStringW(sSequenceFilenameRB)
+                    std::wstring(sSequenceFilenameRB)
 #endif
                     ));
-                session.m_olRollback.AddTail(new MSICA::COpFileDelete(
+                session.m_olRollback.push_back(new MSICA::COpFileDelete(
 #ifdef _UNICODE
-                    sSequenceFilenameCM
+                    sSequenceFilenameCM.c_str()
 #else
-                    ATL::CAtlStringW(sSequenceFilenameCM)
+                    std::wstring(sSequenceFilenameCM)
 #endif
                     ));
 
                 // Save commit file first.
-                hr = session.m_olCommit.SaveToFile(sSequenceFilenameCM);
+                hr = session.m_olCommit.SaveToFile(sSequenceFilenameCM.c_str());
                 if (SUCCEEDED(hr)) {
                     // Save rollback file next.
-                    hr = session.m_olRollback.SaveToFile(sSequenceFilenameRB);
+                    hr = session.m_olRollback.SaveToFile(sSequenceFilenameRB.c_str());
                     if (SUCCEEDED(hr)) {
                         uiResult = NO_ERROR;
                     } else {
                         // Saving rollback file failed.
                         PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
                         uiResult = ERROR_INSTALL_SCRIPT_WRITE;
-                        ::MsiRecordSetInteger(hRecordProg, 1, uiResult           );
-                        ::MsiRecordSetString (hRecordProg, 2, sSequenceFilenameRB);
-                        ::MsiRecordSetInteger(hRecordProg, 3, hr                 );
+                        ::MsiRecordSetInteger(hRecordProg, 1, uiResult                   );
+                        ::MsiRecordSetString (hRecordProg, 2, sSequenceFilenameRB.c_str());
+                        ::MsiRecordSetInteger(hRecordProg, 3, hr                         );
                         ::MsiProcessMessage(hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
                     }
                 } else {
                     // Saving commit file failed.
                     PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
                     uiResult = ERROR_INSTALL_SCRIPT_WRITE;
-                    ::MsiRecordSetInteger(hRecordProg, 1, uiResult           );
-                    ::MsiRecordSetString (hRecordProg, 2, sSequenceFilenameCM);
-                    ::MsiRecordSetInteger(hRecordProg, 3, hr                 );
+                    ::MsiRecordSetInteger(hRecordProg, 1, uiResult                   );
+                    ::MsiRecordSetString (hRecordProg, 2, sSequenceFilenameCM.c_str());
+                    ::MsiRecordSetInteger(hRecordProg, 3, hr                         );
                     ::MsiProcessMessage(hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
                 }
 
@@ -349,7 +345,7 @@ UINT ExecuteSequence(MSIHANDLE hInstall)
                     session.m_bContinueOnError = TRUE;
                     session.m_bRollbackEnabled = FALSE;
                     session.m_olRollback.Execute(&session);
-                    ::DeleteFile(sSequenceFilenameRB);
+                    ::DeleteFile(sSequenceFilenameRB.c_str());
                 }
             } else {
                 // No cleanup after cleanup support.
@@ -361,7 +357,7 @@ UINT ExecuteSequence(MSIHANDLE hInstall)
                 uiResult = HRESULT_CODE(hr);
             }
 
-            ::DeleteFile(sSequenceFilename);
+            ::DeleteFile(sSequenceFilename.c_str());
         } else if (hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND) && bIsCleanup) {
             // Sequence file not found and this is rollback/commit action. Either of the following scenarios are possible:
             // - The delayed action failed to save the rollback/commit file. The delayed action performed cleanup itself. No further action is required.
@@ -371,9 +367,9 @@ UINT ExecuteSequence(MSIHANDLE hInstall)
             // Sequence loading failed. Probably, LOCAL SYSTEM doesn't have read access to user's temp directory.
             PMSIHANDLE hRecordProg = ::MsiCreateRecord(3);
             uiResult = ERROR_INSTALL_SCRIPT_READ;
-            ::MsiRecordSetInteger(hRecordProg, 1, uiResult         );
-            ::MsiRecordSetString (hRecordProg, 2, sSequenceFilename);
-            ::MsiRecordSetInteger(hRecordProg, 3, hr               );
+            ::MsiRecordSetInteger(hRecordProg, 1, uiResult                 );
+            ::MsiRecordSetString (hRecordProg, 2, sSequenceFilename.c_str());
+            ::MsiRecordSetInteger(hRecordProg, 3, hr                       );
             ::MsiProcessMessage(hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         }
 
