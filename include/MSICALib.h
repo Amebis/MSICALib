@@ -621,7 +621,7 @@ public:
     friend inline BOOL operator <<(CStream &f, const COpList &list);
     friend inline BOOL operator >>(CStream &f, COpList &list);
 
-protected:
+public:
     enum OPERATION {
         OP_ROLLBACK_ENABLE = 1,
         OP_FILE_DELETE,
@@ -760,35 +760,48 @@ namespace MSICA {
 // Inline operators
 ////////////////////////////////////////////////////////////////////////////
 
-template <class T>
-inline BOOL operator <<(CStream &f, const T &val)
-{
-    DWORD dwWritten;
-
-    if (!::WriteFile(f, &val, sizeof(T), &dwWritten, NULL)) return FALSE;
-    if (dwWritten != sizeof(T)) {
-        ::SetLastError(ERROR_WRITE_FAULT);
-        return FALSE;
-    }
-
-    return TRUE;
+#define MSICALIB_STREAM_DATA(T)                                           \
+inline BOOL operator <<(CStream &f, const T &val)                         \
+{                                                                         \
+    DWORD dwWritten;                                                      \
+                                                                          \
+    if (!::WriteFile(f, &val, sizeof(T), &dwWritten, NULL)) return FALSE; \
+    if (dwWritten != sizeof(T)) {                                         \
+        ::SetLastError(ERROR_WRITE_FAULT);                                \
+        return FALSE;                                                     \
+    }                                                                     \
+                                                                          \
+    return TRUE;                                                          \
+}                                                                         \
+                                                                          \
+inline BOOL operator >>(CStream &f, T &val)                               \
+{                                                                         \
+    DWORD dwRead;                                                         \
+                                                                          \
+    if (!::ReadFile(f, &val, sizeof(T), &dwRead, NULL)) return FALSE;     \
+    if (dwRead != sizeof(T)) {                                            \
+         ::SetLastError(ERROR_READ_FAULT);                                \
+         return FALSE;                                                    \
+    }                                                                     \
+                                                                          \
+    return TRUE;                                                          \
 }
 
+MSICALIB_STREAM_DATA(short)
+MSICALIB_STREAM_DATA(unsigned short)
+MSICALIB_STREAM_DATA(long)
+MSICALIB_STREAM_DATA(unsigned long)
+MSICALIB_STREAM_DATA(int)
+MSICALIB_STREAM_DATA(size_t)
+#ifndef _WIN64
+MSICALIB_STREAM_DATA(DWORDLONG)
+#endif
+MSICALIB_STREAM_DATA(HKEY)
+MSICALIB_STREAM_DATA(GUID)
+MSICALIB_STREAM_DATA(TASK_TRIGGER)
+MSICALIB_STREAM_DATA(COpList::OPERATION)
 
-template <class T>
-inline BOOL operator >>(CStream &f, T &val)
-{
-    DWORD dwRead;
-
-    if (!::ReadFile(f, &val, sizeof(T), &dwRead, NULL)) return FALSE;
-    if (dwRead != sizeof(T)) {
-         ::SetLastError(ERROR_READ_FAULT);
-         return FALSE;
-    }
-
-    return TRUE;
-}
-
+#undef MSICALIB_STREAM_DATA
 
 template <class _Ty, class _Ax>
 inline BOOL operator <<(CStream &f, const std::vector<_Ty, _Ax> &val)
