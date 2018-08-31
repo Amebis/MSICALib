@@ -18,7 +18,10 @@
     along with MSICA. If not, see <http://www.gnu.org/licenses/>.
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ImportGroup Label="PropertySheets" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="..\..\..\include\$(Platform).props" />
+    <Import Project="..\..\..\include\$(Configuration).props" />
+  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <OutDir>temp\$(ProjectName).$(Platform).$(Configuration)\</OutDir>
@@ -44,5 +47,20 @@
       <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
     </Lib>
   </ItemDefinitionGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ClCompile Include="..\src\OpCert.cpp" />
+    <ClCompile Include="..\src\MSICALib.cpp" />
+    <ClCompile Include="..\src\OpFile.cpp" />
+    <ClCompile Include="..\src\OpSvc.cpp" />
+    <ClCompile Include="..\src\OpTS.cpp" />
+    <ClCompile Include="..\src\OpReg.cpp" />
+    <ClCompile Include="..\src\OpWLAN.cpp" />
+    <ClCompile Include="..\src\stdafx.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\MSICALib.h" />
+    <ClInclude Include="..\src\stdafx.h" />
+  </ItemGroup>
 </Project>
