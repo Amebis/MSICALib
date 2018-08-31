@@ -105,10 +105,10 @@ HRESULT COpRegKeyCreate::Execute(CSession *pSession)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(4);
-        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_CREATE  );
-        ::MsiRecordSetInteger(hRecordProg, 2, (UINT)m_hKeyRoot & 0x7fffffff);
-        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue.c_str()             );
-        ::MsiRecordSetInteger(hRecordProg, 4, lResult                      );
+        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_CREATE           );
+        ::MsiRecordSetInteger(hRecordProg, 2, (int)(UINT_PTR)m_hKeyRoot & 0x7fffffff);
+        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue.c_str()                      );
+        ::MsiRecordSetInteger(hRecordProg, 4, lResult                               );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return HRESULT_FROM_WIN32(lResult);
     }
@@ -156,11 +156,11 @@ HRESULT COpRegKeyCopy::Execute(CSession *pSession)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(5);
-        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_COPY    );
-        ::MsiRecordSetInteger(hRecordProg, 2, (UINT)m_hKeyRoot & 0x7fffffff);
-        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue1.c_str()            );
-        ::MsiRecordSetStringW(hRecordProg, 4, m_sValue2.c_str()            );
-        ::MsiRecordSetInteger(hRecordProg, 5, lResult                      );
+        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_COPY             );
+        ::MsiRecordSetInteger(hRecordProg, 2, (int)(UINT_PTR)m_hKeyRoot & 0x7fffffff);
+        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue1.c_str()                     );
+        ::MsiRecordSetStringW(hRecordProg, 4, m_sValue2.c_str()                     );
+        ::MsiRecordSetInteger(hRecordProg, 5, lResult                               );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return HRESULT_FROM_WIN32(lResult);
     }
@@ -322,11 +322,11 @@ HRESULT COpRegKeyDelete::Execute(CSession *pSession)
             while (iLength && m_sValue[iLength - 1] == L'\\') iLength--;
 
             for (;;) {
-                HKEY hKey;
+                HKEY hKeyTest;
                 sprintf(sBackupName, L"%.*ls (orig %u)", iLength, m_sValue.c_str(), ++uiCount);
-                lResult = ::RegOpenKeyExW(m_hKeyRoot, sBackupName.c_str(), 0, KEY_ENUMERATE_SUB_KEYS | samAdditional, &hKey);
+                lResult = ::RegOpenKeyExW(m_hKeyRoot, sBackupName.c_str(), 0, KEY_ENUMERATE_SUB_KEYS | samAdditional, &hKeyTest);
                 if (lResult != NO_ERROR) break;
-                ::RegCloseKey(hKey);
+                ::RegCloseKey(hKeyTest);
             }
             if (lResult == ERROR_FILE_NOT_FOUND) {
                 // Since copying registry key is a complicated job (when rollback/commit support is required), and we do have an operation just for that, we use it.
@@ -341,10 +341,10 @@ HRESULT COpRegKeyDelete::Execute(CSession *pSession)
                 pSession->m_olCommit.push_back(new COpRegKeyDelete(m_hKeyRoot, sBackupName.c_str()));
             } else {
                 PMSIHANDLE hRecordProg = ::MsiCreateRecord(4);
-                ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_PROBING );
-                ::MsiRecordSetInteger(hRecordProg, 2, (UINT)m_hKeyRoot & 0x7fffffff);
-                ::MsiRecordSetStringW(hRecordProg, 3, sBackupName.c_str()          );
-                ::MsiRecordSetInteger(hRecordProg, 4, lResult                      );
+                ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_PROBING          );
+                ::MsiRecordSetInteger(hRecordProg, 2, (int)(UINT_PTR)m_hKeyRoot & 0x7fffffff);
+                ::MsiRecordSetStringW(hRecordProg, 3, sBackupName.c_str()                   );
+                ::MsiRecordSetInteger(hRecordProg, 4, lResult                               );
                 ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
                 return HRESULT_FROM_WIN32(lResult);
             }
@@ -358,10 +358,10 @@ HRESULT COpRegKeyDelete::Execute(CSession *pSession)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(4);
-        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_DELETE  );
-        ::MsiRecordSetInteger(hRecordProg, 2, (UINT)m_hKeyRoot & 0x7fffffff);
-        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue.c_str()             );
-        ::MsiRecordSetInteger(hRecordProg, 4, lResult                      );
+        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_DELETE           );
+        ::MsiRecordSetInteger(hRecordProg, 2, (int)(UINT_PTR)m_hKeyRoot & 0x7fffffff);
+        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue.c_str()                      );
+        ::MsiRecordSetInteger(hRecordProg, 4, lResult                               );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return HRESULT_FROM_WIN32(lResult);
     }
@@ -549,11 +549,11 @@ HRESULT COpRegValueCreate::Execute(CSession *pSession)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(5);
-        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_SETVALUE);
-        ::MsiRecordSetInteger(hRecordProg, 2, (UINT)m_hKeyRoot & 0x7fffffff);
-        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue.c_str()             );
-        ::MsiRecordSetStringW(hRecordProg, 4, m_sValueName.c_str()         );
-        ::MsiRecordSetInteger(hRecordProg, 5, lResult                      );
+        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_SETVALUE         );
+        ::MsiRecordSetInteger(hRecordProg, 2, (int)(UINT_PTR)m_hKeyRoot & 0x7fffffff);
+        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue.c_str()                      );
+        ::MsiRecordSetStringW(hRecordProg, 4, m_sValueName.c_str()                  );
+        ::MsiRecordSetInteger(hRecordProg, 5, lResult                               );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return HRESULT_FROM_WIN32(lResult);
     }
@@ -623,12 +623,12 @@ HRESULT COpRegValueCopy::Execute(CSession *pSession)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(6);
-        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_COPYVALUE);
-        ::MsiRecordSetInteger(hRecordProg, 2, (UINT)m_hKeyRoot & 0x7fffffff );
-        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue.c_str()              );
-        ::MsiRecordSetStringW(hRecordProg, 4, m_sValueName1.c_str()         );
-        ::MsiRecordSetStringW(hRecordProg, 5, m_sValueName2.c_str()         );
-        ::MsiRecordSetInteger(hRecordProg, 6, lResult                       );
+        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_COPYVALUE        );
+        ::MsiRecordSetInteger(hRecordProg, 2, (int)(UINT_PTR)m_hKeyRoot & 0x7fffffff);
+        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue.c_str()                      );
+        ::MsiRecordSetStringW(hRecordProg, 4, m_sValueName1.c_str()                 );
+        ::MsiRecordSetStringW(hRecordProg, 5, m_sValueName2.c_str()                 );
+        ::MsiRecordSetInteger(hRecordProg, 6, lResult                               );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return HRESULT_FROM_WIN32(lResult);
     }
@@ -691,11 +691,11 @@ HRESULT COpRegValueDelete::Execute(CSession *pSession)
                     pSession->m_olCommit.push_back(new COpRegValueDelete(m_hKeyRoot, m_sValue.c_str(), sBackupName.c_str()));
                 } else {
                     PMSIHANDLE hRecordProg = ::MsiCreateRecord(5);
-                    ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_PROBINGVAL);
-                    ::MsiRecordSetInteger(hRecordProg, 2, (UINT)m_hKeyRoot & 0x7fffffff  );
-                    ::MsiRecordSetStringW(hRecordProg, 3, m_sValue.c_str()               );
-                    ::MsiRecordSetStringW(hRecordProg, 3, sBackupName.c_str()            );
-                    ::MsiRecordSetInteger(hRecordProg, 4, lResult                        );
+                    ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_PROBINGVAL       );
+                    ::MsiRecordSetInteger(hRecordProg, 2, (int)(UINT_PTR)m_hKeyRoot & 0x7fffffff);
+                    ::MsiRecordSetStringW(hRecordProg, 3, m_sValue.c_str()                      );
+                    ::MsiRecordSetStringW(hRecordProg, 3, sBackupName.c_str()                   );
+                    ::MsiRecordSetInteger(hRecordProg, 4, lResult                               );
                     ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
                     ::RegCloseKey(hKey);
                     return HRESULT_FROM_WIN32(lResult);
@@ -713,11 +713,11 @@ HRESULT COpRegValueDelete::Execute(CSession *pSession)
         return S_OK;
     else {
         PMSIHANDLE hRecordProg = ::MsiCreateRecord(5);
-        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_DELETEVALUE);
-        ::MsiRecordSetInteger(hRecordProg, 2, (UINT)m_hKeyRoot & 0x7fffffff   );
-        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue.c_str()                );
-        ::MsiRecordSetStringW(hRecordProg, 4, m_sValueName.c_str()            );
-        ::MsiRecordSetInteger(hRecordProg, 5, lResult                         );
+        ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_REGKEY_DELETEVALUE      );
+        ::MsiRecordSetInteger(hRecordProg, 2, (int)(UINT_PTR)m_hKeyRoot & 0x7fffffff);
+        ::MsiRecordSetStringW(hRecordProg, 3, m_sValue.c_str()                      );
+        ::MsiRecordSetStringW(hRecordProg, 4, m_sValueName.c_str()                  );
+        ::MsiRecordSetInteger(hRecordProg, 5, lResult                               );
         ::MsiProcessMessage(pSession->m_hInstall, INSTALLMESSAGE_ERROR, hRecordProg);
         return HRESULT_FROM_WIN32(lResult);
     }

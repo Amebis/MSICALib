@@ -1,6 +1,7 @@
 /*.opensdf
 /*.sdf
 /*.suo
+/.vs
 /ipch
 *.user
 temp
