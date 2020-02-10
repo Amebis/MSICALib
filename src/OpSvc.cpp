@@ -17,7 +17,7 @@
     along with MSICA. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "stdafx.h"
+#include "pch.h"
 
 #pragma comment(lib, "advapi32.lib")
 

@@ -38,7 +38,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>..\include;..\..\WinStd\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Lib>
       <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
@@ -52,12 +52,12 @@
     <ClCompile Include="..\src\OpTS.cpp" />
     <ClCompile Include="..\src\OpReg.cpp" />
     <ClCompile Include="..\src\OpWLAN.cpp" />
-    <ClCompile Include="..\src\stdafx.cpp">
+    <ClCompile Include="..\src\pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\MSICALib.h" />
-    <ClInclude Include="..\src\stdafx.h" />
+    <ClInclude Include="..\src\pch.h" />
   </ItemGroup>
 </Project>
