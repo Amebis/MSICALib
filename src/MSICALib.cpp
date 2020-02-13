@@ -203,10 +203,10 @@ UINT SaveSequence(MSIHANDLE hInstall, LPCTSTR szActionExecute, LPCTSTR szActionC
             LPCTSTR pszExtension = ::PathFindExtension(sSequenceFilename.c_str());
             winstd::tstring sSequenceFilename2;
 
-            sprintf(sSequenceFilename2, _T("%.*ls-rb%ls"), pszExtension - sSequenceFilename.c_str(), sSequenceFilename.c_str(), pszExtension);
+            sprintf(sSequenceFilename2, _T("%.*ls-rb%ls"), (unsigned int)(pszExtension - sSequenceFilename.c_str()), sSequenceFilename.c_str(), pszExtension);
             uiResult = ::MsiSetProperty(hInstall, szActionRollback, sSequenceFilename2.c_str());
             if (uiResult == NO_ERROR) {
-                sprintf(sSequenceFilename2, _T("%.*ls-cm%ls"), pszExtension - sSequenceFilename.c_str(), sSequenceFilename.c_str(), pszExtension);
+                sprintf(sSequenceFilename2, _T("%.*ls-cm%ls"), (unsigned int)(pszExtension - sSequenceFilename.c_str()), sSequenceFilename.c_str(), pszExtension);
                 uiResult = ::MsiSetProperty(hInstall, szActionCommit, sSequenceFilename2.c_str());
                 if (uiResult != NO_ERROR) {
                     ::MsiRecordSetInteger(hRecordProg, 1, ERROR_INSTALL_PROPERTY_SET);
@@ -270,8 +270,8 @@ UINT ExecuteSequence(MSIHANDLE hInstall)
                 LPCTSTR pszExtension = ::PathFindExtension(sSequenceFilename.c_str());
                 winstd::tstring sSequenceFilenameCM, sSequenceFilenameRB;
 
-                sprintf(sSequenceFilenameRB, _T("%.*ls-rb%ls"), pszExtension - sSequenceFilename.c_str(), sSequenceFilename.c_str(), pszExtension);
-                sprintf(sSequenceFilenameCM, _T("%.*ls-cm%ls"), pszExtension - sSequenceFilename.c_str(), sSequenceFilename.c_str(), pszExtension);
+                sprintf(sSequenceFilenameRB, _T("%.*ls-rb%ls"), (unsigned int)(pszExtension - sSequenceFilename.c_str()), sSequenceFilename.c_str(), pszExtension);
+                sprintf(sSequenceFilenameCM, _T("%.*ls-cm%ls"), (unsigned int)(pszExtension - sSequenceFilename.c_str()), sSequenceFilename.c_str(), pszExtension);
 
                 // After commit, delete rollback file. After rollback, delete commit file.
                 session.m_olCommit.push_back(new MSICA::COpFileDelete(

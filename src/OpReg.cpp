@@ -323,7 +323,7 @@ HRESULT COpRegKeyDelete::Execute(CSession *pSession)
 
             for (;;) {
                 HKEY hKeyTest;
-                sprintf(sBackupName, L"%.*ls (orig %u)", iLength, m_sValue.c_str(), ++uiCount);
+                sprintf(sBackupName, L"%.*ls (orig %u)", (unsigned int)iLength, m_sValue.c_str(), ++uiCount);
                 lResult = ::RegOpenKeyExW(m_hKeyRoot, sBackupName.c_str(), 0, KEY_ENUMERATE_SUB_KEYS | samAdditional, &hKeyTest);
                 if (lResult != NO_ERROR) break;
                 ::RegCloseKey(hKeyTest);

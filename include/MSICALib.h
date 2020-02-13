@@ -1328,7 +1328,10 @@ inline BOOL IsWow64Process()
 {
 #ifndef _WIN64
     // Find IsWow64Process() address in KERNEL32.DLL.
-    BOOL (WINAPI *_IsWow64Process)(__in HANDLE hProcess, __out PBOOL Wow64Process) = (BOOL(WINAPI*)(__in HANDLE, __out PBOOL))::GetProcAddress(::GetModuleHandle(_T("KERNEL32.DLL")), "IsWow64Process");
+    HMODULE hKernel32 = ::GetModuleHandle(_T("KERNEL32.DLL"));
+    if (!hKernel32)
+        return FALSE;
+    BOOL (WINAPI *_IsWow64Process)(__in HANDLE hProcess, __out PBOOL Wow64Process) = (BOOL(WINAPI*)(__in HANDLE, __out PBOOL))::GetProcAddress(hKernel32, "IsWow64Process");
 
     // See if our 32-bit process is running in 64-bit environment.
     if (_IsWow64Process) {
@@ -1343,7 +1346,7 @@ inline BOOL IsWow64Process()
             return FALSE;
         }
     } else {
-        // This KERNEL32.DLL doesn't know IsWow64Process().Definitely not a WOW64 process.
+        // This KERNEL32.DLL doesn't know IsWow64Process(). Definitely not a WOW64 process.
         return FALSE;
     }
 #else
