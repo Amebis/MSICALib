@@ -325,12 +325,8 @@ public:
     friend inline BOOL operator >>(CStream &f, COpRegValueCreate &op);
 
 protected:
-    DWORD              m_dwType;
-    std::wstring       m_sData;
-    std::vector<BYTE>  m_binData;
-    DWORD              m_dwData;
-    std::vector<WCHAR> m_szData;
-    DWORDLONG          m_qwData;
+    DWORD             m_dwType;
+    std::vector<BYTE> m_binData;
 };
 
 
@@ -1036,17 +1032,7 @@ inline BOOL operator <<(CStream &f, const COpRegValueCreate &op)
 {
     if (!(f << (const COpRegValueSingle &)op)) return FALSE;
     if (!(f << op.m_dwType                  )) return FALSE;
-    switch (op.m_dwType) {
-    case REG_SZ:
-    case REG_EXPAND_SZ:
-    case REG_LINK:                if (!(f << op.m_sData  )) return FALSE; break;
-    case REG_BINARY:              if (!(f << op.m_binData)) return FALSE; break;
-    case REG_DWORD_LITTLE_ENDIAN:
-    case REG_DWORD_BIG_ENDIAN:    if (!(f << op.m_dwData )) return FALSE; break;
-    case REG_MULTI_SZ:            if (!(f << op.m_szData )) return FALSE; break;
-    case REG_QWORD_LITTLE_ENDIAN: if (!(f << op.m_qwData )) return FALSE; break;
-    default: ::SetLastError(ERROR_INVALID_DATA); return FALSE;
-    }
+    if (!(f << op.m_binData                 )) return FALSE;
 
     return TRUE;
 }
@@ -1056,17 +1042,7 @@ inline BOOL operator >>(CStream &f, COpRegValueCreate &op)
 {
     if (!(f >> (COpRegValueSingle &)op)) return FALSE;
     if (!(f >> op.m_dwType            )) return FALSE;
-    switch (op.m_dwType) {
-    case REG_SZ:
-    case REG_EXPAND_SZ:
-    case REG_LINK:                if (!(f >> op.m_sData  )) return FALSE; break;
-    case REG_BINARY:              if (!(f >> op.m_binData)) return FALSE; break;
-    case REG_DWORD_LITTLE_ENDIAN:
-    case REG_DWORD_BIG_ENDIAN:    if (!(f >> op.m_dwData )) return FALSE; break;
-    case REG_MULTI_SZ:            if (!(f >> op.m_szData )) return FALSE; break;
-    case REG_QWORD_LITTLE_ENDIAN: if (!(f >> op.m_qwData )) return FALSE; break;
-    default:                      ::SetLastError(ERROR_INVALID_DATA); return FALSE;
-    }
+    if (!(f >> op.m_binData           )) return FALSE;
 
     return TRUE;
 }

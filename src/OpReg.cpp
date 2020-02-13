@@ -454,7 +454,7 @@ COpRegValueCreate::COpRegValueCreate(HKEY hKeyRoot, LPCWSTR pszKeyName, LPCWSTR 
 
 COpRegValueCreate::COpRegValueCreate(HKEY hKeyRoot, LPCWSTR pszKeyName, LPCWSTR pszValueName, DWORD dwData, int iTicks) :
     m_dwType(REG_DWORD),
-    m_dwData(dwData),
+    m_binData(reinterpret_cast<LPCBYTE>(&dwData), reinterpret_cast<LPCBYTE>(&dwData + 1)),
     COpRegValueSingle(hKeyRoot, pszKeyName, pszValueName, iTicks)
 {
 }
@@ -470,7 +470,7 @@ COpRegValueCreate::COpRegValueCreate(HKEY hKeyRoot, LPCWSTR pszKeyName, LPCWSTR 
 
 COpRegValueCreate::COpRegValueCreate(HKEY hKeyRoot, LPCWSTR pszKeyName, LPCWSTR pszValueName, LPCWSTR pszData, int iTicks) :
     m_dwType(REG_SZ),
-    m_sData(pszData),
+    m_binData(reinterpret_cast<LPCBYTE>(pszData), reinterpret_cast<LPCBYTE>(pszData + wcslen(pszData) + 1)),
     COpRegValueSingle(hKeyRoot, pszKeyName, pszValueName, iTicks)
 {
 }
@@ -478,7 +478,7 @@ COpRegValueCreate::COpRegValueCreate(HKEY hKeyRoot, LPCWSTR pszKeyName, LPCWSTR 
 
 COpRegValueCreate::COpRegValueCreate(HKEY hKeyRoot, LPCWSTR pszKeyName, LPCWSTR pszValueName, DWORDLONG qwData, int iTicks) :
     m_dwType(REG_QWORD),
-    m_qwData(qwData),
+    m_binData(reinterpret_cast<LPCBYTE>(&qwData), reinterpret_cast<LPCBYTE>(&qwData + 1)),
     COpRegValueSingle(hKeyRoot, pszKeyName, pszValueName, iTicks)
 {
 }
@@ -515,33 +515,7 @@ HRESULT COpRegValueCreate::Execute(CSession *pSession)
         }
 
         // Set the registry value.
-        switch (m_dwType) {
-        case REG_SZ:
-        case REG_EXPAND_SZ:
-        case REG_LINK:
-            lResult = ::RegSetValueExW(hKey, m_sValueName.c_str(), 0, m_dwType, (const BYTE*)m_sData.c_str(), static_cast<DWORD>((m_sData.length() + 1) * sizeof(WCHAR))); break;
-            break;
-
-        case REG_BINARY:
-            lResult = ::RegSetValueExW(hKey, m_sValueName.c_str(), 0, m_dwType, m_binData.data(), static_cast<DWORD>(m_binData.size() * sizeof(BYTE))); break;
-
-        case REG_DWORD_LITTLE_ENDIAN:
-        case REG_DWORD_BIG_ENDIAN:
-            lResult = ::RegSetValueExW(hKey, m_sValueName.c_str(), 0, m_dwType, (const BYTE*)&m_dwData, sizeof(DWORD)); break;
-            break;
-
-        case REG_MULTI_SZ:
-            lResult = ::RegSetValueExW(hKey, m_sValueName.c_str(), 0, m_dwType, (const BYTE*)m_szData.data(), static_cast<DWORD>(m_szData.size() * sizeof(WCHAR))); break;
-            break;
-
-        case REG_QWORD_LITTLE_ENDIAN:
-            lResult = ::RegSetValueExW(hKey, m_sValueName.c_str(), 0, m_dwType, (const BYTE*)&m_qwData, sizeof(DWORDLONG)); break;
-            break;
-
-        default:
-            lResult = ERROR_UNSUPPORTED_TYPE;
-        }
-
+        lResult = ::RegSetValueExW(hKey, m_sValueName.c_str(), 0, m_dwType, m_binData.data(), static_cast<DWORD>(m_binData.size() * sizeof(BYTE)));
         ::RegCloseKey(hKey);
     }
 
