@@ -30,7 +30,6 @@ All :: \
 	"$(LANG).$(PLAT).$(CFG).Error-2.idt"
 
 "$(LANG).$(PLAT).$(CFG).Error-1.idt" : "Makefile" "..\..\..\..\..\include\MSIBuildCfg.mak"
-	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
 Error	Message
 i2	L0
@@ -38,7 +37,6 @@ Error	Error
 <<NOKEEP
 
 "en_US.$(PLAT).$(CFG).Error-2.idtx" : "Makefile" "..\..\..\..\..\include\MSIBuildCfg.mak"
-	-if exist $@ del /f /q $@
 	move /y << $@ > NUL
 Error	Message
 i2	L0
