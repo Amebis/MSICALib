@@ -34,6 +34,10 @@ COperation::COperation(int iTicks) :
 {
 }
 
+COperation::~COperation()
+{
+}
+
 
 ////////////////////////////////////////////////////////////////////////////
 // COpTypeSingleString

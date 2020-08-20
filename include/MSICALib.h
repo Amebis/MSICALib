@@ -95,6 +95,7 @@ class COperation
 {
 public:
     COperation(int iTicks = 0);
+    virtual ~COperation();
 
     virtual HRESULT Execute(CSession *pSession) = 0;
 
