@@ -46,7 +46,7 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
         if (FAILED(hr)) goto finish;
     }
 
-    hr = pService.create(CLSID_TaskScheduler, NULL, CLSCTX_INPROC_SERVER);
+    hr = CoCreateInstance(CLSID_TaskScheduler, NULL, CLSCTX_INPROC_SERVER, pService);
     if (SUCCEEDED(hr)) {
         // Windows Vista or newer.
         winstd::variant vEmpty;
@@ -328,7 +328,7 @@ HRESULT COpTaskCreate::Execute(CSession *pSession)
         winstd::com_obj<ITask> pTask;
 
         // Get task scheduler object.
-        hr = pTaskScheduler.create(CLSID_CTaskScheduler, NULL, CLSCTX_ALL);
+        hr = CoCreateInstance(CLSID_CTaskScheduler, NULL, CLSCTX_ALL, pTaskScheduler);
         if (FAILED(hr)) goto finish;
 
         // Create the new task.
@@ -620,7 +620,7 @@ HRESULT COpTaskDelete::Execute(CSession *pSession)
     HRESULT hr;
     winstd::com_obj<ITaskService> pService;
 
-    hr = pService.create(CLSID_TaskScheduler, NULL, CLSCTX_INPROC_SERVER);
+    hr = CoCreateInstance(CLSID_TaskScheduler, NULL, CLSCTX_INPROC_SERVER, pService);
     if (SUCCEEDED(hr)) {
         // Windows Vista or newer.
         winstd::variant vEmpty;
@@ -721,7 +721,7 @@ HRESULT COpTaskDelete::Execute(CSession *pSession)
         winstd::com_obj<ITaskScheduler> pTaskScheduler;
 
         // Get task scheduler object.
-        hr = pTaskScheduler.create(CLSID_CTaskScheduler, NULL, CLSCTX_ALL);
+        hr = CoCreateInstance(CLSID_CTaskScheduler, NULL, CLSCTX_ALL, pTaskScheduler);
         if (FAILED(hr)) goto finish;
 
         if (pSession->m_bRollbackEnabled) {
@@ -809,7 +809,7 @@ HRESULT COpTaskEnable::Execute(CSession *pSession)
     HRESULT hr;
     winstd::com_obj<ITaskService> pService;
 
-    hr = pService.create(CLSID_TaskScheduler, NULL, CLSCTX_INPROC_SERVER);
+    hr = CoCreateInstance(CLSID_TaskScheduler, NULL, CLSCTX_INPROC_SERVER, pService);
     if (SUCCEEDED(hr)) {
         // Windows Vista or newer.
         winstd::variant vEmpty;
@@ -861,7 +861,7 @@ HRESULT COpTaskEnable::Execute(CSession *pSession)
         DWORD dwFlags;
 
         // Get task scheduler object.
-        hr = pTaskScheduler.create(CLSID_CTaskScheduler, NULL, CLSCTX_ALL);
+        hr = CoCreateInstance(CLSID_CTaskScheduler, NULL, CLSCTX_ALL, pTaskScheduler);
         if (FAILED(hr)) goto finish;
 
         // Load the task.
@@ -928,7 +928,7 @@ HRESULT COpTaskCopy::Execute(CSession *pSession)
     HRESULT hr;
     winstd::com_obj<ITaskService> pService;
 
-    hr = pService.create(CLSID_TaskScheduler, NULL, CLSCTX_INPROC_SERVER);
+    hr = CoCreateInstance(CLSID_TaskScheduler, NULL, CLSCTX_INPROC_SERVER, pService);
     if (SUCCEEDED(hr)) {
         // Windows Vista or newer.
         winstd::variant vEmpty;
@@ -984,7 +984,7 @@ HRESULT COpTaskCopy::Execute(CSession *pSession)
         winstd::com_obj<ITask> pTask;
 
         // Get task scheduler object.
-        hr = pTaskScheduler.create(CLSID_CTaskScheduler, NULL, CLSCTX_ALL);
+        hr = CoCreateInstance(CLSID_CTaskScheduler, NULL, CLSCTX_ALL, pTaskScheduler);
         if (FAILED(hr)) goto finish;
 
         // Load the source task.

@@ -87,8 +87,8 @@ COpList::COpList(int iTicks) : COperation(iTicks)
 
 DWORD COpList::LoadFromFile(LPCTSTR pszFileName)
 {
-    CStream fSequence;
-    if (!fSequence.create(pszFileName, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN))
+    CStream fSequence(CreateFile(pszFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL));
+    if (!fSequence)
         return GetLastError();
 
     // Load operation sequence.
@@ -101,8 +101,8 @@ DWORD COpList::LoadFromFile(LPCTSTR pszFileName)
 
 DWORD COpList::SaveToFile(LPCTSTR pszFileName) const
 {
-    CStream fSequence;
-    if (!fSequence.create(pszFileName, GENERIC_WRITE, FILE_SHARE_READ, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN))
+    CStream fSequence(CreateFile(pszFileName, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL));
+    if (!fSequence)
         return GetLastError();
 
     // Save execute sequence to file.
